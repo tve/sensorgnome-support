@@ -1,2 +1,2 @@
-# sensorgnome
-Master control process for a sensorgnome field computer.
+# sensorgnome-support
+Support scripts and files needed for a Sensorgnome to operate.

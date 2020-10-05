@@ -1,0 +1,11 @@
+[Unit]
+Description=Sensorgnome Boot process.
+Wants=network.target
+After=syslog.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/proj/sensorgnome/scripts/boottime_compute.sh
+
+[Install]
+WantedBy=multi-user.target

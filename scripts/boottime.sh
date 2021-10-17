@@ -15,12 +15,9 @@
 
 mkdir -p /dev/sensorgnome/usb
 
-# make sure we have a link that points back to the FAT partition's
-# SG subfolder
-
-pushd /media
-ln -s /dev/sdcard SD_card
-popd
+# The "Datasaver" in sensorgnome expects to write data to /media/SD_card and
+# /media/diskNportM, so ensure /media/SD_card is a symlink to /data
+[[ -e /media/SD_card ]] || ln -s /data /media/SD_card
 
 # export gpio pins for use with the adafruit pushbutton LED switch
 # (see ../overlays/Makefile)
@@ -42,17 +39,19 @@ sed -i /etc/hosts -e "/127.0.0.1[ \t]\+localhost/s/^.*$/127.0.0.1\tlocalhost `ho
 if [[ -f /boot/GESTURES.TXT ]]; then
     systemctl stop hostapd
     ifdown wlan0
-else
+# looks like there's no button so start hotspot by default
+# unless there's no config file for it...
+elif [[ -f /etc/hostapd/hostapd.conf ]]; then
     ifup wlan0
     systemctl start hostapd
 fi
 
-# make sure the DOS boot partition of the boot SD disk (internal flash
-# disk or microSD card on beaglebone black; microSD card on beaglebone white)
-# is mounted at /mnt/boot
+# - generate the sensorgnome unique system ID into /etc/sensorgnome_id
+# This ID is associated with the CPU chip, thus if the hardware is swapped out due to a failure
+# the station will get a new ID...
 
+/home/pi/proj/sensorgnome/scripts/gen_id.sh
 
-read BB_ID < /etc/beaglebone_id
 # - increment the persistent bootcount in /etc/bootcount
 
 BOOT_COUNT_FILE="/etc/bootcount"
@@ -65,6 +64,7 @@ if [[ -f $BOOT_COUNT_FILE ]]; then
 else
     echo 1 > $BOOT_COUNT_FILE
 fi
+echo "The boot count is $(cat $BOOT_COUNT_FILE)"
 
 # - delete any empty unmounted directores named /media/disk_portX.Y
 #   These might be leftover from previous boots with disks plugged

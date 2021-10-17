@@ -14,9 +14,10 @@ fi
 /home/pi/proj/sensorgnome/scripts/maintain_ssh_tunnel
 
 cd /home/pi/proj/sensorgnome/master
-export NODE_ENV=production VAMP_PATH=/home/pi/vamp NODE_PATH=/usr/local/lib/node_modules LC_ALL="C.UTF-8"
-for (( ; ; )) do
-nice -n -15 /usr/bin/nodejs ./master.js > /var/log/nodelog.txt 2>&1
-killall -KILL rtl_tcp vamp-alsa-host chronyc
-sleep 60
+export NODE_ENV=production VAMP_PATH=/home/pi/vamp LC_ALL="C.UTF-8"
+while true; do
+    echo '*** Starting sensorgnome control app'
+    nice -n -15 /usr/bin/node ./master.js > /var/log/nodelog.txt 2>&1
+    killall -KILL rtl_tcp vamp-alsa-host chronyc
+    sleep 60
 done

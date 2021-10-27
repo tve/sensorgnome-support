@@ -8,15 +8,14 @@ standard tools. On rPi this means:
 - https://www.raspberrypi.com/documentation/computers/configuration.html#using-the-command-line
 - https://www.raspberrypi.com/documentation/computers/configuration.html#setting-up-a-routed-wireless-access-point
 
-The Sensorgnome WiFi client is configured using a NETWORK.TXT config file. This file is
+The Sensorgnome WiFi client is configured using a `NETWORK.TXT` config file. This file is
 typically placed in the fat32 /data partition so it can be edited on a windows laptop.
 The Wifi client is enabled at boot if config is provided, after that the std `wpa_supplicant`
 daemon manages it.
 
 The Sensorgnome hotspot is enabled via a hardware button that is polled using the `gestures.js`
 and `pushbutton.js` scripts. The hotspot configuration is fixed and uses the Sensorgnome's ID.
-The button and associated LED pins can be configured in the Makefile (i.e. they are hard-coded
-for a given build).
+The button and associated LED pins can be configured in `GESTURES.TXT` to a limited degree.
 
 Notes:
 - The wifi client and the hotspot are almost completely independent and can operate simultaneously,
@@ -48,3 +47,9 @@ rPi, install it, and restart appropriate services. It assumes that the
 `sensorgnome-armv7-rpi-buster` dockcross script/image is available and it has a hardcoded
 rPi hostname that you will need to adapt. (You will also want to set your rPi up with ssh
 key-based auth so you don't have to type a password 10 times...)
+
+About all the files here... There are four groupings:
+- `etc-*` files are config snippets for standard daemons that find their way into `/etc/...`
+- `gestures*` are files related to the daemon that polls the button and blinks the LED
+- `gpio*` are files to init the GPIO pins used by the gestures daemon
+- `wifi*` are files that handle wifi client and hotspot configuration

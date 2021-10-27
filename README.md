@@ -14,7 +14,7 @@ hardware implementations of a Sensorgnome can mix and match the support packages
 The current subsystems are:
 - funcube: tools related to funcube dongles
 - gps-clock: scripts to manage GPS, real-time clock, and system clock synchronization
-- sg-system: misc pieces to init a sensorgnome
+- sg-boot: misc pieces to init a sensorgnome
 - ssh-comms: maintain communication channels over SSH
 - udev-usb: manage USB devices, incl hubs
 - wifi-button: manage wifi client and hotspot using a physical button and LED indicator

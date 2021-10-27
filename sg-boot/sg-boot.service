@@ -1,0 +1,13 @@
+[Unit]
+Description=Init Sensorgnome system basics
+After=local-fs.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sensorgnome/sg-boot
+ExecStart=/usr/bin/bash -e ./boottime.sh
+SyslogIdentifier=sg-boot
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

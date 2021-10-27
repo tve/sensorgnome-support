@@ -1,4 +1,7 @@
-#!/bin/bash
+#! /bin/bash
+
+# *** THIS HAS NOT BEEN UPDATED AND IS NOT CURRENTLY USED ***
+
 #
 # look for a file called sensorgnome_update.tgz on the boot partition.
 # If found, copy it to /tmp, remove it from the boot partition,

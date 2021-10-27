@@ -1,5 +1,5 @@
 #! /bin/bash
-# -Generate the sensorgnome unique system ID into /etc/sensorgnome_id
+# Generate the sensorgnome unique system ID into /etc/sensorgnome_id
 # This ID is associated with the CPU chip, thus if the hardware is swapped out due to a failure
 # the station will get a new ID...
 # Currently this only works for rpi, will need to be enhanced for BBB

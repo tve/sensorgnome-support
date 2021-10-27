@@ -1,0 +1,9 @@
+Package: sg-boot
+Version: 1.0
+Architecture: armhf
+Essential: no
+Depends: parted
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sensorgnome basic system initialization
+  Initializes the sensorgnome ID, the /data partition, and boot counter.

@@ -1,0 +1,11 @@
+[Unit]
+Description=check for adafruit gps cape on ttyAMA0 
+Requires=fake-hwclock.service
+After=fake-hwclock.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/pi/proj/sensorgnome/scripts/gpscape_rpi.sh
+
+[Install]
+WantedBy=multi-user.target

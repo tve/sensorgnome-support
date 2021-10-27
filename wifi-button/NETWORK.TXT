@@ -1,0 +1,78 @@
+# This file lets you set up a WiFi client connection for your SGPi.
+# This connection is independent from the SGPi's WiFi hotspot (see NOTES below).
+#
+# If you DO NOT want the SGPi to connect to a local WiFi network, leave the
+# WIFI_SSID (network name) empty (this is the default).
+# If you DO want the SGPi to connect to a local WiFi network, set the WIFI_SSID to the
+# network'/'s name / SSID and set the WIFI_PASS to the network's password. The password
+# must be at least 8 characters long (this is a general WiFi requirement) and it
+# is required. The network must be WPA/WPA2 password protected, and open network will
+# not be accepted.
+#
+
+# WiFi SSID / network name, leave blank for no connection (default)
+WIFI_SSID=
+# Example: WIFI_SSID=MyWifi
+
+# WiFi password (use quotes if the password contains spaces or special characters)
+WIFI_PASS=
+# Example: WIFI_PASS="very Secure!"
+
+# WiFi 2-letter country code (CA, US, GB, see https://en.wikipedia.org/wiki/ISO_3166-1)
+# Used to enable the correct frequency bands
+WIFI_COUNTRY=US
+
+# NOTES
+# =====
+#
+# By default, the SGPi's WiFi adapter is off, but if you provided SSID/password above,
+# then the SGPi tries to maintain a connection to sensorgnome .org via the WiFi network.
+# This keeps the WiFi adapter on all the time, which will increase power consumption.
+#
+# Changing the WiFi info above requires rebooting the rPi to take effect.
+
+# SGPi WiFi HOTSPOT - activate
+# ============================
+#
+# The SGPi's WiFi hotspot is independent of any WiFi client configured above
+# and can be turned on by double-clicking the external button (the one with the LED ring).
+# An active hotspot is indicated by the external button LED blinking on and off
+# at 0.9 second intervals.
+#
+# The hotspot will have the SGPi's serial number as both its network name
+# and its network passphrase, e.g.:
+#
+#  Hotspot Name:     SG-26F1RPI358CC
+#  Hotspot Password: SG-26F1RPI358CC
+#
+# When the hotspot is on, you can connect to the SGPi from your laptop
+# or phone WiFi menu.  After connecting to the SGPi hotspot, you can
+# access the SGPi's interface page in a web browser using one or both
+# of these URLs:
+#
+#   http://sgpi.local     - most Macs, linux boxes, Windows computers with iTunes
+#   http://192.168.7.2    - all computers, phones
+#
+# You can also use FileZilla (https://filezilla-project.org/) to download
+# data from the SGPi's WiFi hotspot using these options:
+#
+#   hostname: sftp://192.168.7.2
+#   username: root
+#   password: root
+#
+# Your SG's files can then be found in the /data/SGdata folder
+#
+# SGPi WiFi HOTSPOT - deactivate
+# ==============================
+#
+# The WiFi hotspot will turn OFF when any of these events occur:
+#
+# - you double-click the external button.  This will also turn off the
+#   0.9 second LED blinking.
+#
+# - the WiFi hotspot times out.  This happens 30 minutes after the
+#   hotspot is activated, regardless of network activity.  This also
+#   turns off the 0.9 second LED blinking.
+#
+# - the SGPi reboots.  After rebooting, the hotspot is off until it is
+#   activated by double-clicking the button.

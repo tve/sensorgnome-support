@@ -1,0 +1,13 @@
+[Unit]
+Description=Init wifi according to network.txt
+# FIXME: After=<service that sets /etc/sensorgnome_id
+After=wpa_supplicant.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/sensorgnome/wifi-button/scripts/wifi-init.sh
+SyslogIdentifier=sg-wifi-init
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

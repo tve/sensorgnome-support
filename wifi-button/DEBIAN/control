@@ -1,0 +1,9 @@
+Package: sg-wifi-button
+Version: 1.0
+Architecture: armhf
+Essential: no
+Depends: nodejs, hostapd, dnsmasq
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sensorgnome wifi button handling
+  Script to apply button gesture rules to manage wifi hotspot.

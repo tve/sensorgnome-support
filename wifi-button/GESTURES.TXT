@@ -1,0 +1,46 @@
+# If a file called GESTURES.TXT exists in the config dir, then the gesture service
+# is run.  This detects pushbutton gestures on a switch wired to a GPIO pin and signals
+# status to an LED wired to another GPIO pin.
+# 
+# If GESTURES.TXT is missing, the WiFi hotspot turns on at every boot (and never turns off).
+
+# Configuration:
+GEST_LED_GPIO=17  # GPIO pin for LED
+GEST_SW_GPIO=18   # GPIO pin for N.O. switch contact
+# Important: on the rPi the GEST_SW_GPIO pin must have a pull-up enabled in a Device tree
+# Overlay (dtbo file). Thus the value above cannot be simply changed: the device tree needs to be
+# amended as well (or an external pull-up resistor used).
+
+# The recommended switch is:  https://www.adafruit.com/product/559
+# and it is wired like so:
+# 
+# "+"         = LED power                    -> GPIO 17 (or other depending on config)
+# "-", COMMON = LED GND and switch GND       -> GND  (two terminals going to ground)
+# "NO"        = Switch normally-open contact -> GPIO 18 (or other as configured)
+# 
+# Device-tree fragments are loaded to ensure the internal pull-up
+# resistor is enabled on the "NO" pin so that grounding the NO pin is
+# considered "on".  
+# 
+# The adafruit switch's LED includes an internal resistor to limit current.
+# If you roll your own LED, make sure to do something similar (typ range is 330Ω-2KΩ).
+# 
+# The following gestures are supported:
+# 
+# single click: toggle a 1/s heartbeat of the LED as well as rapid
+#               blinks for detected tag pulses.  Turns off automatically
+#               after 10 minutes
+# 
+# double click: toggle the WiFi hotspot to start/stop a
+#               WPA2-protected access point with the SG serial number
+#               as both ssid and passphrase, e.g. SG-26F1RPI358CC.
+#               The SG has the address 192.168.7.2 when connecting
+#               wirelessly.  When the hotspot is on, the LED blinks on and
+#               off every 0.9 seconds.
+# 
+#               Turns off automatically after 30 minutes.
+# 
+# hold 3 sec: perform a clean shutdown; the LED will light and stay
+#               lit until shutdown is complete, and then turns off.
+# 
+# See gestures.js and pushbtn.js for details.

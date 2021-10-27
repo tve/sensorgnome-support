@@ -1,0 +1,46 @@
+#! /usr/bin/bash -ex
+echo "Running sg-wifi-button postinst in $(pwd)"
+MISC=/opt/sensorgnome/wifi-button/misc # would be nice to derive that from some env var...
+
+# enable device tree overlay that turns on the button GPIO pull-up
+cp $MISC/gpio_pull.dtbo /boot/overlays # can't let dpkg do that 'cause chmod doesn't work on fat32
+if ( ! grep -q dtoverlay=gpio_pull /boot/config.txt ); then
+  printf "#load overlay for SG LED-pushbutton switch\ndtoverlay=gpio_pull\n" >> /boot/config.txt
+fi
+
+# install GESTURES.TXT and NETWORK.TXT if not there
+if [[ ! -f /data/config/GESTURES.TXT ]]; then
+  cp $MISC/GESTURES.TXT /data/config  # FIXME: use some env var to specify paths
+fi
+if [[ ! -f /data/config/NETWORK.TXT ]]; then
+  cp $MISC/NETWORK.TXT /data/config  # FIXME: use some env var to specify paths
+fi
+
+# enable and start/restart gestures and wifi_init units
+for U in wifi-init gestures; do
+    # code from debhelper's postinst-systemd-enable template
+    if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
+        # This will only remove masks created by d-s-h on package removal.
+        deb-systemd-helper unmask $U >/dev/null || true
+
+        # was-enabled defaults to true, so new installations run enable.
+        if deb-systemd-helper --quiet was-enabled $U; then
+            # Enables the unit on first installation, creates new
+            # symlinks on upgrades if the unit file has changed.
+            deb-systemd-helper enable $U.service || true
+        else
+            # Update the statefile to add new symlinks (if any), which need to be
+            # cleaned up on purge. Also remove old symlinks.
+            deb-systemd-helper update-state $U >/dev/null || true
+        fi
+    fi
+done
+
+# disable hostapd and dnsmasq auto-startup, we want to start them ourselves when appropriate
+deb-systemd-helper disable hostapd.service
+deb-systemd-helper disable dnsmasq.service
+
+# disable dhcp client on AP interface
+if ! egrep -q ap0 /etc/dhcpcd.conf; then \
+	  cat $MISC/etc-dhcpcd.conf >>/etc/dhcpcd.conf; \
+fi

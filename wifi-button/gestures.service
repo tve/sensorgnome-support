@@ -1,0 +1,16 @@
+[Unit]
+Description=Pushbutton+LED gestures daemon
+After=wifi-init
+
+[Service]
+#ConditionPathExists=/data/config/GESTURES.TXT
+Type=exec
+WorkingDirectory=/opt/sensorgnome/wifi-button/scripts
+ExecStartPre=/usr/bin/bash gpio-init.sh
+ExecStart=/usr/bin/node gestures.js /data/config/GESTURES.TXT
+SyslogIdentifier=sg-gestures
+RestartSec=60s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

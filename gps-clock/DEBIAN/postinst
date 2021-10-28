@@ -1,0 +1,15 @@
+#! /usr/bin/bash -ex
+echo "Running sg-gps-clock postinst in $(pwd)"
+MISC=/opt/sensorgnome/gps-clock # would be nice to derive that from some env var...
+
+# Ensure gpsd looks at he appropriate hardware devices
+sed -i -e 's;^DEVICES.*;DEVICES="/dev/serial0 /dev/pps0";' /etc/default/gpsd
+# Ensure gpsd starts without waiting for a client to connect (-n)
+# Ensure gpsd propagates time at start-up even without fix thanks to battery RTC (-r)
+sed -i -e 's/^GPSD_OPTIONS.*/GPSD_OPTIONS="-n -r"/' /etc/default/gpsd
+# Note: consider setting USBAUTO to false so it doesn't interfere with any dongle detection?
+
+# Modify /boot/config.txt so the PPS driver is loaded and the GPS uart is available
+if ! grep -q "gps-clock" /boot/config.txt; then
+  cat $MISC/boot-config.txt >>/boot/config.txt
+fi

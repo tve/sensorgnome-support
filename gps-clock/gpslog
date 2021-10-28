@@ -1,0 +1,31 @@
+nc localhost 2947
+?WATCH={"enable":true,"json":true};
+
+No fix:
+{"class":"TPV","device":"/dev/serial0","mode":1,"time":"2021-10-28T19:43:53.762Z","ept":0.005}
+{"class":"TPV","device":"/dev/serial0","mode":1,"time":"2021-10-28T19:43:54.762Z","ept":0.005}
+{"class":"TPV","device":"/dev/serial0","mode":1,"time":"2021-10-28T19:43:55.762Z","ept":0.005}
+{"class":"TPV","device":"/dev/serial0","mode":1,"time":"2021-10-28T19:43:56.762Z","ept":0.005}
+{"class":"TPV","device":"/dev/serial0","mode":1,"time":"2021-10-28T19:43:57.762Z","ept":0.005}
+{"class":"SKY","device":"/dev/serial0","satellites":[{"PRN":21,"el":60,"az":275,"ss":0,"used":false}
+,{"PRN":31,"el":60,"az":133,"ss":0,"used":false},{"PRN":1,"el":46,"az":307,"ss":0,"used":false},{"PR
+N":32,"el":43,"az":44,"ss":0,"used":false},{"PRN":22,"el":39,"az":312,"ss":0,"used":false},{"PRN":10
+,"el":24,"az":100,"ss":0,"used":false},{"PRN":8,"el":9,"az":227,"ss":0,"used":false},{"PRN":4,"el":6
+,"az":246,"ss":0,"used":false},{"PRN":25,"el":5,"az":71,"ss":0,"used":false},{"PRN":26,"el":2,"az":1
+52,"ss":0,"used":false},{"PRN":27,"el":1,"az":200,"ss":0,"used":false}]}
+
+4 satellites:
+{"class":"SKY","device":"/dev/serial0","xdop":10.85,"ydop":2.62,"vdop":0.99,"tdop":11.73,"hdop":4.18
+    ,"gdop":18.00,"pdop":4.30,"satellites":[{"PRN":31,"el":66,"az":102,"ss":0,"used":false},{"PRN":21,"e
+    l":58,"az":247,"ss":32,"used":true},{"PRN":1,"el":54,"az":289,"ss":34,"used":true},{"PRN":22,"el":51
+    ,"az":319,"ss":29,"used":true},{"PRN":32,"el":32,"az":52,"ss":0,"used":false},{"PRN":10,"el":15,"az"
+    :111,"ss":0,"used":false},{"PRN":4,"el":15,"az":255,"ss":29,"used":true},{"PRN":26,"el":10,"az":143,
+    "ss":0,"used":false},{"PRN":25,"el":7,"az":58,"ss":0,"used":false},{"PRN":17,"el":2,"az":316,"ss":0,
+    "used":false},{"PRN":8,"el":1,"az":218,"ss":0,"used":false}]}
+    {"class":"TPV","device":"/dev/serial0","mode":3,"time":"2021-10-28T20:13:42.000Z","ept":0.005,"lat":
+    34.498695000,"lon":-119.813241667,"alt":297.700,"epx":162.787,"epy":39.330,"epv":22.770,"track":219.
+    6100,"speed":0.123,"climb":0.000,"eps":325.57,"epc":197.80}
+    {"class":"PPS","device":"/dev/pps0","real_sec":1635452023, "real_nsec":0,"clock_sec":1635452022,"clo
+    ck_nsec":554429551,"precision":-20}
+
+

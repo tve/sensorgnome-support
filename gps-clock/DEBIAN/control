@@ -1,0 +1,9 @@
+Package: sg-gps-clock
+Version: 1.0
+Architecture: armhf
+Essential: no
+Depends: pps-tools, gpsd, gpsd-clients, chrony
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sensorgnome gps clock config
+  Configures chrony, gpsd to use internet NTP and a local GPS with PPS as clock source

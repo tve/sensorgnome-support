@@ -6,3 +6,4 @@ ssh $PI sudo apt remove -y sg-gps-clock || true
 ssh $PI sudo apt install -y ./sg-gps-clock.deb
 ssh $PI sudo systemctl daemon-reload
 ssh $PI sudo systemctl restart chrony
+ssh $PI sudo systemctl restart sg-gps-link

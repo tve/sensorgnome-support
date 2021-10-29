@@ -1,0 +1,13 @@
+[Unit]
+Description=Symlink to GPS for Sensorgnome
+After=sg-boot
+ConditionFileNotEmpty=/proc/device-tree/hat/product
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c 'grep -q "Ultimate GPS HAT" /proc/device-tree/hat/product && ln -f -s /dev/serial0 /dev/sensorgnome/gps.port=0.pps=1.type=hat'
+SyslogIdentifier=sg-gps-link
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

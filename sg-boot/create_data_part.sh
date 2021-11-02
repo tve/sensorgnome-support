@@ -9,7 +9,11 @@ fi
 
 ROOT_PART=$(findmnt / -o source -n)
 ROOT_DEV="/dev/$(lsblk -no pkname $ROOT_PART)"
-FREE_SIZE=$(parted -ms $ROOT_DEV unit b print free | tail -n 1 | cut -f 4 -d: | sed -e 's/B//')
+FREE_SIZE=$(parted -ms $ROOT_DEV unit b print free | tail -n 1 | grep free | cut -f 4 -d: | sed -e 's/B//')
+if [[ -z "$FREE_SIZE" ]]; then
+  echo "No free space for data partition"
+  exit 1
+fi
 if [[ "$FREE_SIZE" -lt 1073741824 ]]; then
   echo "Less than 1GB free space for data partition, OOPS"
   exit 1
@@ -29,6 +33,7 @@ mkfs.fat -n DATA $DATA_PART
 # mount and move /data stuff in rootfs over
 echo "Moving data from rootfs /data to new partition"
 mount $DATA_PART /mnt
+mkdir -p /data
 date >/data/created
 mv /data/* /mnt
 umount /mnt
@@ -41,7 +46,7 @@ if ! grep -q /data /etc/fstab; then
   ROOT_ENTRY=$(grep '\s/\s' /etc/fstab)
   DATA_NUM=$(parted "$ROOT_DEV" -ms print | tail -n 1 | cut -f 1 -d:)
   DATA_UUID=$(echo $ROOT_ENTRY | sed -e "s/[0-9]\s.*/$DATA_NUM/")
-  echo "$DATA_UUID /data fat32 defaults,noatime 0" >>/etc/fstab
+  echo "$DATA_UUID /data vfat defaults,noatime 0" >>/etc/fstab
   echo ""
   echo "fstab:"
   cat /etc/fstab

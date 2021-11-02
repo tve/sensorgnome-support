@@ -35,13 +35,3 @@ sync
 # FIXME: figure out how this is supposed to work
 # maybe do a software update
 #/home/pi/proj/sensorgnome/scripts/update_software.sh
-
-# FIXME: move to ssh-comms subsystem
-# FIXME: needs to be tied to SG_ID, need new reg is moving to a different SG hardware
-# If this SG is not yet registered, then add an appropriate entry to
-# the system crontab vi /etc/cron.d
-# Successful registration will delete that file.
-UNIQUE_KEY_FILE=/home/pi/.ssh/id_dsa
-if [[ ! -f $UNIQUE_KEY_FILE ]]; then
-    echo '* * *    *   *   root  /home/pi/proj/sensorgnome/scripts/register_sg' > /etc/cron.d/register_sg
-fi

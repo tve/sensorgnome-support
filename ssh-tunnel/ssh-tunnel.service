@@ -1,0 +1,14 @@
+[Unit]
+Description=SSH tunnel to sensorgnome.org
+Requires=sg-register.service
+
+[Service]
+Type=exec
+WorkingDirectory=/opt/sensorgnome/ssh-tunnel
+ExecStart=/bin/bash -c "exec ./ssh-tunnel.sh /opt/sensorgnome/.ssh"
+SyslogIdentifier=ssh-tunnel
+RestartSec=600s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+Package: sg-udev-usb
+Version: 1.0
+Architecture: armhf
+Essential: no
+Depends: 
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sensorgnome udev rules for USB
+  Configures udev rules to detect USB hubs and set files for the master process accordingly.

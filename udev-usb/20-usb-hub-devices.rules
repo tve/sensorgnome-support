@@ -45,8 +45,8 @@
 # Heavily modified from Arch linux file media-by-label-auto-mount.rules
 
 # uncomment the following block for debug info
-#ACTION=="add",IMPORT{program}="/bin/sh -c 'echo Add %p %k $driver %M %m %s{busnum} %s{devnum} $env{ID_VENDOR_ID} $env{ID_MODEL_ID} >> /tmp/rules.txt'"
-#ACTION=="remove",IMPORT{program}="/bin/sh -c 'echo Remove %p %k %M %m %s{busnum} %s{devnum} $env{ID_VENDOR_ID} $env{ID_MODEL_ID} >> /tmp/rules.txt'"
+ACTION=="add",IMPORT{program}="/bin/sh -c 'echo Add %p %E{SUBSYSTEM} k=%k %M/%m %s{idVendor}:%s{idProduct} >> /tmp/rules.txt'"
+#ACTION=="remove",IMPORT{program}="/bin/sh -c 'echo Remove %p %k %M %m %s{busnum} %s{devnum} %s{idVendor}:%s{idProduct} >> /tmp/rules.txt'"
 #ACTION=="change",IMPORT{program}="/bin/sh -c 'echo Change %p %k >> /tmp/rules.txt'"
 
 ACTION=="add",GOTO="main"
@@ -57,56 +57,65 @@ ACTION=="add",GOTO="main"
 # the test for ENV{DELETED}=="1" below fails for them, which is desired because removal of a secondary USB hub needs
 # to change the port mapping rules (for port 4 of the Pi HUB).
 
-ACTION=="remove",ENV{MAJOR}=="189",IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p",PROGRAM="/home/pi/proj/sensorgnome/scripts/rmlinkandtarget.sh /dev/sensorgnome/usb/%E{PORT_NUM}",GOTO="done"
+#ACTION=="remove",ENV{MAJOR}=="189",IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p",PROGRAM="/home/pi/proj/sensorgnome/scripts/rmlinkandtarget.sh /dev/sensorgnome/usb/%E{PORT_NUM}",GOTO="done"
 ACTION=="remove",GOTO="main"
 ACTION=="change",GOTO="main"
-IMPORT{program}="/bin/sh -c 'echo Unknown %p %k >> /tmp/rules.txt'"
+#IMPORT{program}="/bin/sh -c 'echo Unknown %p %k >> /tmp/rules.txt'"
 
 SUBSYSTEM!="usb",GOTO="not_usb_hub"
 
 ## detect USB hubs
 LABEL="main"
-KERNEL!="1-1",GOTO="secondary_usb_hub"
+#KERNEL!="1-1",GOTO="secondary_usb_hub"
+KERNEL!="1-1",GOTO="not_usb_hub"
+
 ACTION=="add",ENV{ID_VENDOR_ID}=="1a40",ENV{ID_MODEL_ID}=="0201",GOTO="GWC_HU2SA0R"
 ACTION=="add",ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0610",GOTO="DLINK_DUBH7"
 ACTION=="add",ENV{ID_VENDOR_ID}=="0835",ENV{ID_MODEL_ID}=="8500",GOTO="DLINK_DUBH7_C1"
 ACTION=="add",ENV{ID_VENDOR_ID}=="050d",ENV{ID_MODEL_ID}=="0416",GOTO="STAPLES_BELKIN"
-ACTION=="add",ENV{ID_VENDOR_ID}=="0424",ENV{ID_MODEL_ID}=="9514",GOTO="RASPBERRY_PI2"
-ACTION=="add",ENV{ID_VENDOR_ID}=="0424",ENV{ID_MODEL_ID}=="2514",GOTO="RASPBERRY_PI3+"
+#ACTION=="add",ENV{ID_VENDOR_ID}=="0424",ENV{ID_MODEL_ID}=="9514",GOTO="RASPBERRY_PI2"
+#ACTION=="add",ENV{ID_VENDOR_ID}=="0424",ENV{ID_MODEL_ID}=="2514",GOTO="RASPBERRY_PI3+"
+#ACTION=="add",ENV{ID_VENDOR_ID}=="1d6b",ENV{ID_MODEL_ID}=="0002",GOTO="RASPBERRY_PI4B_USB2"
+#ACTION=="add",ENV{ID_VENDOR_ID}=="1d6b",ENV{ID_MODEL_ID}=="0003",GOTO="RASPBERRY_PI4B_USB3"
 ACTION!="remove",GOTO="done"
 IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt"
 GOTO="done"
 
 LABEL="GWC_HU2SA0R"
-IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_GWC_HU2SA0R_portnums.txt /dev/usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_GWC_HU2SA0R_portnums.txt /dev/usb_hub_port_nums.txt"
 GOTO="done"
 
 LABEL="DLINK_DUBH7"
-IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_DLINK_DUBH7_portnums.txt /dev/usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_DLINK_DUBH7_portnums.txt /dev/usb_hub_port_nums.txt"
 GOTO="done"
 
 LABEL="DLINK_DUBH7_C1"
-IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_DLINK_DUBH7_C1_portnums.txt /dev/usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_DLINK_DUBH7_C1_portnums.txt /dev/usb_hub_port_nums.txt"
 GOTO="done"
 
 LABEL="STAPLES_BELKIN"
-IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_STAPLES_BELKIN_portnums.txt /dev/usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_STAPLES_BELKIN_portnums.txt /dev/usb_hub_port_nums.txt"
 GOTO="done"
 
 ## the following rules are also for the original raspberry 3B, but not the 3B+
-LABEL="RASPBERRY_PI2"
-IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
-
-LABEL="RASPBERRY_PI3+"
-IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
+#LABEL="RASPBERRY_PI2"
+#IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="RASPBERRY_PI3+"
+#IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="RASPBERRY_PI4B"
+#IMPORT{program}="/bin/rm -f /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI4B_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
 
 ################### HUB ATTACHED TO HUB (Pi 2/3) #####
 ##
@@ -114,40 +123,40 @@ GOTO="done"
 ##
 ##
 
-LABEL="secondary_usb_hub"
-## might be a hub plugged into the Pi hub
-KERNEL!="1-1.5",GOTO="not_pi_2_secondary_hub"
-ENV{ID_VENDOR_ID}=="1a40",ENV{ID_MODEL_ID}=="0201",GOTO="UUGEAR_IN_PI2"
-ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0610",GOTO="DLINK_DUBH7_IN_PI2"
-ENV{ID_VENDOR_ID}=="0835",ENV{ID_MODEL_ID}=="8500",GOTO="DLINK_DUBH7_C1_IN_PI2"
-ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0608",GOTO="DLINK_DUBH7_D1_IN_PI2"
-GOTO="not_usb_hub"
-
-## if secondary hub is being removed, pretend we've just enumerated the main hub,
-## so that its port nums file is restored
-LABEL="UUGEAR_IN_PI2"
-ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
-IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_UUGEAR_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
-
-LABEL="DLINK_DUBH7_IN_PI2"
-ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
-IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_DUBH7_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
-
-LABEL="DLINK_DUBH7_D1_IN_PI2"
-ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
-IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_DUBH7_D1_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
-
-LABEL="DLINK_DUBH7_C1_IN_PI2"
-ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
-IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_DUBH7_C1_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
+#LABEL="secondary_usb_hub"
+### might be a hub plugged into the Pi hub
+#KERNEL!="1-1.5",GOTO="not_pi_2_secondary_hub"
+#ENV{ID_VENDOR_ID}=="1a40",ENV{ID_MODEL_ID}=="0201",GOTO="UUGEAR_IN_PI2"
+#ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0610",GOTO="DLINK_DUBH7_IN_PI2"
+#ENV{ID_VENDOR_ID}=="0835",ENV{ID_MODEL_ID}=="8500",GOTO="DLINK_DUBH7_C1_IN_PI2"
+#ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0608",GOTO="DLINK_DUBH7_D1_IN_PI2"
+#GOTO="not_usb_hub"
+#
+### if secondary hub is being removed, pretend we've just enumerated the main hub,
+### so that its port nums file is restored
+#LABEL="UUGEAR_IN_PI2"
+#ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
+#IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_UUGEAR_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="DLINK_DUBH7_IN_PI2"
+#ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
+#IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_DUBH7_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="DLINK_DUBH7_D1_IN_PI2"
+#ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
+#IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_DUBH7_D1_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="DLINK_DUBH7_C1_IN_PI2"
+#ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
+#IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI2_DUBH7_C1_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
 
 ################### HUB ATTACHED TO HUB (Pi 3+)  #####
 ##
@@ -160,42 +169,42 @@ GOTO="done"
 ## to the same file as /dev/usb_hub_port_nums.txt points to.  That would break
 ## the "restore" code in "REMOVE_SECONDARY_USB_HUB"
 
-LABEL="not_pi_2_secondary_hub"
-KERNEL!="1-1.2",GOTO="not_usb_hub"
-ENV{ID_VENDOR_ID}=="1a40",ENV{ID_MODEL_ID}=="0201",GOTO="UUGEAR_IN_PI3+"
-ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0610",GOTO="DLINK_DUBH7_IN_PI3+"
-ENV{ID_VENDOR_ID}=="0835",ENV{ID_MODEL_ID}=="8500",GOTO="DLINK_DUBH7_C1_IN_PI3+"
-ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0608",GOTO="DLINK_DUBH7_D1_IN_PI3+"
-GOTO="not_usb_hub"
-
-LABEL="UUGEAR_IN_PI3+"
-ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
-IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_UUGEAR_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
-
-LABEL="DLINK_DUBH7_IN_PI3+"
-ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
-IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_DUBH7_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
-
-LABEL="DLINK_DUBH7_D1_IN_PI3+"
-ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
-IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_DUBH7_D1_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
-
-LABEL="DLINK_DUBH7_C1_IN_PI3+"
-ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
-IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
-IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_DUBH7_C1_portnums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
-
-LABEL="REMOVE_SECONDARY_USB_HUB"
-## restore primary hub port mapping
-IMPORT{program}="/bin/mv -f /dev/primary_usb_hub_port_nums.txt /dev/usb_hub_port_nums.txt"
-GOTO="done"
+#LABEL="not_pi_2_secondary_hub"
+#KERNEL!="1-1.2",GOTO="not_usb_hub"
+#ENV{ID_VENDOR_ID}=="1a40",ENV{ID_MODEL_ID}=="0201",GOTO="UUGEAR_IN_PI3+"
+#ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0610",GOTO="DLINK_DUBH7_IN_PI3+"
+#ENV{ID_VENDOR_ID}=="0835",ENV{ID_MODEL_ID}=="8500",GOTO="DLINK_DUBH7_C1_IN_PI3+"
+#ENV{ID_VENDOR_ID}=="05e3",ENV{ID_MODEL_ID}=="0608",GOTO="DLINK_DUBH7_D1_IN_PI3+"
+#GOTO="not_usb_hub"
+#
+#LABEL="UUGEAR_IN_PI3+"
+#ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
+#IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_UUGEAR_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="DLINK_DUBH7_IN_PI3+"
+#ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
+#IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_DUBH7_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="DLINK_DUBH7_D1_IN_PI3+"
+#ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
+#IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_DUBH7_D1_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="DLINK_DUBH7_C1_IN_PI3+"
+#ACTION=="remove",GOTO="REMOVE_SECONDARY_USB_HUB"
+#IMPORT{program}="/bin/mv /dev/usb_hub_port_nums.txt /dev/primary_usb_hub_port_nums.txt"
+#IMPORT{program}="/bin/ln -s /home/pi/proj/sensorgnome/udev-rules/hub_RASPBERRYPI3+_DUBH7_C1_portnums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
+#
+#LABEL="REMOVE_SECONDARY_USB_HUB"
+### restore primary hub port mapping
+#IMPORT{program}="/bin/mv -f /dev/primary_usb_hub_port_nums.txt /dev/usb_hub_port_nums.txt"
+#GOTO="done"
 
 ####################  END OF HUB DETECTION #######################
 LABEL="not_usb_hub"
@@ -206,7 +215,7 @@ ACTION!="add", GOTO="not_add_disk"
 # don't try to mount the root device itself
 KERNEL!="sd[a-z][0-9]",GOTO="done"
 IMPORT{program}="/sbin/blkid -o udev -p %N"
-IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p"
+IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 
 # Disk: import FS info
 ENV{mount_dir}="disk_port%E{PORT_NUM}-%n"
@@ -227,7 +236,7 @@ GOTO="done"
 LABEL="not_add_disk"
 # Clean up after removal
 ACTION!="remove",GOTO="done"
-IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p"
+IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 ENV{mount_dirs}="disk_port%E{PORT_NUM}*"
 ENV{PORT_NUM}!="",RUN+="/bin/sh -c 'for DEV in /media/%E{mount_dirs}; do umount -l $DEV; rmdir $DEV; done'"
 GOTO="done"
@@ -237,11 +246,12 @@ LABEL="not_disk"
 ################# START OTHER DEVICE DETECTION #################
 
 ## detect funcube dongles
+ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb31",IMPORT{program}="/bin/sh -c 'echo FCD %p %E{SUBSYSTEM} k=%k %M/%m %s{idVendor}:%s{idProduct} >> /tmp/rules.txt'"
 ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb56",ENV{MYDEVNAME}="funcubePro",GOTO="usbaudio"
 ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb31",ENV{MYDEVNAME}="funcubeProPlus",GOTO="usbaudio"
 
-## detect RPi AMA0 (which we assume is the Pi GPS Hat)
-ACTION=="add",KERNEL=="ttyAMA0",GOTO="adafruit_gps_hat"
+## detect RPi serial0 (which we assume is the Adafruit GPS Hat on a Pi3/Pi4)
+ACTION=="add",KERNEL=="serial0",GOTO="adafruit_gps_hat"
 
 ## detect PL2303 serial port and assume it's a GPS (FIXME!)
 ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",KERNEL=="tty*",GOTO="pl2303gps"
@@ -266,7 +276,7 @@ GOTO="done"
 # pl2303gps serial port: add a link indicating which port the device is in
 LABEL="pl2303gps"
 # because the device node hasn't been set up yet, we need to run the
-IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p"
+IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 MODE:="0666"
 ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/gps.port=%E{PORT_NUM}.pps=0"
 GOTO="done"
@@ -278,7 +288,7 @@ IMPORT{program}="/sbin/modprobe ftdi_sio product=0x0001 vendor=0xbd09"
 # FIXME: we'd like to use /dev/ttyUSB%n in the following, but %n won't be defined since it is
 # not until after modprobe ftdi_sio that the kernel even knows this is a serial device!
 IMPORT{program}="/bin/stty -F /dev/ttyUSB0 4800"
-IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p"
+IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 
 MODE:="0666"
 ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/gps.port=%E{PORT_NUM}.pps=1"
@@ -287,7 +297,9 @@ GOTO="done"
 # any usb audio device
 LABEL="usbaudio"
 MODE:="0666"
-IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p"
+IMPORT{program}="/bin/sh -c 'echo AUD /opt/sensorgnome/udev-usb/get-usb-port.py %p >> /tmp/rules.txt'"
+DRIVERS=="usb",IMPORT{program}="/bin/sh -c 'echo XXX /opt/sensorgnome/udev-usb/get-usb-port.py %p %k >> /tmp/rules.txt'"
+DRIVERS=="usb",KERNEL=="controlC[0-9]",IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 DRIVERS=="usb",KERNEL=="controlC[0-9]",SYMLINK+="sensorgnome/%E{MYDEVNAME}.port=%E{PORT_NUM}.alsaDev=%n.usbPath=%s{busnum}:%s{devnum}"
 GOTO="done"
 
@@ -427,7 +439,7 @@ ACTION=="remove",GOTO="done"
 LABEL="add_rtlsdr"
 MODE:="0666"
 ## record the usb bus path e.g. 1-1.2
-IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p"
+IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 ## get the sg device name, encoding some properties
 ENV{sgname}="/dev/sensorgnome/rtlsdr.port=%E{PORT_NUM}.usbPath=%s{busnum}:%s{devnum}.vidpid=%s{idVendor}:%s{idProduct}.mfg=%s{manufacturer}.prod=%s{product}"
 ## Touch a file in /dev/sensorgnome, rather than using SYMLINK+=

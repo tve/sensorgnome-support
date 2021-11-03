@@ -40,3 +40,7 @@ jobs:
       - name: Upload .debs to AWS S3 repo
         run: |
           aws s3 sync packages s3://${{env.S3_PATH}}/$GIT_DESC/
+      - name: Link to packages on S3
+        run: |
+          echo "https://${{env.S3_PATH}}/$GIT_DESC/"
+          echo "::notice title=Packages::https://${{env.S3_PATH}}/$GIT_DESC/"

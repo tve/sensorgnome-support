@@ -11,7 +11,10 @@ permissions:
   contents: write
 
 jobs:
-  x64:
+  build-all:
+    # run on x64 which has the debian tools, the one thing this may not do is build the
+    # device tree overlay in the wifi-button subsystem, but the binary is checked-in and
+    # so far never needs to be rebuilt. Revisit this if we ever need to build the dtbo. 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

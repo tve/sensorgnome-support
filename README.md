@@ -63,3 +63,9 @@ Open issues
 1. Need to check the data usage for cell-based stations, in particular the cost of keep-alives.
 1. Need to revisit the USB port numbering machinery.
 1. Need to revisit USB watchdog.
+1. The organization of the repo into subdirectories with mostly independent subsystems seems
+   to work very well. However, whether it makes sense for each subdir to produce its own deb
+   package is questionable. The intent is to be able to install just the needed packages on
+   each target platform. But it turns into a ton of tiny packages. An alternative might be to
+   have a very simple config file that specifies which subsystems should be rolled into one
+   single package for each target.

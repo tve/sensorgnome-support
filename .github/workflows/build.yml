@@ -3,8 +3,8 @@ name: Build packages
 on: [push]
 
 env:
-  S3_PATH: s3.voneicken.com/motus-builds/${{github.repository}}
-  S3_REGION: us-west-2
+  S3_PATH: motus-builds/${{github.repository}}
+  S3_REGION: us-east-2
 
 permissions:
   id-token: write

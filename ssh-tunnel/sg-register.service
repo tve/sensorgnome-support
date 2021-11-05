@@ -1,6 +1,7 @@
 [Unit]
 Description=Register with Sensorgnome.org
 Requires=sg-boot
+After=sg-boot
 
 [Service]
 Type=oneshot

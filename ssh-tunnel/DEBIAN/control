@@ -2,7 +2,7 @@ Package: sg-ssh-tunnel
 Version: 1.0
 Architecture: armhf
 Essential: no
-Depends: 
+Depends: sg-boot
 Homepage: https://github.com/sensorgnome-support
 Maintainer: TvE (tvoneicken@gmail.com)
 Description: Sensorgnome SSH communications tunnel

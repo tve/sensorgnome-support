@@ -1,6 +1,7 @@
 [Unit]
 Description=SSH tunnel to sensorgnome.org
 Requires=sg-register.service
+After=sg-register.service
 
 [Service]
 Type=exec

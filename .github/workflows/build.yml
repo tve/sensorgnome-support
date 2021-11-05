@@ -24,19 +24,27 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: .
-      - run: echo "GIT_DESC=$(git describe --tags --dirty --always)" >>$GITHUB_ENV
+
+      # use branch or tag name in S3 upload path
+      - run: echo GIT_REF=${{github.ref}} | sed -e 's;refs/[^/]*/;;' >>$GITHUB_ENV
+
       - name: Generate .deb packages
         run: ./gen-all-packages.sh
         shell: bash
       - run: ls -ls packages
+
+      # Upload github artifacts for debugging purposes
       - uses: actions/upload-artifact@v2
         with:
           name: deb-packages
           path: packages
+
       - run : |
           echo "Actor used in JWT token:" ${{github.actor}}
           echo "GITHUB_ACTOR=${{github.actor}}" >>$GITHUB_ENV
+
       - name: Configure AWS Credentials
+        # See https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
         uses: aws-actions/configure-aws-credentials@master
         with:
           role-to-assume: ${{env.AWS_ROLE}}
@@ -44,10 +52,12 @@ jobs:
           aws-region: ${{ env.S3_REGION }}
         env:
           GITHUB_ACTOR: ${{github.actor}}
+
       - name: Upload .debs to AWS S3 repo
         run: |
-          aws s3 sync --acl public-read packages s3://${{env.S3_PATH}}/$GIT_DESC/
-      - name: Link to packages on S3
+          aws s3 sync --acl public-read packages s3://${{env.S3_PATH}}/$GIT_REF/
+
+      - name: Create annotation with link to packages on S3
         run: |
-          echo "https://${{env.S3_PATH}}/$GIT_DESC/"
-          echo "::notice title=Packages::https://${{env.S3_PATH}}/$GIT_DESC/"
+          echo "https://${{env.S3_PATH}}/$GIT_REF/"
+          echo "::notice title=Packages::https://${{env.S3_PATH}}/$GIT_REF/"

@@ -3,8 +3,7 @@ DESTDIR=build-temp
 rm -rf $DESTDIR
 mkdir $DESTDIR
 
-DEST=$DESTDIR/opt/sensorgnome/udev-usb
-make DESTDIR=$DEST install
+make install
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

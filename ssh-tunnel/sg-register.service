@@ -1,5 +1,6 @@
 [Unit]
 Description=Register with Sensorgnome.org
+# need sensorgnome_id to ensure registration matches ID
 Requires=sg-boot.service
 After=sg-boot.service
 
@@ -9,6 +10,8 @@ WorkingDirectory=/opt/sensorgnome/ssh-tunnel
 ExecStart=/usr/bin/bash -ex -c "./sg-register.sh /opt/sensorgnome/.ssh $(cat /etc/sensorgnome_id)"
 SyslogIdentifier=sg-register
 RemainAfterExit=true
+RestartSec=60s
+Restart=on-failure
 
 [Install]
 WantedBy=multi-user.target

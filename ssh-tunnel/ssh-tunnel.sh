@@ -1,4 +1,4 @@
-#!/bin/bash
+#! /bin/bash -e
 #
 # open a tunnels to sensorgnome.org
 #
@@ -12,6 +12,12 @@ if [[ "${#*}" != 1 ]]; then
 fi
 SSH="$1"
 
+# Register with sensorgnome.org, which results in SSH keys, no-op if we have the keys already
+while ! ./sg-register.sh $SSH $(cat /etc/sensorgnome_id); do
+  echo "Failed to register with sensorgnome.org, retrying in 60 seconds..."
+  sleep 60
+done
+
 TUNNEL_PORT_FILE=$SSH/tunnel_port
 UNIQUE_KEY_FILE=$SSH/id_dsa
 REMOTE_USER=sg_remote
@@ -24,8 +30,10 @@ LAST=$(date +%s)
 
 while true; do
   if [[ -f $TUNNEL_PORT_FILE ]]; then
+      echo "Starting SSH tunnel"
       read TUNNEL_PORT < $TUNNEL_PORT_FILE
-      ssh -f -N -T \
+      set -x
+      ssh -N -T \
           -L$LOCAL_STREAM_PORT:localhost:$REMOTE_STREAM_PORT \
           -R$TUNNEL_PORT:localhost:22 \
           -o ControlMaster=auto \
@@ -35,6 +43,7 @@ while true; do
           -i $UNIQUE_KEY_FILE \
           -p $REMOTE_SSH_PORT \
           $REMOTE_USER@$REMOTE_HOST
+      set +x
       # tunnel died, sleep some before restart
       NOW=$(date +%s)
       ALIVE=$(($NOW-$LAST))

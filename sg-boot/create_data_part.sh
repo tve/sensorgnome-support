@@ -38,7 +38,7 @@ date >/data/created
 mv /data/* /mnt
 umount /mnt
 mount $DATA_PART /data
-
+mkdir -p /data/config /data/SGdata
 df -h
 
 # create fstab entry

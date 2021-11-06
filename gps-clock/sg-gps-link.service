@@ -1,8 +1,7 @@
 [Unit]
 Description=Symlink to GPS for Sensorgnome
-Requires=chronyd.service
-After=sg-boot chronyd.service
 ConditionFileNotEmpty=/proc/device-tree/hat/product
+After=local-fs.target
 
 [Service]
 Type=oneshot

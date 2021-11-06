@@ -1,7 +1,7 @@
 [Unit]
 Description=Init wifi according to network.txt
-# FIXME: After=<service that sets /etc/sensorgnome_id
-After=wpa_supplicant.service
+Requires=sg-boot.service wpa_supplicant.service
+After=sg-boot.service wpa_supplicant.service
 
 [Service]
 Type=oneshot

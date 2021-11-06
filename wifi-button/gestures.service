@@ -1,6 +1,7 @@
 [Unit]
 Description=Pushbutton+LED gestures daemon
-After=wifi-init
+After=wifi-init.service
+Requires=wifi-init.service
 
 [Service]
 #ConditionPathExists=/data/config/GESTURES.TXT

@@ -3,7 +3,7 @@ DESTDIR=build-temp
 rm -rf $DESTDIR
 mkdir $DESTDIR
 
-make install
+make install DESTDIR=$DESTDIR
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

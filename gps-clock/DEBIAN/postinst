@@ -13,3 +13,9 @@ sed -i -e 's/^GPSD_OPTIONS.*/GPSD_OPTIONS="-n -r"/' /etc/default/gpsd
 if ! grep -q "gps-clock" /boot/config.txt; then
   cat $MISC/boot-config.txt >>/boot/config.txt
 fi
+
+# We update chrony's coinfig file, so restart it
+systemctl daemon-reload
+if systemctl is-active --quiet chrony.service; then
+  systemctl restart chrony.service
+fi

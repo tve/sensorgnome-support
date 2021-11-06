@@ -19,7 +19,10 @@ install -m 755 *.sh $DEST
 install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
 
+# Boilerplate package generation
 cp -r DEBIAN $DESTDIR
-dpkg-deb -v --build $DESTDIR sg-ssh-tunnel.deb
-# dpkg-deb --contents sg-ssh-comms.deb
-ls -lh sg-ssh-tunnel.deb
+sed -e "/^Version/s/:.*/: $(date +%Y.%j)/" -i $DESTDIR/DEBIAN/control # set version: YYYY.DDD
+mkdir -p packages
+dpkg-deb --root-owner-group --build $DESTDIR packages
+# dpkg-deb --contents packages
+ls -lh packages

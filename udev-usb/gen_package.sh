@@ -12,7 +12,10 @@ install -m 644 20-usb-hub-devices.rules $DESTDIR/etc/udev/rules.d
 install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
 
+# Boilerplate package generation
 cp -r DEBIAN $DESTDIR
-dpkg-deb -v --build $DESTDIR sg-udev-usb.deb
-# dpkg-deb --contents sg-udev-usb.deb
-ls -lh sg-udev-usb.deb
+sed -e "/^Version/s/:.*/: $(date +%Y.%j)/" -i $DESTDIR/DEBIAN/control # set version: YYYY.DDD
+mkdir -p packages
+dpkg-deb --root-owner-group --build $DESTDIR packages
+# dpkg-deb --contents packages
+ls -lh packages

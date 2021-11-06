@@ -9,6 +9,7 @@ if ( ! grep -q dtoverlay=gpio_pull /boot/config.txt ); then
 fi
 
 # install GESTURES.TXT and NETWORK.TXT if not there
+mkdir -p /data/config
 if [[ ! -f /data/config/GESTURES.TXT ]]; then
   cp $MISC/GESTURES.TXT /data/config  # FIXME: use some env var to specify paths
 fi

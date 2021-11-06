@@ -10,7 +10,6 @@ for d in */ ; do
         if [ -f "gen_package.sh" ]; then
             echo "===== Generating package for $d"
             ./gen_package.sh
-            mv *${d%/}.deb ../packages
         fi
         cd ..
     fi

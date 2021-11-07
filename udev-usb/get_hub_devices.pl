@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 #
 # echo a JSON object representing connected devices
+# this is used in the web interface to display what's plugged in
 #
 
 use strict;
@@ -62,9 +63,9 @@ foreach my $dev (@devlist) {
     }
 }
 
-# internal: stuff about the beaglebone
+# internal: stuff about the system
 
-chomp(my $usage = `df /media/SD_card | tail -1l`);
+chomp(my $usage = `df /data | tail -1l`);
 my ($SKIP,$size,$used,$avail,$used_percent) = split(/[ \t]+/, $usage);
 
 $hub_devs{"SD_card"} = {(name => "SD_card", filesystem => "vfat", size=>$size, used=>$used, avail=>$avail, used_percent => $used_percent)};

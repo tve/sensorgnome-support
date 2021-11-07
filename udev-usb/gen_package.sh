@@ -5,7 +5,7 @@ mkdir $DESTDIR
 
 DEST=$DESTDIR/opt/sensorgnome/udev-usb
 install -d $DEST
-install -m 755 usb-init.sh get-usb-port.py $DEST
+install -m 755 usb-init.sh get-usb-port.py get_hub_devices.pl $DEST
 install -m 644 *.txt $DEST
 install -d $DESTDIR/etc/udev/rules.d
 install -m 644 20-usb-hub-devices.rules $DESTDIR/etc/udev/rules.d

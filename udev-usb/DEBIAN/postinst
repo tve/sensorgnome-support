@@ -2,6 +2,11 @@
 echo "Running sg-udev-usb postinst in $(pwd)"
 MISC=/opt/sensorgnome/udev-usb # would be nice to derive that from some env var...
 
+# prevent gpsd from stealing CTT tag receivers by removing its udev rule
+if [[ -f /usr/lib/udev/rules.d/60-gpsd.rules ]]; then
+    sed -i -e '/"10c4".*"ea60"/d' /usr/lib/udev/rules.d/60-gpsd.rules
+fi
+
 # cause udev to heed the new rules we may have just installed udev rules
 udevadm control --reload-rules
 

@@ -250,6 +250,11 @@ ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb31"
 ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb56",ENV{MYDEVNAME}="funcubePro",GOTO="usbaudio"
 ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb31",ENV{MYDEVNAME}="funcubeProPlus",GOTO="usbaudio"
 
+## detect Cornell tag XCVR / CTT LifeTag MOTUS Adapter
+ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6001",ENV{MYDEVNAME}="CornellTagXCVR",GOTO="CornellTagXCVR"
+ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6010",ENV{MYDEVNAME}="CornellTagXCVR",GOTO="CornellTagXCVR"
+ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60",ENV{MYDEVNAME}="CornellTagXCVR",GOTO="CornellTagXCVR"
+
 ## detect RPi serial0 (which we assume is the Adafruit GPS Hat on a Pi3/Pi4)
 ACTION=="add",KERNEL=="serial0",GOTO="adafruit_gps_hat"
 
@@ -264,6 +269,15 @@ ACTION=="add",SUBSYSTEMS=="sound",ENV{MYDEVNAME}="usbAudio",GOTO="usbaudio"
 
 ## otherwise, see whether it's an rtlsdr dongle
 GOTO="rtlsdr"
+
+# Cornell (Gabrielson & Winkler) Tag Transceiver / CTT LifeTag MOTUS Adapter
+# line settings: 115200 raw
+LABEL="CornellTagXCVR"
+IMPORT{program}="/bin/sh -c '(sleep 2; /bin/stty -F /dev/ttyUSB%n 115200 raw &)'"
+IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
+MODE:="0666"
+ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/CornellTagXCVR.port=%E{PORT_NUM}"
+GOTO="done"
 
 # adafruit GPS hat for Pi
 LABEL="adafruit_gps_hat"

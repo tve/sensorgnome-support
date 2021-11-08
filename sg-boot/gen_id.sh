@@ -4,9 +4,13 @@
 # the station will get a new ID...
 # Currently this only works for rpi, will need to be enhanced for BBB
 
-RPI_ID=`cat /proc/cpuinfo | /bin/grep Serial | /bin/sed -e 's/.*: //; s/^........//;s/^\(....\)/\1====/'  | tr [:lower:] [:upper:]`
-MODEL=RPI`sed -e 's/[^0-9]*\([0-9]\).*/\1/' /proc/device-tree/model` # first digit, e.g. rpi 400 -> 4
-RPI_ID=${RPI_ID/====/$MODEL}
+RPI_ID=$(grep Serial </proc/cpuinfo | /bin/sed -re 's/^.*(.{4})(.{4})/\1====\2/'  | tr [:lower:] [:upper:])
+# Distinguish between "regular RPI" and "RPI Zero"
+CLASS=RPI
+egrep -qi zero /proc/device-tree/model && CLASS=RPZ
+# Model digit
+MODEL=$(sed -e 's/[^0-9]*\([0-9]\).*/\1/' /proc/device-tree/model) # first digit, e.g. rpi 400 -> 4
+RPI_ID=${RPI_ID/====/$CLASS$MODEL}
 echo $RPI_ID > /etc/sensorgnome_id
 
 HOSTNAME="SG-${RPI_ID}"

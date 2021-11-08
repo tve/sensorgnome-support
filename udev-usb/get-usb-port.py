@@ -9,7 +9,7 @@ path = sys.argv[1]
 # where the port.port section is the path through hubs
 # Ex: 1-1.1.2.3:1.1 (bus 1, ports 1, 1, 2, 3, configuration 1, interface 1)
 # http://gajjarpremal.blogspot.com/2015/04/sysfs-structures-for-linux-usb.html
-m = re.search(r'/\d-((\d+\.)+\d+):[\d.]+/', path)
+m = re.search(r'/\d-((\d+\.)*\d+):[\d.]+/', path)
 if not m:
     sys.stderr.write("Error: %s is not a valid path\n" % path)
     sys.exit(1)
@@ -20,8 +20,11 @@ m = list(map(int, m[1].split('.')))
 # that into a 0 initial value. But in case there's another root hub on some system
 # we add 100.
 port = (m[0]-1)*100
-if len(m) == 2:
-    # device plugged into root hub: second digit is port number
+if len(m) == 1:
+    # device plugged into root hub, e.g. directly into rPi Zero micro-USB: first digit is port number
+    port += m[0]
+elif len(m) == 2:
+    # device plugged into port on internal hub: second digit is port number
     port += m[1]
 elif len(m) == 3:
     # device plugged into a hub: second digit is port of root hub, third digit is port of hub
@@ -35,7 +38,7 @@ elif len(m) == 4:
     # hub ports, and numbers 29, 28, 27, 26 in the daisy chained hub.
     port += m[1]*10 + 10 - m[3]
 else:
-    sys.stderr.write("Error: %s is not a valid path\n" % m)
+    sys.stderr.write("Error: cannot parse path %s\n" % m)
     sys.exit(1)
 with open("/tmp/rules.txt", "a") as f:
     f.write(f"PORTNUM={port}\n")

@@ -18,20 +18,19 @@ if not m:
     sys.exit(1)
 #print(f"match={m[1]}")
 port_path = m[1]
-print(f"PORT_PATH={port_path}")
+print(f"PORT_PATH={port_path.replace('.', '_')}")
 
 # read port mapping file and apply any mapping found
 try:
     with open(PORT_MAP_FILE, 'r') as file:
         for line in file:
-            l = re.search(r'^\s*([0-9]+)\s*=\s*([0-9.]+)', line)
-            if l and l[2] == port_path:
-                print(f"PORT_NUM={l[1]}")
-                subprocess.run(["/usr/bin/logger", "-t", "get-usb-port",
-                                f"USB path {port_path} -> port {l[1]}"])
+            l = re.search(r'^\s*([\d.]+)\s*->\s*(\d+)', line)
+            if l and l[1] == port_path:
+                print(f"PORT_NUM={l[2]}")
+                sys.stderr.write(f"USB path {port_path} -> port {l[2]}\n")
                 sys.exit(0)
-except:
-    pass
+except OSError:
+    sys.stderr.write(f"No port map file found at {PORT_MAP_FILE}")
 
 # no explicit mapping, apply default one
 m = list(map(int, m[1].split('.')))
@@ -60,4 +59,4 @@ else:
     sys.stderr.write("Error: cannot parse path %s\n" % m)
     sys.exit(1)
 print(f"PORT_NUM={port}")
-subprocess.run(["/usr/bin/logger", "-t", "get-usb-port", f"USB path {port_path} -> port {port}"])
+sys.stderr.write(f"USB path {port_path} -> port {port}\n")

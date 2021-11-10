@@ -45,9 +45,10 @@
 # Heavily modified from Arch linux file media-by-label-auto-mount.rules
 
 # uncomment the following block for debug info
-ACTION=="add",IMPORT{program}="/bin/sh -c 'echo Add %p %E{SUBSYSTEM} k=%k %M/%m %s{idVendor}:%s{idProduct} >> /tmp/rules.txt'"
-#ACTION=="remove",IMPORT{program}="/bin/sh -c 'echo Remove %p %k %M %m %s{busnum} %s{devnum} %s{idVendor}:%s{idProduct} >> /tmp/rules.txt'"
-#ACTION=="change",IMPORT{program}="/bin/sh -c 'echo Change %p %k >> /tmp/rules.txt'"
+ACTION=="add",RUN{program}+="/usr/bin/logger -t sensorgnome Checking %p"
+#ACTION=="add",RUN{program}+="/usr/bin/logger -t sensorgnome Add %p %E{SUBSYSTEM} k=%k %M/%m %s{idVendor}:%s{idProduct}"
+#ACTION=="remove",RUN{program}+="/usr/bin/logger -t sensorgnome Remove %p %k %M %m %s{busnum} %s{devnum} %s{idVendor}:%s{idProduct}"
+#ACTION=="change",RUN{program}+="/usr/bin/logger -t sensorgnome Change %p %k"
 
 ACTION=="add",GOTO="main"
 
@@ -60,7 +61,6 @@ ACTION=="add",GOTO="main"
 #ACTION=="remove",ENV{MAJOR}=="189",IMPORT{program}="/usr/bin/awk -f /home/pi/proj/sensorgnome/scripts/get_usb_device_port_number.awk %p",PROGRAM="/home/pi/proj/sensorgnome/scripts/rmlinkandtarget.sh /dev/sensorgnome/usb/%E{PORT_NUM}",GOTO="done"
 ACTION=="remove",GOTO="main"
 ACTION=="change",GOTO="main"
-#IMPORT{program}="/bin/sh -c 'echo Unknown %p %k >> /tmp/rules.txt'"
 
 SUBSYSTEM!="usb",GOTO="not_usb_hub"
 
@@ -137,7 +137,6 @@ LABEL="not_disk"
 ################# START OTHER DEVICE DETECTION #################
 
 ## detect funcube dongles
-ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb31",IMPORT{program}="/bin/sh -c 'echo FCD %p %E{SUBSYSTEM} k=%k %M/%m %s{idVendor}:%s{idProduct} >> /tmp/rules.txt'"
 ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb56",ENV{MYDEVNAME}="funcubePro",GOTO="usbaudio"
 ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb31",ENV{MYDEVNAME}="funcubeProPlus",GOTO="usbaudio"
 
@@ -147,7 +146,7 @@ ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6010",
 ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60",ENV{MYDEVNAME}="CornellTagXCVR",GOTO="CornellTagXCVR"
 
 ## detect RPi serial0 (which we assume is the Adafruit GPS Hat on a Pi3/Pi4)
-ACTION=="add",KERNEL=="serial0",GOTO="adafruit_gps_hat"
+#ACTION=="add",KERNEL=="serial0",GOTO="adafruit_gps_hat"
 
 ## detect PL2303 serial port and assume it's a GPS (FIXME!)
 ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303",KERNEL=="tty*",GOTO="pl2303gps"
@@ -167,23 +166,26 @@ LABEL="CornellTagXCVR"
 IMPORT{program}="/bin/sh -c '(sleep 2; /bin/stty -F /dev/ttyUSB%n 115200 raw &)'"
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 MODE:="0666"
-ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/CornellTagXCVR.port=%E{PORT_NUM}"
+ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/CornellTagXCVR.port=%E{PORT_NUM}.port_path=%E{PORT_PATH}"
+ENV{PORT_NUM}!="",RUN{program}+="/usr/bin/logger -t sensorgnome Added CornellTagXCVR %E{PORT_PATH}->port %E{PORT_NUM}"
 GOTO="done"
 
 # adafruit GPS hat for Pi
-LABEL="adafruit_gps_hat"
-SYMLINK+="gps%n"
-SYMLINK+="sensorgnome/gps.port=0.pps=1.type=hat"
-TAG+="systemd"
-ENV{SYSTEMD_WANTS}="gpsdctl@%k.service"
-GOTO="done"
+#LABEL="adafruit_gps_hat"
+#SYMLINK+="gps%n"
+#SYMLINK+="sensorgnome/gps.port=0.pps=1.kind=hat"
+#RUN{program}+="/usr/bin/logger -t sensorgnome Added GPS HAT"
+#TAG+="systemd"
+#ENV{SYSTEMD_WANTS}="gpsdctl@%k.service"
+#GOTO="done"
 
 # pl2303gps serial port: add a link indicating which port the device is in
 LABEL="pl2303gps"
 # because the device node hasn't been set up yet, we need to run the
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 MODE:="0666"
-ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/gps.port=%E{PORT_NUM}.pps=0"
+ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/gps.port=%E{PORT_NUM}.pps=0.port_path=%E{PORT_PATH}"
+ENV{PORT_NUM}!="",RUN{program}+="/usr/bin/logger -t sensorgnome Added GPS %E{PORT_PATH}->port %E{PORT_NUM}"
 GOTO="done"
 
 # sensorgnome PPSGPS: a US Globalsat MR350P serial GPS interfaced via an FTDI EVAL232R board,
@@ -196,16 +198,16 @@ IMPORT{program}="/bin/stty -F /dev/ttyUSB0 4800"
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 
 MODE:="0666"
-ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/gps.port=%E{PORT_NUM}.pps=1"
+ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/gps.port=%E{PORT_NUM}.pps=1.port_path=%E{PORT_PATH}"
+ENV{PORT_NUM}!="",RUN{program}+="/usr/bin/logger -t sensorgnome Added GPS %E{PORT_PATH}->port %E{PORT_NUM}"
 GOTO="done"
 
 # any usb audio device
 LABEL="usbaudio"
 MODE:="0666"
-IMPORT{program}="/bin/sh -c 'echo AUD /opt/sensorgnome/udev-usb/get-usb-port.py %p >> /tmp/rules.txt'"
-DRIVERS=="usb",IMPORT{program}="/bin/sh -c 'echo XXX /opt/sensorgnome/udev-usb/get-usb-port.py %p %k >> /tmp/rules.txt'"
 DRIVERS=="usb",KERNEL=="controlC[0-9]",IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
-DRIVERS=="usb",KERNEL=="controlC[0-9]",SYMLINK+="sensorgnome/%E{MYDEVNAME}.port=%E{PORT_NUM}.alsaDev=%n.usbPath=%s{busnum}:%s{devnum}"
+DRIVERS=="usb",KERNEL=="controlC[0-9]",SYMLINK+="sensorgnome/%E{MYDEVNAME}.port=%E{PORT_NUM}.alsaDev=%n.usbPath=%s{busnum}:%s{devnum}.port_path=%E{PORT_PATH}"
+ENV{PORT_NUM}!="",RUN{program}+="/usr/bin/logger -t sensorgnome Added %E{MYDEVNAME} %E{PORT_PATH}->port %E{PORT_NUM}"
 GOTO="done"
 
 LABEL="rtlsdr"
@@ -346,7 +348,7 @@ MODE:="0666"
 ## record the usb bus path e.g. 1-1.2
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 ## get the sg device name, encoding some properties
-ENV{sgname}="/dev/sensorgnome/rtlsdr.port=%E{PORT_NUM}.usbPath=%s{busnum}:%s{devnum}.vidpid=%s{idVendor}:%s{idProduct}.mfg=%s{manufacturer}.prod=%s{product}"
+ENV{sgname}="/dev/sensorgnome/rtlsdr.port=%E{PORT_NUM}.usbPath=%s{busnum}:%s{devnum}.vidpid=%s{idVendor}:%s{idProduct}.mfg=%s{manufacturer}.prod=%s{product}.port_path=%E{PORT_PATH}"
 ## Touch a file in /dev/sensorgnome, rather than using SYMLINK+=
 ## because we look after deletion ourselves (see rule for ACTION=="remove" near top of file)
 ## To support physical removal of device, we create symlinks to /dev/sensorgnome/*.port=N.* from /dev/sensorgnome/usb/N,
@@ -354,6 +356,7 @@ ENV{sgname}="/dev/sensorgnome/rtlsdr.port=%E{PORT_NUM}.usbPath=%s{busnum}:%s{dev
 ## happen unless the device is physically removed.
 
 ENV{MAJOR}=="189",IMPORT{program}="/bin/mkdir -p /dev/sensorgnome/usb",IMPORT{program}="/bin/touch %E{sgname}",IMPORT{program}="/bin/sh -c '/bin/ln -s %E{sgname} /dev/sensorgnome/usb/%E{PORT_NUM}'"
+ENV{MAJOR}=="189",RUN{program}+="/usr/bin/logger -t sensorgnome Added rtlsdr %E{PORT_PATH}->port %E{PORT_NUM}"
 GOTO="done"
 
 LABEL="done"

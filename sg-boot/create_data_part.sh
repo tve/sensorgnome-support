@@ -37,6 +37,8 @@ mkdir -p /data
 mount $DATA_PART /data
 mkdir -p /data/config /data/SGdata
 mv $(ls /boot/*.txt | egrep -v '(cmdline|config|issue)') /data/config || true
+[[ -f /boot/SG_tag_database.sqlite ]] && mv /boot/SG_tag_database.sqlite /data/config
+[[ -f /boot/SG_tag_database.csv ]] && mv /boot/SG_tag_database.csv /data/config
 df -h
 
 # create fstab entry

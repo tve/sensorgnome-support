@@ -61,7 +61,6 @@ Open issues
 1. Need to ensure that the time is set to some obvious bogus value until there is proper
    time sync so it's easy to flag detections where there is no correct time.
 1. Need to check the data usage for cell-based stations, in particular the cost of keep-alives.
-1. Need to revisit the USB port numbering machinery.
 1. Need to revisit USB watchdog.
 1. The organization of the repo into subdirectories with mostly independent subsystems seems
    to work very well. However, whether it makes sense for each subdir to produce its own deb

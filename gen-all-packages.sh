@@ -4,14 +4,10 @@
 mkdir -p packages
 rm packages/*.deb || true
 
-for d in */ ; do
-    if [[ -d "$d" ]]; then
-        cd "$d"
-        if [ -f "gen_package.sh" ]; then
-            echo "===== Generating package for $d"
-            ./gen_package.sh
-        fi
-        cd ..
+for d in *; do
+    if [[ -f "$d/gen-package.sh" ]]; then
+        echo "===== Generating package for $d"
+        (cd "$d"; ./gen-package.sh)
     fi
 done
 

@@ -20,7 +20,7 @@ install: gpio_pull.dtbo
 	install -m 644 *.js $(DEST)/scripts
 	install -m 755 *.sh $(DEST)/scripts
 	install -m 644 gpio_pull.dtbo $(DEST)/misc
-	install -m 644 *.TXT $(DEST)/misc
+	install -m 644 *.txt $(DEST)/misc
 	install -m 644 etc-dhcpcd.conf $(DEST)/misc
     # install in system location
 	install -d $(DESTDIR)/etc/wpa_supplicant $(DESTDIR)/etc/hostapd

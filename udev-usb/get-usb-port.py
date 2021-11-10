@@ -2,6 +2,9 @@
 # Output the port number of a USB device given its sysfs device path
 import sys
 import re
+import subprocess
+
+PORT_MAP_FILE = "/data/config/usb_port_map.txt"
 
 path = sys.argv[1]
 # The path should have a section that has the USB path, which should be of the form:
@@ -11,10 +14,26 @@ path = sys.argv[1]
 # http://gajjarpremal.blogspot.com/2015/04/sysfs-structures-for-linux-usb.html
 m = re.search(r'/\d-((\d+\.)*\d+):[\d.]+/', path)
 if not m:
-    sys.stderr.write("Error: %s is not a valid path\n" % path)
+    sys.stderr.write(f"Error: {path} is not a valid path\n")
     sys.exit(1)
 #print(f"match={m[1]}")
+port_path = m[1]
+print(f"PORT_PATH={port_path}")
 
+# read port mapping file and apply any mapping found
+try:
+    with open(PORT_MAP_FILE, 'r') as file:
+        for line in file:
+            l = re.search(r'^\s*([0-9]+)\s*=\s*([0-9.]+)', line)
+            if l and l[2] == port_path:
+                print(f"PORT_NUM={l[1]}")
+                subprocess.run(["/usr/bin/logger", "-t", "get-usb-port",
+                                f"USB path {port_path} -> port {l[1]}"])
+                sys.exit(0)
+except:
+    pass
+
+# no explicit mapping, apply default one
 m = list(map(int, m[1].split('.')))
 # the first digit is the root hub, on rPi or so there's just one and we turn
 # that into a 0 initial value. But in case there's another root hub on some system
@@ -40,6 +59,5 @@ elif len(m) == 4:
 else:
     sys.stderr.write("Error: cannot parse path %s\n" % m)
     sys.exit(1)
-with open("/tmp/rules.txt", "a") as f:
-    f.write(f"PORTNUM={port}\n")
 print(f"PORT_NUM={port}")
+subprocess.run(["/usr/bin/logger", "-t", "get-usb-port", f"USB path {port_path} -> port {port}"])

@@ -1,11 +1,15 @@
 #! /usr/bin/bash -ex
 echo "Running sg-udev-usb postinst in $(pwd)"
-MISC=/opt/sensorgnome/udev-usb # would be nice to derive that from some env var...
+SRC=/opt/sensorgnome/udev-usb # would be nice to derive that from some env var...
 
 # prevent gpsd from stealing CTT tag receivers by removing its udev rule
 if [[ -f /usr/lib/udev/rules.d/60-gpsd.rules ]]; then
     sed -i -e '/"10c4".*"ea60"/d' /usr/lib/udev/rules.d/60-gpsd.rules
 fi
+
+# move default USB port mapping rules to /boot, from where it gets copied to /data on first boot
+mkdir -p /data/config
+[[ -f /data/config/usb-port-map.txt ]] || cp $SRC/usb-port-map.txt /data/config
 
 # cause udev to heed the new rules we may have just installed udev rules
 udevadm control --reload-rules

@@ -10,12 +10,8 @@ fi
 
 # install GESTURES.TXT and NETWORK.TXT if not there
 mkdir -p /data/config
-if [[ ! -f /data/config/GESTURES.TXT ]]; then
-  cp $MISC/GESTURES.TXT /data/config  # FIXME: use some env var to specify paths
-fi
-if [[ ! -f /data/config/NETWORK.TXT ]]; then
-  cp $MISC/NETWORK.TXT /data/config  # FIXME: use some env var to specify paths
-fi
+[[ -f /data/config/gestures.txt ]] || cp $MISC/gestures.txt /data/config
+[[ -f /data/config/network.txt  ]] || cp $MISC/network.txt  /data/config
 
 # enable and start/restart gestures and wifi_init units
 for U in wifi-init gestures; do

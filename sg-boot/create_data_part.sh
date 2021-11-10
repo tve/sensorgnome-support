@@ -30,15 +30,13 @@ DATA_PART="/dev/$(lsblk -nl -o NAME | tail -n 1)"
 echo "Creating FAT32 filesystem in $DATA_PART"
 mkfs.fat -n DATA $DATA_PART
 
-# mount and move /data stuff in rootfs over
-echo "Moving data from rootfs /data to new partition"
-mount $DATA_PART /mnt
+# mount and move specific files from /boot over, the reason for this is that boot is a fat32
+# filesystem where the user can edit come config files before first boot
+echo "Moving data from /boot to new partition"
 mkdir -p /data
-date >/data/created
-mv /data/* /mnt
-umount /mnt
 mount $DATA_PART /data
 mkdir -p /data/config /data/SGdata
+cp $(echo /boot/*.txt | egrep -v '(cmdline|config|issue)') /data/config
 df -h
 
 # create fstab entry

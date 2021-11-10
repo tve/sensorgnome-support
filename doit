@@ -1,0 +1,14 @@
+#! /bin/bash -e
+pkg="$1"
+if [[ -z "$pkg" ]]; then
+    echo "Usage: $0 <package>"
+    exit 1
+fi
+
+SG_HOST=sg-eth
+(cd $pkg; ./gen-package.sh)
+PKG=$(ls -tr packages | tail -1)
+echo ""
+echo "*** Installing $PKG on $SG_HOST"
+scp packages/$PKG pi@$SG_HOST:
+ssh pi@$SG_HOST sudo apt install --reinstall ./$PKG

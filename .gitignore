@@ -1,2 +1,4 @@
 *.deb
 build-temp
+funcube/firmware
+

@@ -36,7 +36,7 @@ echo "Moving data from /boot to new partition"
 mkdir -p /data
 mount $DATA_PART /data
 mkdir -p /data/config /data/SGdata
-cp $(echo /boot/*.txt | egrep -v '(cmdline|config|issue)') /data/config
+mv $(ls /boot/*.txt | egrep -v '(cmdline|config|issue)') /data/config || true
 df -h
 
 # create fstab entry

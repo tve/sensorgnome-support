@@ -1,4 +1,4 @@
-#! /usr/bin/bash -ex
+#! /usr/bin/bash -e
 echo "Running sg-gps-clock postinst in $(pwd)"
 MISC=/opt/sensorgnome/gps-clock # would be nice to derive that from some env var...
 

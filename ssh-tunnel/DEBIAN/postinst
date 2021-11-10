@@ -1,4 +1,4 @@
-#! /usr/bin/bash -ex
+#! /usr/bin/bash -e
 echo "Running sg-ssh-tunnel postinst in $(pwd)"
 MISC=/opt/sensorgnome/ssh-tunnel # would be nice to derive that from some env var...
 

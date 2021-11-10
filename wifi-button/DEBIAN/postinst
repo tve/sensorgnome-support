@@ -1,4 +1,4 @@
-#! /usr/bin/bash -ex
+#! /usr/bin/bash -e
 echo "Running sg-wifi-button postinst in $(pwd)"
 MISC=/opt/sensorgnome/wifi-button/misc # would be nice to derive that from some env var...
 

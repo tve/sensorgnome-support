@@ -4,7 +4,7 @@ rm -rf $DESTDIR
 mkdir $DESTDIR
 
 DEST=$DESTDIR/opt/sensorgnome/gps-clock
-install -d $DEST $DESTDIR/etc/chrony
+install -d $DEST $DESTDIR/etc/chrony $DESTDIR/dev/sensorgnome
 install -m 644 boot-config.txt $DEST
 install -m 644 chrony.conf $DESTDIR/etc/chrony
 install -d $DESTDIR/etc/systemd/system/chrony.service.d

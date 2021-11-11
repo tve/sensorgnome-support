@@ -5,6 +5,8 @@ After=local-fs.target
 
 [Service]
 Type=oneshot
+ExecStartPre=/usr/bin/mkdir -p /dev/sensorgnome
+ExecStartPre=/usr/bin/systemctl stop serial-getty@ttyS0.service
 ExecStart=/bin/bash -c 'grep -q "Ultimate GPS HAT" /proc/device-tree/hat/product && ln -f -s /dev/serial0 /dev/sensorgnome/gps.port=0.pps=1.kind=hat'
 SyslogIdentifier=sg-gps-link
 RemainAfterExit=true

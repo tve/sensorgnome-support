@@ -29,4 +29,4 @@ install: gpio_pull.dtbo
 	install -m 644 *.service $(DESTDIR)/etc/systemd/system
 	install -m 644 etc-dnsmasq.conf $(DESTDIR)/etc/dnsmasq.d/wifi-button.conf
 	install -m 644 etc-hostapd.conf $(DESTDIR)/etc/hostapd/hostapd.conf
-	install -m 644 etc-wpa_supplicant.conf $(DESTDIR)/etc/wpa_supplicant/wpa_supplicant.conf
+	#install -m 644 etc-wpa_supplicant.conf $(DESTDIR)/etc/wpa_supplicant/wpa_supplicant.conf

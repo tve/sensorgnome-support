@@ -30,9 +30,13 @@ fi
 WIFI_COUNTRY=${WIFI_COUNTRY:-US}
 
 # Configure the wifi client
+echo "Unblocking wlan"
 rfkill unblock wlan # prob not necessary but harmless
+echo "Setting wlan country"
 raspi-config nonint do_wifi_country $WIFI_COUNTRY
+echo "Setting wlan ssid/passphrase"
 raspi-config nonint do_wifi_ssid_passphrase $WIFI_SSID $WIFI_PASS
+echo "Done"
 
 # Using: https://www.raspberrypi.com/documentation/computers/configuration.html#using-the-command-line
 #sed -i -e "s/ssid=.*/ssid=\"$WIFI_SSID\"/" \

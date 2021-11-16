@@ -40,7 +40,17 @@ for dev in dev_list:
         elif re.match(r'CornellTagXCVR', name):
             out[port]["name"] = "CTT 434MHz Rcvr"
         elif re.match(r'disk', name):
-            pass
+            if "partitions" not in out[port]:
+                out[port]["partitions"] = [] 
+            opts = "-o UUID,LABEL,SIZE,USE% --first-only --json"
+            proc = subprocess.run(f"findmnt {opts} /media/{attr['mount']}", capture_output=True, shell=True)
+            try:
+                p = json.loads(proc.stdout.decode("utf-8").strip())["filesystems"][0]
+                p["name"] = p["label"] or p["uuid"] or "?"
+                out[port]["partitions"].append(p)
+            except:
+                pass
+
         elif re.match(r'gps', name):
             if attr['kind'] == "hat":
                 out[port]["name"] = "Adafruit GPS hat with PPS"
@@ -51,7 +61,18 @@ for dev in dev_list:
     except:
         pass
 
-# add some stuff about the system
-#proc = subprocess.run("uname -a", capture_output=True, shell=True)
+# add "df" output
+proc = subprocess.run(f"df -t ext4 -t vfat -h -T", capture_output=True, shell=True)
+out["storage"] = proc.stdout.decode("utf-8").strip()
+
+# add disk info about /data
+opts = "-o UUID,LABEL,SIZE,USE% --first-only --json"
+proc = subprocess.run(f"findmnt {opts} /data", capture_output=True, shell=True)
+try:
+    p = json.loads(proc.stdout.decode("utf-8").strip())["filesystems"][0]
+    p["name"] = p["label"] or p["uuid"] or "?"
+    out["SD_card"] = (p)
+except:
+    pass
 
 print(json.dumps(out, indent=4))

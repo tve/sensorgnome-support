@@ -1,8 +1,9 @@
 #! /bin/bash -ex
-../../sensorgnome-build/docker/sensorgnome-armv7-rpi-buster ./gen_package.sh
-PI=pi@sg-eth
-scp sg-udev-usb.deb $PI:
+./gen-package.sh
+PI=pi@${1:-sgpi.local}
+PKG=sg-udev-usb_$(date +%Y.%j)_armhf.deb
+scp ../packages/$PKG $PI:
 ssh $PI sudo apt remove -y sg-udev-usb || true
-ssh $PI sudo apt install -y ./sg-udev-usb.deb
+ssh $PI sudo apt install -y ./$PKG
 ssh $PI sudo systemctl daemon-reload
 ssh $PI sudo systemctl restart sg-usb-init

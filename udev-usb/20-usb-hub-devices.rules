@@ -114,14 +114,16 @@ ENV{disk_name}="disk.port=%E{PORT_NUM}.name=%k.mount=%E{mount_dir}"
 # Global mount options
 ENV{mount_options}="defaults,noatime,users"
 # Filesystem-specific mount options
-ENV{ID_FS_TYPE}=="vfat", ENV{mount_options}="%E{mount_options},gid=100,umask=002,utf8,flush"
-ENV{ID_FS_TYPE}=="ext4", ENV{mount_options}="%E{mount_options},group,users,suid"
-ENV{ID_FS_TYPE}=="ntfs", ENV{mount_options}="%E{mount_options},gid=100,umask=002,utf8 -tntfs-3g"
+ENV{ID_FS_TYPE}=="vfat",ENV{mount_options}="%E{mount_options},gid=100,umask=002,utf8,flush"
+ENV{ID_FS_TYPE}=="ext4",ENV{mount_options}="%E{mount_options},group,users,suid"
+ENV{ID_FS_TYPE}=="ntfs",ENV{mount_options}="%E{mount_options},gid=100,umask=002,utf8 -tntfs-3g"
 SYMLINK+="sensorgnome/%E{disk_name}"
 
 # Mount the device
 MODE:="0666"
-ENV{PORT_NUM}!="",RUN+="/bin/mkdir -p /media/%E{mount_dir}", RUN+="/bin/mount -o %E{mount_options} /dev/%k /media/%E{mount_dir}"
+ENV{PORT_NUM}!="",RUN+="/usr/bin/mkdir -p /media/%E{mount_dir}",
+ENV{PORT_NUM}!="",RUN+="/usr/bin/mount -o %E{mount_options} /dev/%k /media/%E{mount_dir}"
+ENV{PORT_NUM}!="",RUN+="/usr/bin/logger -t sensorgnome Mounted /dev/%k on /media/%E{mount_dir} options %E{mount_options}"
 GOTO="done"
 
 LABEL="not_add_disk"

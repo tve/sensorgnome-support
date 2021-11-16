@@ -9,8 +9,9 @@ install -m 755 usb-init.sh get-usb-port.py get-hub-devices.py $DEST
 install -m 644 *.txt $DEST
 install -d $DESTDIR/etc/udev/rules.d
 install -m 644 20-usb-hub-devices.rules $DESTDIR/etc/udev/rules.d
-install -d $DESTDIR/etc/systemd/system
+install -d $DESTDIR/etc/systemd/system $DESTDIR/etc/systemd/system/systemd-udevd.service.d
 install -m 644 *.service $DESTDIR/etc/systemd/system
+install -m 644 allow-mount.conf $DESTDIR/etc/systemd/system/systemd-udevd.service.d
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

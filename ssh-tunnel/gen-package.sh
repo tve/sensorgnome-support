@@ -3,8 +3,8 @@ DESTDIR=build-temp
 rm -rf $DESTDIR
 mkdir $DESTDIR
 
-DEST=$DESTDIR/opt/sensorgnome/.ssh
-# obfuscate keys so they're not easily detectable by bots that scan github repos
+DEST=$DESTDIR/home/pi/.ssh
+# keys are obfuscated so they're not easily detectable by bots that scan github repos
 install -m 700 -d $DEST
 tr '\!-~' 'P-~\!-O' <factory >$DEST/id_dsa_factory
 tr '\!-~' 'P-~\!-O' <factory-pub >$DEST/id_dsa_factory.pub

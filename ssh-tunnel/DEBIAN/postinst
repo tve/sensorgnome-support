@@ -8,6 +8,9 @@ if ! egrep -q 'PubkeyAcceptedKeyTypes.*ssh-dss' /etc/ssh/ssh_config; then
   echo "  PubkeyAcceptedKeyTypes +ssh-dss" >> /etc/ssh/ssh_config
 fi
 
+# Fix pi user's .ssh dir ownership
+chown -R 1000:1000 /home/pi/.ssh
+
 # enable and start/restart units
 for U in ssh-tunnel; do
     # code from debhelper's postinst-systemd-enable template

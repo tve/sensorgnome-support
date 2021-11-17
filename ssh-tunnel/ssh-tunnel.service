@@ -7,7 +7,7 @@ After=sg-boot.service
 [Service]
 Type=exec
 WorkingDirectory=/opt/sensorgnome/ssh-tunnel
-ExecStart=/opt/sensorgnome/ssh-tunnel/ssh-tunnel.sh /opt/sensorgnome/.ssh
+ExecStart=/opt/sensorgnome/ssh-tunnel/ssh-tunnel.sh /home/pi/.ssh
 SyslogIdentifier=ssh-tunnel
 RestartSec=600s
 Restart=on-failure

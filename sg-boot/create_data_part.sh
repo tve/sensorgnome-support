@@ -46,7 +46,7 @@ if ! grep -q /data /etc/fstab; then
   ROOT_ENTRY=$(grep '\s/\s' /etc/fstab)
   DATA_NUM=$(parted "$ROOT_DEV" -ms print | tail -n 1 | cut -f 1 -d:)
   DATA_UUID=$(echo $ROOT_ENTRY | sed -e "s/[0-9]\s.*/$DATA_NUM/")
-  echo "$DATA_UUID /data vfat defaults,noatime 0" >>/etc/fstab
+  echo "$DATA_UUID /data vfat defaults,noatime,uid=1000,gid=100,flush 0 0" >>/etc/fstab
   echo ""
   echo "fstab:"
   cat /etc/fstab

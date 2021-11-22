@@ -145,7 +145,10 @@ ACTION=="add",SUBSYSTEMS=="usb",ATTRS{idVendor}=="04d8",ATTRS{idProduct}=="fb31"
 ## detect Cornell tag XCVR / CTT LifeTag MOTUS Adapter
 ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6001",ENV{MYDEVNAME}="CornellTagXCVR",GOTO="CornellTagXCVR"
 ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6010",ENV{MYDEVNAME}="CornellTagXCVR",GOTO="CornellTagXCVR"
+# CTT Motus Adapter v1 with integrated CP2102 serial adapter and std Vid:Pid (ugh!)
 ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60",ENV{MYDEVNAME}="CornellTagXCVR",GOTO="CornellTagXCVR"
+# CTT Motus Adapter v2 made with Adafruit Feather #3077 using std Vid:Pid (ugh!)
+ACTION=="add",SUBSYSTEM=="tty",ATTRS{idVendor}=="239a",ATTRS{idProduct}=="800c",ENV{MYDEVNAME}="CornellTagXCVR",GOTO="CornellTagXCVR"
 
 ## detect RPi serial0 (which we assume is the Adafruit GPS Hat on a Pi3/Pi4)
 #ACTION=="add",KERNEL=="serial0",GOTO="adafruit_gps_hat"
@@ -164,6 +167,7 @@ GOTO="rtlsdr"
 
 # Cornell (Gabrielson & Winkler) Tag Transceiver / CTT LifeTag MOTUS Adapter
 # line settings: 115200 raw
+# FIXME: the adafruit-based tags show up as /dev/ttyACM, not /dev/ttyUSB
 LABEL="CornellTagXCVR"
 IMPORT{program}="/bin/sh -c '(sleep 2; /bin/stty -F /dev/ttyUSB%n 115200 raw &)'"
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"

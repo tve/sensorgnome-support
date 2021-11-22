@@ -3,12 +3,13 @@ echo "Running sg-ssh-tunnel postinst in $(pwd)"
 MISC=/opt/sensorgnome/ssh-tunnel # would be nice to derive that from some env var...
 
 # need to make openssh accept dsa keys in both directions
-for conf in /etc/ssh/ssh_config /etc/ssh/sshd_config; do
-    if ! egrep -q 'PubkeyAcceptedKeyTypes.*ssh-dss' $conf; then
-        echo "Host sensorgnome.org *.sensorgnome.org" >> $conf
-        echo "  PubkeyAcceptedKeyTypes +ssh-dss" >> $conf
-    fi
-done
+if ! egrep -q 'PubkeyAcceptedKeyTypes.*ssh-dss' /etc/ssh/ssh_config; then
+    echo "Host sensorgnome.org *.sensorgnome.org" >> /etc/ssh/ssh_config
+    echo "  PubkeyAcceptedKeyTypes +ssh-dss" >> /etc/ssh/ssh_config
+fi
+if ! egrep -q 'PubkeyAcceptedKeyTypes.*ssh-dss' /etc/ssh/sshd_config; then
+    echo "PubkeyAcceptedKeyTypes +ssh-dss" >> /etc/ssh/sshd_config
+fi
 
 # Fix pi user's .ssh dir ownership
 chown -R 1000:1000 /home/pi/.ssh

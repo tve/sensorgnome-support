@@ -2,6 +2,7 @@ Sensorgnome GPS Clock and Location
 ==================================
 
 Manage the system clock using chrony and a GPS with GPSd:
+
 - set-up chrony to handle internet time servers as well as interface with GPSd
 - set-up GPSd to handle the Adafruit GPS HAT
 - set-up GPSd to produce location updates where the sensorgnome master process finds it
@@ -60,12 +61,44 @@ most accurate, if there is a good fix.
 
 Dev notes
 ---------
+
 (See also top-level README.)
 
 The `sg-gps-clock.deb` package can be installed and tested on a vanilla rPi with the following
 considerations:
+
 - TBD
 - you can typically revert a run of `sg-gps-clock` as follows:
-```
+
+```bash
 sudo apt remove -y gpsd chrony
+```
+
+### Detect clock time step
+
+See [stackoverflow](https://stackoverflow.com/questions/2251635)
+
+```C
+#include <sys/timerfd.h>
+#include <limits.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+
+int main(void) {
+        int fd = timerfd_create(CLOCK_REALTIME, 0);
+        timerfd_settime(fd, TFD_TIMER_ABSTIME | TFD_TIMER_CANCEL_ON_SET,
+                        &(struct itimerspec){ .it_value = { .tv_sec = INT_MAX } },
+                        NULL);
+        printf("Waiting\n");
+        char buffer[10];
+        if (-1 == read(fd, &buffer, 10)) {
+                if (errno == ECANCELED)
+                        printf("Timer cancelled - system clock changed\n");
+                else
+                        perror("error");
+        }
+        close(fd);
+        return 0;
+}
 ```

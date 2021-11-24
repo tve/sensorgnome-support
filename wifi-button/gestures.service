@@ -4,11 +4,10 @@ After=wifi-init.service
 Requires=wifi-init.service
 
 [Service]
-#ConditionPathExists=/data/config/GESTURES.TXT
 Type=exec
 WorkingDirectory=/opt/sensorgnome/wifi-button/scripts
 ExecStartPre=/usr/bin/bash gpio-init.sh
-ExecStart=/usr/bin/node gestures.js /data/config/GESTURES.TXT
+ExecStart=/usr/bin/node gestures.js /opt/sensorgnome/wifi-button/misc/gestures.txt
 SyslogIdentifier=sg-gestures
 RestartSec=60s
 Restart=on-failure

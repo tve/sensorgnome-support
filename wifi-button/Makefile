@@ -13,7 +13,6 @@ gpio_pull.dtbo: gpio_pull-overlay.dts
 
 # Installation moves files to where they need to go
 DEST=$(DESTDIR)/opt/sensorgnome/wifi-button
-DATA_CONFIG=/data/config
 install: gpio_pull.dtbo
     # install in sensorgnome dir
 	install -d $(DEST) $(DEST)/scripts $(DEST)/misc $(DEST)/DEBIAN

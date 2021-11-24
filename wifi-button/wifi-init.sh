@@ -9,7 +9,7 @@
 
 # Accepts one argument, which is the directory where NETWORK.TXT is found
 DIR=${1:-/data/config}
-FN=NETWORK.TXT
+FN=network.txt
 
 if [[ ! -f $DIR/$FN ]]; then
   echo "No file $DIR/$FN found: not touching Wifi"

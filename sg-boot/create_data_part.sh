@@ -31,7 +31,7 @@ echo "Creating FAT32 filesystem in $DATA_PART"
 mkfs.fat -n DATA $DATA_PART
 
 # mount and move specific files from /boot over, the reason for this is that boot is a fat32
-# filesystem where the user can edit come config files before first boot
+# filesystem where the user can edit some config files before first boot
 echo "Moving data from /boot to new partition"
 mkdir -p /data
 mount $DATA_PART /data

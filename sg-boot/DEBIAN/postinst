@@ -1,4 +1,4 @@
-#! /usr/bin/bash -ex
+#! /usr/bin/bash -e
 echo "Running sg-boot postinst in $(pwd)"
 MISC=/opt/sensorgnome/sg-boot # would be nice to derive that from some env var...
 

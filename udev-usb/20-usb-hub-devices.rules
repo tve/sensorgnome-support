@@ -121,7 +121,7 @@ SYMLINK+="sensorgnome/%E{disk_name}"
 
 # Mount the device
 MODE:="0666"
-ENV{PORT_NUM}!="",RUN+="/usr/bin/mkdir -p /media/%E{mount_dir}",
+ENV{PORT_NUM}!="",RUN+="/usr/bin/mkdir -p /media/%E{mount_dir}"
 ENV{PORT_NUM}!="",RUN+="/usr/bin/mount -o %E{mount_options} /dev/%k /media/%E{mount_dir}"
 ENV{PORT_NUM}!="",RUN+="/usr/bin/logger -t sensorgnome Mounted /dev/%k on /media/%E{mount_dir} options %E{mount_options}"
 GOTO="done"

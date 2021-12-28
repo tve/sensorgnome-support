@@ -1,7 +1,7 @@
 #! /usr/bin/bash -e
 # export gpio pins for use with the adafruit pushbutton LED switch
 
-. /data/config/GESTURES.TXT
+. $1
 echo "Enabling GPIO $GEST_LED_GPIO for LED and GPIO $GEST_SW_GPIO for button"
 
 cd /sys/class/gpio

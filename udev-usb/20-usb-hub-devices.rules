@@ -45,7 +45,7 @@
 # Heavily modified from Arch linux file media-by-label-auto-mount.rules
 
 # uncomment the following block for debug info
-ACTION=="add",RUN{program}+="/usr/bin/logger -t sensorgnome Checking %p"
+#ACTION=="add",RUN{program}+="/usr/bin/logger -t sensorgnome Checking %p"
 #ACTION=="add",RUN{program}+="/usr/bin/logger -t sensorgnome Add %p %E{SUBSYSTEM} k=%k %M/%m %s{idVendor}:%s{idProduct}"
 #ACTION=="remove",RUN{program}+="/usr/bin/logger -t sensorgnome Remove %p %k %M %m %s{busnum} %s{devnum} %s{idVendor}:%s{idProduct}"
 #ACTION=="change",RUN{program}+="/usr/bin/logger -t sensorgnome Change %p %k"

@@ -15,8 +15,8 @@ WIFI_SSID=
 # Example: WIFI_SSID=MyWifi
 
 # WiFi password / passphrase (use quotes if the password contains spaces or special characters)
-WIFI_PASS=
-# Example: WIFI_PASS="very Secure!"
+WIFI_PASSPHRASE=
+# Example: WIFI_PASSPHRASE="very Secure!"
 
 # WiFi 2-letter country code (CA, US, GB, see https://en.wikipedia.org/wiki/ISO_3166-1)
 # Used to enable the correct frequency bands

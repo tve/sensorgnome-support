@@ -1,35 +1,16 @@
-# USB port mapping
-#
-# When a device is plugged into USB its port is represented by a path, such as 1.2.3.
-# For SensorGnome, tag detections need to be reported using a "port number" in the range 0..9
-# (0 really being 10).
-# By default, USB paths are mapped to port numbers, but these may fall outside the range 0..9
-# and they may represent a haphazard sequence when compared with a physical hub.
-# This file allows explicit port mappings to be enforced, such that ports on the rPi and
-# on a hub can be labeled 1..10 in a reasonable order.
-# The mapping simply assigns a port number to a path using a notation like
-# path -> port, for example, `1.2.3 -> 3` to map path 1.2.3 to port 3.
-# The port and path assigned to a device can be seen in the web interface, it can also be
-# found in `/var/log/syslog` (search for "Added").
+# Path -> port mappings
 
-# On a rPi 4B the built-in USB ports have paths 1.1 through 1.4 (1.1 is on the bottom closest
-# to the Ethernet, 1.4 is at the top outside corner). A 4-port hub plugged into port 4 will result
-# in paths 1.4.1 through 1.4.4. A 7-port hub typically consists of two 4-port hubs daisy-chained
-# internally, which results in paths 1.4.1..1.4.3 and 1.4.4.1 through 1.4.4.4 assuming the internal
-# chaining is on port 4 (1.4.4).
-
-# In terms of ordering of mappings in this file, the first line with a matching path wins!
-# Add your mappings below this line so they come first...
-
-# Below are some typical configurations. They're here for convenience. They overlap somewhat
-# but don't conflict with each other. Feel free to comment out or override above.
-
-# Mappings for rPi3B+ built-in ports, WARNING: these are incorrect when using an rPi4B or rPi Zero-2!
-# For rPi4B and rPi Zero-2 please comment out the next 4 lines!
+# Mappings for rPi3B+ built-in ports
 1.2 -> 1
 1.3 -> 2
 1.4 -> 3
 1.5 -> 4
+
+# Mappings for rPi4B built-in ports
+#1.4 -> 1
+#1.3 -> 2
+#1.2 -> 3
+#1.1 -> 4
 
 # Mappings for 4-port hub plugged into rPi3B+ port 4
 1.5.1 -> 4

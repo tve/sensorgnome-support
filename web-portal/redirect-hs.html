@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sensorgnome HotSpot</title>
+    <script>
+      function setTime() {
+        let req = fetch('/init/set-time', {
+          method: "POST",
+          cache: 'no-cache',
+          redirect: 'follow',
+          credentials: 'include',
+          headers: { "Content-Type": "application/json", },
+          body: JSON.stringify({ ts: Date.now(), }),
+        })
+        .then(res => console.log("Set-time returned:", res.status))
+        .catch(err => console.log("Set-time errored:", err))
+      }
+      setTime()
+    </script>
+    <style>
+      p { line-height: 2.5ex; margin-top: 2em; }
+    </style>
+  </head>
+  <body style="margin: 2em 0px">
+    <div style="width: 90%; max-width: 40em; margin: auto; border: 2px solid grey; padding: 10px;">
+      <h1>Sensorgnome <!--sgid--> HotSpot</h1>
+      <h2>Redirect to HTTPS...</h2>
+      <p>Your Sensorgnome uses HTTPS with a self signed certificate.
+        Please access it at<br>
+        <b><a href="https://192.168.7.2/">https://192.168.7.2/</a></b><br>
+        You will have to click through a barrage of browser warnings to accept the
+        self-signed certificate, sorry.
+        Unfortunately there are no good options to secure web sites that do not have
+        public DNS names and persistent internet connections...</p>
+    </div>
+  </body>
+</html>

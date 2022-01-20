@@ -1,0 +1,10 @@
+Package: sg-web-portal
+Version: 1.0
+Architecture: armhf
+Essential: no
+Depends: nodejs, caddy
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sensorgnome web portal
+  The web portal includes a hotspot captive server, the Caddy web server/reverse proxy,
+  and a page to perform initial configuration of a new Sensorgnome.

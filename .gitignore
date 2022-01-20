@@ -3,3 +3,4 @@ build-temp
 funcube/firmware
 spellright.dict
 uploader/
+node_modules

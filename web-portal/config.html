@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sensorgnome Config</title>
+    <style>
+      p { line-height: 2.5ex; margin-top: 2em; }
+      li {line-height: 2.5ex; }
+      .submit { width: 8em; height: 3ex; margin: 1em 0px 1em 4em; font-size: 125%; }
+      input { font-size: 110%; }
+    </style>
+  </head>
+  <body style="margin: 2em 0px">
+    <div style="width: 90%; max-width: 40em; margin: auto; border: 2px solid grey; padding: 10px;">
+      <h1>Sensorgnome <!--sgid--> Configuration</h1>
+      <h2>Welcome to your new Sensorgnome</h2>
+      <form action="/init/set-config" method="post">
+          <p>This Sensorgnome has not yet been configured.<br>
+              Please enter a password that will be used
+              to secure the Web UI and SSH login.<br>
+              The password must be at least 8 characters long and will be checked against a 
+              "top-100000 passwords" list.</p>
+          </p>
+          <label for="password">Password:</label>
+          <input type="text" name="password" id="password" required />
+          <p>Enter a "short name" for this Sensorgnome. It will appear in the filename
+              of all data files as well as in Sensorgnome lists on the Motus and Sensorgnome sites.<br>
+              Short names must be 3-20 characters long and composed of letters, 0-9, and _ (underscore).
+          </p>
+          <label for="short_name">Short name:</label>
+          <input type="text" name="short_name" id="short_name" minlength="3" maxlength="20"
+                 pattern="[\p{Letter}0-9_]+" required />
+          <p style="color:red; font-weight:bold"><!--message--></p>
+          <input class="submit" type="submit" value="Submit" />
+          <p>Note: if your form submission hangs and you are on Android, please ensure your
+            cellular/mobile connection is disabled</p>
+          <p>Sensorgnome IP addresses:</p>
+          <ul><!--ipaddrs--></ul>
+      </form>
+    </div>
+  </body>
+</html>

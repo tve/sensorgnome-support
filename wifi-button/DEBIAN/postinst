@@ -41,6 +41,9 @@ done
 # disable hostapd and dnsmasq auto-startup, we want to start them ourselves when appropriate
 deb-systemd-helper disable hostapd.service
 deb-systemd-helper disable dnsmasq.service
+#sed -i 's/^dnsmasq/#dnsmasq/' /etc/resolvconf.conf
+# prevent dnsmasq from becoming the system resolver:
+egrep -q DNSMASQ_EXCEPT /etc/default/dnsmasq || echo DNSMASQ_EXCEPT=lo >> /etc/default/dnsmasq
 
 # disable dhcp client on AP interface
 if ! egrep -q ap0 /etc/dhcpcd.conf; then \

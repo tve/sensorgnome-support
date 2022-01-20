@@ -1,0 +1,15 @@
+[Unit]
+Description=Init web portal
+After=sg-boot
+Before=sg-control.service
+
+[Service]
+Type=exec
+WorkingDirectory=/opt/sensorgnome/web-portal
+ExecStart=/usr/bin/bash -e ./init-config.sh
+SyslogIdentifier=sg-web-portal
+RestartSec=20s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

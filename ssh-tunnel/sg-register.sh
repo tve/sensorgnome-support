@@ -37,7 +37,7 @@ if [[ ! -f "$UNIQUE_KEY_FILE" ]]; then
 
   REG="$(echo $SGID | /usr/bin/ssh -T \
       -i $FACTORY_KEY_FILE \
-      -o StrictHostKeyCHecking=accept-new \
+      -o StrictHostKeyChecking=accept-new \
       -p $UPLOAD_PORT \
       $UPLOAD_USER@$UPLOAD_HOST)"
   [[ $? != 0 ]] && exit 1

@@ -1,6 +1,8 @@
 Package: sg-gps-clock
 Version: 1.0
 Architecture: armhf
+Section: misc
+Priority: standard
 Essential: no
 Depends: pps-tools, gpsd, gpsd-clients, chrony
 Homepage: https://github.com/sensorgnome-support

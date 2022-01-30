@@ -45,7 +45,7 @@ Development
 - Assuming you have `sensorgnome-build` checked-out alongside this repo you might run
   `gen_package.sh` as follows (from within one of the subdirs of this repo):
 ```
-    ../../sensorgnome-build/docker/sensorgnome-armv7-rpi-buster ./gen_package.sh
+    ../../sensorgnome-build/docker/sensorgnome-armv7-rpi-bullseye ./gen_package.sh
 ```
 
 Open issues

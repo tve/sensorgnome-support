@@ -1,5 +1,5 @@
 #! /bin/bash -ex
-../../sensorgnome-build/docker/sensorgnome-armv7-rpi-buster ./gen_package.sh
+../../sensorgnome-build/docker/sensorgnome-armv7-rpi-bullseye ./gen_package.sh
 PI=pi@sg-eth
 scp sg-ssh-tunnel.deb $PI:
 ssh $PI sudo apt remove -y sg-ssh-tunnel || true

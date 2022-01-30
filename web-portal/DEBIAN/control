@@ -1,6 +1,8 @@
 Package: sg-web-portal
 Version: 1.0
 Architecture: armhf
+Section: misc
+Priority: standard
 Essential: no
 Depends: nodejs, caddy
 Homepage: https://github.com/sensorgnome-support

@@ -1,6 +1,8 @@
 Package: sg-wifi-button
 Version: 1.0
 Architecture: armhf
+Section: misc
+Priority: standard
 Essential: no
 Depends: nodejs, hostapd, dnsmasq
 Homepage: https://github.com/sensorgnome-support

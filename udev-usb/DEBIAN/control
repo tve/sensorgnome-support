@@ -1,6 +1,8 @@
 Package: sg-udev-usb
 Version: 1.0
 Architecture: armhf
+Section: misc
+Priority: standard
 Essential: no
 Depends: 
 Homepage: https://github.com/sensorgnome-support

@@ -36,6 +36,12 @@ Dev notes
 
 (See also top-level README.)
 
+The hotspot starts dnsmasq to respond to DNS queries from clients, which is a required feature,
+and it responds with 192.168.7.2 to every query (captive portal). By default resolvconf picks
+up on the fact that dnsmasq is running and sets /etc/resolv.conf to point to it, which breaks
+all DNS resolutions. This package adds "deny_interfaces=lo.dnsmasq" to /etc/resolvconf.conf
+to prevent that.
+
 The `sg-WiFi-button.deb` package can be installed and tested on a vanilla rPi provided the following
 are present:
 

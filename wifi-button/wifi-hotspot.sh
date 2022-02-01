@@ -19,6 +19,13 @@ else
         sleep 3 # seems to take time... hostapd fails if the dev isn't there
     fi
 
+    # Ensure resolvconf doesn't pick up on the dnsmasq we're about to start
+    if ! egrep -q lo.dnsmasq /etc/resolvconf.conf; then
+        echo "# prevent captive portal dnsmasq from becoming a resolver" >> /etc/resolvconf.conf
+        echo "deny_interfaces=lo.dnsmasq" >> /etc/resolvconf.conf
+        resolvconf -u
+    fi
+
     # Ensure hostapd has the correct ssid/psk
     # FIXME: should also set the country code, but there may not be a NETWORK.TXT file
     # But the "global" country code 00 is probably just fine

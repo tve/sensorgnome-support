@@ -3,7 +3,7 @@ Sensorgnome Boot Basics
 
 Scripts to set-up a few general basics on the sensorgnome before everything else is unleashed:
 
-- set-up sensorgnome ID in /etc/sensorgnome_id
+- set-up sensorgnome ID in /etc/sensorgnome/id
 - set-up hostname
 - create a FAT32 partition for /data if there isn't one and there's space
 - increment a boot counter

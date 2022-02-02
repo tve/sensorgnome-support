@@ -1,12 +1,12 @@
 #! /usr/bin/bash -e
 #
-# If data/config/NETWORK.TXT exists, try to grab an SSID and passphrase
+# If /etc/sensorgnome/NETWORK.TXT exists, try to grab an SSID and passphrase
 # from it and set up the SG as a WiFi client.
 # If the file does not exist or does not contain SSID/passphrase then
 # do no wifi client config.
 
 # Accepts one argument, which is the directory where NETWORK.TXT is found
-DIR=${1:-/data/config}
+DIR=${1:-/etc/sensorgnome}
 FN=network.txt
 
 echo "Unblocking wlan"

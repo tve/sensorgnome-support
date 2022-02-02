@@ -45,8 +45,8 @@ to prevent that.
 The `sg-WiFi-button.deb` package can be installed and tested on a vanilla rPi provided the following
 are present:
 
-- /data/config directory must exist (`sudo mkdir -p /data/config`)
-- /etc/sensorgnome_id is initialized (ex: `echo 1234RPI45678 | sudo tee /etc/sensorgnome_id`)
+- /etc/sensorgnome directory must exist (`sudo mkdir -p /etc/sensorgnome`)
+- /etc/sensorgnome/id is initialized (ex: `echo 1234RPI45678 | sudo tee /etc/sensorgnome/id`)
 - a reboot is necessary after the first install before testing to get the device tree overlay loaded
 
 About all the files here... There are four groupings:

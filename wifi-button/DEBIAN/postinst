@@ -9,14 +9,7 @@ if ( ! grep -q dtoverlay=gpio_pull /boot/config.txt ); then
 fi
 
 # install network.txt if not there
-if [[ -d /data/config ]]; then
-    # /data/config exists, so this must be an update, put network.txt there unless it exists
-    [[ -f /data/config/network.txt ]] || cp $MISC/network.txt /data/config
-else
-    # /data/config does not exist, so this must be a fresh install, put network.txt into /boot
-    # it will be copied to /data/config on first boot
-    [[ -f /boot/network.txt ]] || cp $MISC/network.txt /boot
-fi
+#[[ -f /etc/sensorgnome/network.txt ]] || cp $MISC/network.txt /etc/sensorgnome
 
 # enable and start/restart gestures and wifi_init units
 for U in wifi-init gestures; do

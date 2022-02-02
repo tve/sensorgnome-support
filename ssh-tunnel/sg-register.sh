@@ -4,7 +4,7 @@
 # port tunnel number and pub/priv keypair.
 # Exits with 0 if registration is successful and with 1 if not
 #
-# Expects two commandline arguments: dot_ssh_dir and Sensorgnome_ID
+# Expects two commandline arguments: dot_ssh_dir and Sensorgnome ID
 
 if [[ "${#*}" != 2 ]]; then
   echo Usage: $0 dot_ssh_dir sensorgnome_id

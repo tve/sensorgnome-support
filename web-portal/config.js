@@ -10,7 +10,7 @@ const redirect_html = Fs.readFileSync("public/redirect.html").toString()
 const redirecths_html = Fs.readFileSync("public/redirect-hs.html").toString()
 const success_html = Fs.readFileSync("public/success.html").toString()
 const top100k = Fs.readFileSync("top-100k-passwords.txt").toString().split('\n')
-const sgid = Fs.readFileSync("/etc/sensorgnome_id").toString().trim()
+const sgid = Fs.readFileSync("/etc/sensorgnome/id").toString().trim()
 
 // return list of interface ip addresses as HTML list
 function ifaces_list() {

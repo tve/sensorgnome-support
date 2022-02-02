@@ -4,7 +4,7 @@ import sys
 import re
 import subprocess
 
-PORT_MAP_FILE = "/data/config/usb-port-map.txt"
+PORT_MAP_FILE = "/etc/sensorgnome/usb-port-map.txt"
 
 path = sys.argv[1]
 # The path should have a section that has the USB path, which should be of the form:

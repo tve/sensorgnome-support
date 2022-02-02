@@ -9,6 +9,7 @@ install -m 755 *.sh $DEST
 install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
 install -d $DESTDIR/dev/sensorgnome
+install -d $DESTDIR/etc/sensorgnome
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

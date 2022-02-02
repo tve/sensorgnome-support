@@ -7,15 +7,8 @@ if [[ -f /usr/lib/udev/rules.d/60-gpsd.rules ]]; then
     sed -i -e '/"10c4".*"ea60"/d' /usr/lib/udev/rules.d/60-gpsd.rules
 fi
 
-# install default USB port mapping rules if not there
-if [[ -d /data/config ]]; then
-    # /data/config exists, so this must be an update, put usb-port-map.txt there unless it exists
-    [[ -f /data/config/usb-port-map.txt ]] || cp $SRC/usb-port-map.txt /data/config
-else
-    # /data/config does not exist, so this must be a fresh install, put usb-port-map.txt into /boot
-    # it will be copied to /data/config on first boot
-    [[ -f /boot/usb-port-map.txt ]] || cp $SRC/usb-port-map.txt /boot
-fi
+# //etc/sensorgnome exists, so this must be an update, put usb-port-map.txt there unless it exists
+[[ -f /etc/sensorgnome/usb-port-map.txt ]] || cp $SRC/usb-port-map.txt /etc/sensorgnome
 
 # cause udev to heed the new rules we may have just installed udev rules
 udevadm control --reload-rules

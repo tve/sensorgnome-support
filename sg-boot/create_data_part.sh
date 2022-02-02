@@ -1,4 +1,4 @@
-#! /bin/bash -ex
+#! /bin/bash -e
 # Create a data partition to fill the SDcard if it doesn't exist yet
 
 DATA_PART="$(findmnt /data -o source -n || true)"
@@ -29,17 +29,7 @@ parted -ms $ROOT_DEV p
 DATA_PART="/dev/$(lsblk -nl -o NAME | tail -n 1)"
 echo "Creating FAT32 filesystem in $DATA_PART"
 mkfs.fat -n DATA $DATA_PART
-
-# mount and move specific files from /boot over, the reason for this is that boot is a fat32
-# filesystem where the user can edit some config files before first boot
-echo "Moving data from /boot to new partition"
 mkdir -p /data
-mount $DATA_PART /data
-mkdir -p /data/config /data/SGdata
-mv $(ls /boot/*.txt | egrep -v '(cmdline|config|issue)') /data/config || true
-[[ -f /boot/SG_tag_database.sqlite ]] && mv /boot/SG_tag_database.sqlite /data/config
-[[ -f /boot/SG_tag_database.csv ]] && mv /boot/SG_tag_database.csv /data/config
-df -h
 
 # create fstab entry
 if ! grep -q /data /etc/fstab; then
@@ -51,3 +41,5 @@ if ! grep -q /data /etc/fstab; then
   echo "fstab:"
   cat /etc/fstab
 fi
+mount /data
+mkdir -p /data/SGdata

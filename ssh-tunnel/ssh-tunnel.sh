@@ -13,7 +13,7 @@ fi
 SSH="$1"
 
 # Register with sensorgnome.org, which results in SSH keys, no-op if we have the keys already
-while ! ./sg-register.sh $SSH $(cat /etc/sensorgnome_id); do
+while ! ./sg-register.sh $SSH $(cat /etc/sensorgnome/id); do
   echo "Failed to register with sensorgnome.org, retrying in 60 seconds..."
   sleep 60
 done

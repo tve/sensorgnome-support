@@ -10,9 +10,10 @@
 # them.  The only solution is to reboot.  This check should not
 # be performed too often.  Perhaps every 15 minutes.
 
-# if explicitly prevented, do not do this
+# THIS IS NOT ACTIVELY BEING USED, DUNNO WHETHER IT SHOULD BE in 2022...
 
-if grep -q NO_USB_WATCHDOG_REBOOT /data/config/deployment.txt; then
+# if explicitly prevented, do not do this
+if grep -q NO_USB_WATCHDOG_REBOOT /etc/sensorgnome/deployment.txt; then
 #   echo user specified NO_USB_WATCHDOG_REBOOT
    exit 0
 fi

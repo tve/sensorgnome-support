@@ -1,5 +1,5 @@
 #! /bin/bash
-# Generate the sensorgnome unique system ID into /etc/sensorgnome_id
+# Generate the sensorgnome unique system ID into /etc/sensorgnome/id
 # This ID is associated with the CPU chip, thus if the hardware is swapped out due to a failure
 # the station will get a new ID...
 # Currently this only works for rpi, will need to be enhanced for BBB
@@ -11,7 +11,7 @@ egrep -qi zero /proc/device-tree/model && CLASS=RPZ
 # Model digit
 MODEL=$(sed -e 's/[^0-9]*\([0-9]\).*/\1/' /proc/device-tree/model) # first digit, e.g. rpi 400 -> 4
 RPI_ID=${RPI_ID/====/$CLASS$MODEL}
-echo $RPI_ID > /etc/sensorgnome_id
+echo $RPI_ID > /etc/sensorgnome/id
 
 HOSTNAME="SG-${RPI_ID}"
 echo $HOSTNAME > /etc/hostname

@@ -29,7 +29,7 @@ else
     # Ensure hostapd has the correct ssid/psk
     # FIXME: should also set the country code, but there may not be a NETWORK.TXT file
     # But the "global" country code 00 is probably just fine
-    SGID=$(cat /etc/sensorgnome_id)
+    SGID=$(cat /etc/sensorgnome/id)
     sed -i -e "s/^ssid=.*/ssid=SG-$SGID/" \
         /etc/hostapd/hostapd.conf
 #       -e "s/wpa_passphrase=.*/wpa_passphrase=SG-$SGID/" \

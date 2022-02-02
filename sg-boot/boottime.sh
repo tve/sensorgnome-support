@@ -3,7 +3,7 @@
 # boot-time tasks for Sensor Gnome (for debian 7.0 armhf
 # These must be run before network interfaces are brought up!
 
-# Generate the sensorgnome unique system ID into /etc/sensorgnome_id
+# Generate the sensorgnome unique system ID into /etc/sensorgnome/id
 # This ID is associated with the CPU chip, thus if the hardware is swapped out due to a failure
 # the station will get a new ID...
 ./gen_id.sh
@@ -12,7 +12,7 @@
 sed -i /etc/hosts -e "/127.0.0.1[ \t]\+localhost/s/^.*$/127.0.0.1\tlocalhost `hostname`/"
 
 # Increment the persistent bootcount in /etc/bootcount
-BOOT_COUNT_FILE="/etc/bootcount"
+BOOT_COUNT_FILE="/etc/sensorgnome/bootcount"
 if [[ -f $BOOT_COUNT_FILE ]]; then
     COUNT=`cat $BOOT_COUNT_FILE`;
     if [[ "$COUNT" == "" ]]; then
@@ -32,6 +32,8 @@ sync
 # /media/diskNportM, so ensure /media/SD_card is a symlink to /data
 [[ -e /media/SD_card ]] || ln -s /data /media/SD_card
 
-# FIXME: figure out how this is supposed to work
-# maybe do a software update
-#/home/pi/proj/sensorgnome/scripts/update_software.sh
+# mount and move specific files from /boot into /etc/sensorgnome, the reason for this is that
+# boot is a fat32 filesystem where the user can edit some config files before first boot
+echo "Moving data from /boot to /etc/sensorngome"
+shopt -s nullglob
+mv $(ls /boot/*.{txt,json,sqlite,csv} | egrep -v '(cmdline|config|issue)') /etc/sensorgnome || true

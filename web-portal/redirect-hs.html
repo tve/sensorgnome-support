@@ -7,13 +7,13 @@
     <title>Sensorgnome HotSpot</title>
     <script>
       function setTime() {
-        let req = fetch('/init/set-time', {
+        let req = fetch('/set-time?ts='+Date.now(), {
           method: "POST",
           cache: 'no-cache',
           redirect: 'follow',
           credentials: 'include',
-          headers: { "Content-Type": "application/json", },
-          body: JSON.stringify({ ts: Date.now(), }),
+          //headers: { "Content-Type": "application/json", },
+          //body: JSON.stringify({ ts:  }),
         })
         .then(res => console.log("Set-time returned:", res.status))
         .catch(err => console.log("Set-time errored:", err))
@@ -22,17 +22,23 @@
     </script>
     <style>
       p { line-height: 2.5ex; margin-top: 2em; }
+      .hide/*captive*/ { display: none; }
     </style>
   </head>
   <body style="margin: 2em 0px">
     <div style="width: 90%; max-width: 40em; margin: auto; border: 2px solid grey; padding: 10px;">
       <h1>Sensorgnome <!--sgid--> HotSpot</h1>
+      <h2>Captive Portal functionality</h2>
+      <p class="hideoff">The captive portal is ON. You can <a href="/captive?sw=off">disable</a> it.</p>
+      <p class="hideon">The captive portal is OFF. You can <a href="/captive?sw=on">enable</a> it.</p>
+      <p><i>Preliminary:</i> having the captive portal enabled is recommended for mobile devices
+        and having it disabled is recommended for laptops/desktops.</p>
       <h2>Redirect to HTTPS...</h2>
       <p>Your Sensorgnome uses HTTPS with a self signed certificate.
         Please access it at<br>
         <b><a href="https://192.168.7.2/">https://192.168.7.2/</a></b><br>
-        You will have to click through a barrage of browser warnings to accept the
-        self-signed certificate, sorry.
+        You will have to click at the bottom of the browser warning to the "advanced" functionality
+        to accept the self-signed certificate, sorry.
         Unfortunately there are no good options to secure web sites that do not have
         public DNS names and persistent internet connections...</p>
     </div>

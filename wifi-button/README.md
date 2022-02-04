@@ -30,6 +30,7 @@ Notes:
   client side (i.e. the access point being connected to). Beware that this may be a 5Ghz channel
   and thus the hot-spot may also be on 5Ghz.
 - If the WiFi hot-spot is enabled without WiFi client connection the channel used is No.1
+- The hotspot operates as captive portal, see the `../web-portal` directory
 
 Dev notes
 ---------

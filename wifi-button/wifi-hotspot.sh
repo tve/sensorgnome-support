@@ -4,11 +4,37 @@
 #
 # Usage: wifi_hotspot [on|off]
 
+# Iptables rule for traffic on hotspot destined for us
+ipt_self="PREROUTING -s 192.168.7.0/24 -d 192.168.7.2 -p tcp --dport 80 -j DNAT --to-destination 192.168.7.2:81"
+# Iptables rule for traffic on hotspot destined for routing
+ipt_route="PREROUTING -s 192.168.7.0/24 ! -d 192.168.7.2 -p tcp --dport 80 -j DNAT --to-destination 192.168.7.2:82"
+
 if [[ "$1" == "off" ]]; then
     echo "Disabling Wifi HotSpot"
     systemctl stop dnsmasq
     systemctl stop hostapd
-    iptables -t nat -D PREROUTING -s 192.168.7.0/24 -p tcp --dport 80 -j DNAT --to-destination 192.168.7.2:81
+    iptables -t nat -D $ipt_route
+    iptables -t nat -D $ipt_self
+elif [[ "$1" == "capon" ]]; then
+    if ! iptables -t nat -n -L PREROUTING | egrep -q '!192.168.7.2'; then
+        echo "Turning captive portal on"
+        iptables -t nat -A $ipt_route
+    else
+        echo "Captive portal already on"
+    fi
+elif [[ "$1" == "capoff" ]]; then
+    if iptables -t nat -n -L PREROUTING | egrep -q '!192.168.7.2'; then
+        echo "Turning captive portal off"
+        iptables -t nat -D $ipt_route
+    else
+        echo "Captive portal already off"
+    fi
+elif [[ "$1" == "capinfo" ]]; then
+    if iptables -t nat -n -L PREROUTING | egrep -q '!192.168.7.2'; then
+        echo "on"
+    else
+        echo "off"
+    fi
 else
     echo "Starting up Wifi HotSpot"
     rfkill unblock wlan # prob not necessary but harmless
@@ -39,5 +65,6 @@ else
     systemctl start dnsmasq
 
     # Set-up captive portal
-    iptables -t nat -A PREROUTING -s 192.168.7.0/24 -p tcp --dport 80 -j DNAT --to-destination 192.168.7.2:81
+    iptables -t nat -A $ipt_self
+    iptables -t nat -A $ipt_route
 fi

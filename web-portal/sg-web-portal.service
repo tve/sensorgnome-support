@@ -1,6 +1,6 @@
 [Unit]
 Description=Init web portal
-After=sg-boot
+After=sg-boot.service
 Before=sg-control.service
 
 [Service]

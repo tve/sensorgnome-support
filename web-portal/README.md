@@ -7,14 +7,18 @@ Prerequisites:
 - the DNS server must be configured to redirect a bunch of hostnames that are used for captive
   portal detection to the hotspot IP address (this is done in `wifi-button`)
 - an iptables rule redirects any packet coming into the hotspot interface destined to port 80
-  to local port 81 (this is done in `wifi-button` in the `wifi-hotspot` script)
+  to local port 81 or 82 (this is done in `wifi-button` in the `wifi-hotspot` script)
 
 Thereafter:
 
-- Caddy runs on ports 80, 81 and 443
-- it is configured to auto-issue self-signed certs for port 443, this causes accesses to
-  port 80 to be redirected to port 443
-- port 81 is configured to redirect to the IP address of the hotspot interface and port 443
+- Caddy runs on ports 80, 81, 82 and 443:
+  - port 80: is redirected by Caddy to 443 by virtue of Caddy being configured to run HTTPS
+  - port 81: receives connections to port 80 from ethernet and client wifi,
+    it serves up a pretty basic "click here to redirect to to HTTPS" page
+  - port 82: receives connections to port 80 from the hotspot interface,
+    it serves up a more involved redirect page that allows the captive portal stuff to be
+    enabled/disabled
+  - port 443: is configured to auto-issue self-signed certs 
 - port 443 serves up local files (in the public subdir), or reverse-proxies to the config.js
   web app, or to the main sg-control web app
 - if `public/need_init` exists, then / shows the initial config page, otherwise it reverse-proxies
@@ -31,7 +35,7 @@ Thereafter:
 A typical config flow using the hotspot is:
 
 - the user joins the wifi, the user's device requests a connectivity check URL, that is redirected
-  by caddy to `https://192.168.7.2/` (the hotspot IP address)
+  causing the user device to pop-up the browser so the user can log into the captive portal
 - the `public/need_init` file exists, thus caddy serves up the `config.html` file
 - the user fills out the form, which is posted to `https://192.168.7.2/init/set-config`, which
   is handled by the config app, which sets the password, deletes the `need_init` file, and

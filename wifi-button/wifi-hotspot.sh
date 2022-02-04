@@ -6,31 +6,36 @@
 
 # Iptables rule for traffic on hotspot destined for us
 ipt_self="PREROUTING -s 192.168.7.0/24 -d 192.168.7.2 -p tcp --dport 80 -j DNAT --to-destination 192.168.7.2:81"
-# Iptables rule for traffic on hotspot destined for routing
+# Iptables rule for traffic on hotspot destined for routing, redirect to us
 ipt_route="PREROUTING -s 192.168.7.0/24 ! -d 192.168.7.2 -p tcp --dport 80 -j DNAT --to-destination 192.168.7.2:82"
+# Iptables rule for traffic on hotspot destined for routing, redirect to closed port (conn reset)
+ipt_reset="PREROUTING -s 192.168.7.0/24 ! -d 192.168.7.2 -p tcp --dport 80 -j DNAT --to-destination 192.168.7.2:83"
 
 if [[ "$1" == "off" ]]; then
     echo "Disabling Wifi HotSpot"
     systemctl stop dnsmasq
     systemctl stop hostapd
+    iptables -t nat -D $ipt_reset
     iptables -t nat -D $ipt_route
     iptables -t nat -D $ipt_self
 elif [[ "$1" == "capon" ]]; then
-    if ! iptables -t nat -n -L PREROUTING | egrep -q '!192.168.7.2'; then
+    if ! iptables -t nat -n -L PREROUTING | egrep -q '192.168.7.2:82'; then
         echo "Turning captive portal on"
+        iptables -t nat -D $ipt_reset
         iptables -t nat -A $ipt_route
     else
         echo "Captive portal already on"
     fi
 elif [[ "$1" == "capoff" ]]; then
-    if iptables -t nat -n -L PREROUTING | egrep -q '!192.168.7.2'; then
+    if ! iptables -t nat -n -L PREROUTING | egrep -q '192.168.7.2:83'; then
         echo "Turning captive portal off"
         iptables -t nat -D $ipt_route
+        iptables -t nat -A $ipt_reset
     else
         echo "Captive portal already off"
     fi
 elif [[ "$1" == "capinfo" ]]; then
-    if iptables -t nat -n -L PREROUTING | egrep -q '!192.168.7.2'; then
+    if iptables -t nat -n -L PREROUTING | egrep -q '192.168.7.2:82'; then
         echo "on"
     else
         echo "off"
@@ -42,7 +47,10 @@ else
     # Ensure we have a device for the AP
     if ! ip link show ap0 2>/dev/null; then
         iw dev wlan0 interface add ap0 type __ap
-        sleep 3 # seems to take time... hostapd fails if the dev isn't there
+        sleep 2
+        while ! ip link show ap0 2>/dev/null; do
+            sleep 2 # seems to take time... hostapd fails if the dev isn't there
+        done
     fi
 
     # Ensure resolvconf doesn't pick up on the dnsmasq we're about to start
@@ -65,6 +73,7 @@ else
     systemctl start dnsmasq
 
     # Set-up captive portal
+    iptables -t nat -D $ipt_reset
     iptables -t nat -A $ipt_self
     iptables -t nat -A $ipt_route
 fi

@@ -19,6 +19,7 @@ const sgid = Fs.readFileSync("/etc/sensorgnome/id").toString().trim()
 
 //const dnsmasq_conf = "/etc/dnsmasq.d/wifi-button.conf"
 const wifi_hotspot = "/opt/sensorgnome/wifi-button/scripts/wifi-hotspot.sh"
+const deployment = "/etc/sensorgnome/deployment.json"
 
 // return list of interface ip addresses as HTML list
 function ifaces_list() {
@@ -90,6 +91,17 @@ app.post('/set-config', (req, res) => {
         return respond(res, config_html, {message: "Error changing password: " + e})
     }
     Fs.rmSync("public/need_init")
+
+        // set the shortname
+    if (!Fs.existsSync(deployment)) {
+        try {
+            Fs.writeFileSync(deployment, JSON.stringify({short_label: sn}))
+            CP.execFileSync("systemctl", ["restart", "sg-control"]) // yuck...
+        } catch(e) {
+            return respond(res, config_html, {message: "Error changing password: " + e})
+        }
+    }        
+    
     let ifaces = ifaces_list()
     respond(res, success_html, {shortname: sn})
 })

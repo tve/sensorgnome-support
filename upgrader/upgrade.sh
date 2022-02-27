@@ -8,9 +8,12 @@ if [[ "$#" == 0 ]]; then
     exit 1
 fi
 
-if [[ "$1" == -s ]]; then packages=""
-else packages="$@"
-fi
-
 export DEBIAN_FRONTEND=noninteractive
-apt-get -y upgrade "$packages"
+date
+set -x
+
+if [[ "$1" == -s ]]; then
+    apt-get -y upgrade
+else
+    apt-get -y install "$packages"
+fi

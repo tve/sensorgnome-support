@@ -20,4 +20,6 @@ if ! egrep -q "network=" /etc/wpa_supplicant/wpa_supplicant.conf; then
     wpa_cli -i wlan0 disable 0
     wpa_cli -i wlan0 save_config
     cat /etc/wpa_supplicant/wpa_supplicant.conf
+else
+    wpa_cli -i wlan0 reconnect # will force INACTICVE state if all networks are disabled
 fi

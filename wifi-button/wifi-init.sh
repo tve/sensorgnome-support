@@ -15,10 +15,9 @@ fi
 if ! egrep -q "network=" /etc/wpa_supplicant/wpa_supplicant.conf; then
     echo "Setting wifi client to sample network"
     wpa_cli -i wlan0 add_network wlan0
-    wpa_cli -i wlan0 set_network wlan0 ssid "my_ssid"
+    wpa_cli -i wlan0 set_network wlan0 ssid '"my_ssid"'
     wpa_cli -i wlan0 set_network wlan0 key_mgmt NONE
-    wpa_cli -i wlan0 disable wlan0
+    wpa_cli -i wlan0 disable 0
     wpa_cli -i wlan0 save_config
-    wpa_cli -i wlan0 reconfigure
     cat /etc/wpa_supplicant/wpa_supplicant.conf
 fi

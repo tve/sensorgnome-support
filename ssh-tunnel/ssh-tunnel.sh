@@ -36,7 +36,7 @@ if [[ -f $TUNNEL_PORT_FILE ]]; then
     autossh -M 0 -N -T \
         -L$LOCAL_STREAM_PORT:localhost:$REMOTE_STREAM_PORT \
         -R$TUNNEL_PORT:localhost:22 \
-        -R$WEB_PORT:localhost:80 \
+        -R$WEB_PORT:localhost:8080 \
         -o ControlMaster=auto \
         -o ControlPath=/tmp/sgremote \
         -o ServerAliveInterval=25 \

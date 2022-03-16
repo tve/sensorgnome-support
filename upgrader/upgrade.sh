@@ -13,7 +13,12 @@ date
 set -x
 
 if [[ "$1" == -s ]]; then
-    apt-get -y upgrade
+    CMD="apt-get -y upgrade"
 else
-    apt-get -y install "$packages"
+    CMD="apt-get -y install $packages"
 fi
+
+TERM=dumb systemd-run --scope --collect --description="sg-upgrade" $CMD
+echo "Restarting sg-control (web server) in 10 seconds..."
+sleep 10
+systemctl restart sg-control.service

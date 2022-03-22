@@ -1,0 +1,14 @@
+diff --git a/core_manager/helpers/logger.py b/core_manager/helpers/logger.py
+index 20e80bc..1676ff9 100644
+--- a/core_manager/helpers/logger.py
++++ b/core_manager/helpers/logger.py
+@@ -8,7 +8,8 @@ import logging.handlers
+ from helpers.config_parser import conf
+
+
+-LOG_PATH = os.path.expanduser("~") + "/.core/logs/"
++#LOG_PATH = os.path.expanduser("~") + "/.core/logs/"
++LOG_PATH = "/var/log/sixfab/"
+ LOG_FORMAT = "%(asctime)s --> %(filename)-18s %(levelname)-8s %(message)s"
+
+

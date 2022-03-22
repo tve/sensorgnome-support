@@ -1,0 +1,10 @@
+#! /bin/bash -e
+
+# power-up GPS
+atcom -v -p /dev/ttyUSB2 --rts-cts --dsr-dtr 'AT$GPSP=1'
+
+# enable output on ttyUSB1 with GGA, GLL, GSA, GSV, and RMC sentences
+atcom -v -p /dev/ttyUSB2 --rts-cts --dsr-dtr 'AT$GPSNMUN=2,1,1,1,1,1,0'
+
+# save settings
+atcom -v -p /dev/ttyUSB2 --rts-cts --dsr-dtr 'AT$GPSSAV'

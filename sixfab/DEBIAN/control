@@ -1,0 +1,12 @@
+Package: sg-sixfab
+Version: 1.0
+Architecture: armhf
+Section: misc
+Priority: standard
+Essential: no
+Depends: sg-boot
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sixfab cell modem core manager for Sensorgnome
+  Installs the Sixfab core manager tweaked for Sensorgnome, the systemd service is not
+  automatically enabled.

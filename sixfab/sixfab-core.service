@@ -1,0 +1,13 @@
+[Unit]
+Description=Sixfab Core Manager Sensorgnome Edition
+
+[Service]
+User=sixfab
+Restart=always
+Group=sudo
+RestartSec=3
+WorkingDirectory=/opt/sixfab/core_manager/core_manager
+ExecStart=/usr/bin/python3 run.py
+
+[Install]
+WantedBy=multi-user.target

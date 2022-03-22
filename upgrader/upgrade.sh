@@ -15,9 +15,11 @@ set -x
 if [[ "$1" == -s ]]; then
     CMD="apt-get -y upgrade"
 else
-    CMD="apt-get -y install $packages"
+    CMD="apt-get -y install $@"
 fi
 
+# need to use systemd-run so it runs outside of the sg-control service cgroup, which may get
+# restarted as part of the upgrade and we don't want to be affected by that
 TERM=dumb systemd-run --scope --collect --description="sg-upgrade" $CMD
 echo "Restarting sg-control (web server) in 10 seconds..."
 sleep 10

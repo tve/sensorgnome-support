@@ -1,7 +1,7 @@
 #! /usr/bin/bash -e
-echo "Running sg-sixfab postinst in $(pwd)"
+echo "Running sg-sixfab postinst"
 MISC=/opt/sixfab
-
+cd $MISC
 bash -e ./postinstall.sh
 
 # restart service if running

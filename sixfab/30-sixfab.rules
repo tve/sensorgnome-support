@@ -1,0 +1,9 @@
+# Rules to enable the sixfab core manager service if one of the modems is found
+# Quectel
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="2c7c",ATTRS{idProduct}=="012?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+# Telit
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="120?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="103?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="110?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+# Thales
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1e2d",ATTRS{idProduct}=="006?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"

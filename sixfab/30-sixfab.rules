@@ -1,9 +1,20 @@
 # Rules to enable the sixfab core manager service if one of the modems is found
 # Quectel
-ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="2c7c",ATTRS{idProduct}=="012?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="2c7c",ATTRS{idProduct}=="012?",GOTO="sixfab"
 # Telit
-ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="120?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
-ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="103?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
-ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="110?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="120?",GOTO="sixfab"
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="103?",GOTO="sixfab"
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",ATTRS{idProduct}=="110?",GOTO="sixfab"
 # Thales
-ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1e2d",ATTRS{idProduct}=="006?",TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1e2d",ATTRS{idProduct}=="006?",GOTO="sixfab"
+GOTO="done"
+
+# Actions when finding a sixfab HAT
+LABEL="sixfab"
+RUN{program}+="/usr/bin/logger -t sensorgnome Found Sixfab HAT"
+TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+RUN{program}+="/usr/bin/mkdir -p /dev/sensorgnome"
+RUN{program}+="/usr/bin/echo 'Sixfab Base HAT' | /usr/bin/tee /dev/sensorgnome/hat"
+GOTO="done"
+
+LABEL="done"

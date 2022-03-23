@@ -131,7 +131,7 @@ LABEL="not_add_disk"
 ACTION!="remove",GOTO="done"
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 ENV{mount_dirs}="disk_port%E{PORT_NUM}*"
-ENV{PORT_NUM}!="",RUN+="/bin/sh -c 'for DEV in /media/%E{mount_dirs}; do umount -l $DEV; rmdir $DEV; done'"
+ENV{PORT_NUM}!="",RUN+="/bin/sh -c 'for DEV in /media/%E{mount_dirs}; do umount -l /dev/%k; rmdir /media/%E{mount_dir}; done'"
 GOTO="done"
 
 ###################  END OF DISK DETECTION #####################

@@ -1,0 +1,12 @@
+[Unit]
+Description=Init GPS for Sensorgnome
+After=local-fs.target systemd-udevd.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -e /opt/sensorgnome/gps-clock/init-gps.sh
+SyslogIdentifier=sg-gps-init
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

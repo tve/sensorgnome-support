@@ -3,15 +3,15 @@ echo "Running sg-gps-clock postinst in $(pwd)"
 MISC=/opt/sensorgnome/gps-clock # would be nice to derive that from some env var...
 
 # Ensure gpsd looks at the appropriate hardware devices
-sed -i -e 's;^DEVICES.*;DEVICES="/dev/serial0 /dev/pps0";' /etc/default/gpsd
+sed -i -e 's;^DEVICES.*;DEVICES="/dev/serial0 /dev/ttyUSB2 /dev/pps0";' /etc/default/gpsd
 # Ensure gpsd starts without waiting for a client to connect (-n)
 # Ensure gpsd propagates time at start-up even without fix thanks to battery RTC (-r)
 sed -i -e 's/^GPSD_OPTIONS.*/GPSD_OPTIONS="-n -r"/' /etc/default/gpsd
 # Note: consider setting USBAUTO to false so it doesn't interfere with any dongle detection?
 
-# Modify /boot/config.txt so the PPS driver is loaded and the GPS uart is available
-if ! grep -q "gps-clock" /boot/config.txt; then
-  cat $MISC/boot-config.txt >>/boot/config.txt
+# Modify /boot/config.txt so the GPS uart is available
+if ! grep -q "enable_uart" /boot/config.txt; then
+  echo enable_uart=1 >>/boot/config.txt
 fi
 
 # We update chrony's config file, so restart it

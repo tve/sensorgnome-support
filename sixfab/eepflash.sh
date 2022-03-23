@@ -132,6 +132,7 @@ if [ "$BUS" = "NOT_SET" ]; then
 		BUS=9
 	else
 		dtoverlay i2c-gpio i2c_gpio_sda=0 i2c_gpio_scl=1 bus=9
+		sleep 1
 		rc=$?
 		if [ $rc != 0 ]; then
 			echo "Loading of i2c-gpio dtoverlay failed."

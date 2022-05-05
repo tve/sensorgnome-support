@@ -4,9 +4,10 @@ MISC=/opt/sensorgnome/wifi-button/misc # would be nice to derive that from some 
 
 # enable device tree overlay that turns on the button GPIO pull-up
 cp $MISC/gpio_pull.dtbo /boot/overlays # can't let dpkg do that 'cause chmod doesn't work on fat32
-if ( ! grep -q dtoverlay=gpio_pull /boot/config.txt ); then
-  printf "#load overlay for SG LED-pushbutton switch\ndtoverlay=gpio_pull\n" >> /boot/config.txt
-fi
+# enabling is now done dynamically if HAT detected
+# if ( ! grep -q dtoverlay=gpio_pull /boot/config.txt ); then
+#   printf "#load overlay for SG LED-pushbutton switch\ndtoverlay=gpio_pull\n" >> /boot/config.txt
+# fi
 
 # install network.txt if not there
 #[[ -f /etc/sensorgnome/network.txt ]] || cp $MISC/network.txt /etc/sensorgnome

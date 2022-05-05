@@ -17,7 +17,7 @@ if [[ -f $DTP ]] && grep -q "Ultimate GPS HAT" $DTP; then
 fi
 
 # Detect SixFab Base HAT with modem that has GPS. While this HAT has an EEPROM it may be used in
-# in combination with a UPS HAt which also has an EEPROM and that causes the detection to be scrambled
+# in combination with a UPS HAT which also has an EEPROM and that causes the detection to be scrambled
 # 'cause the rPi folks didn't anticipate the use of multiple stacked HATs...
 # We do have a udev rule in the sg-sixfab package that creates the $SGH file, though...
 if [[ -f $SGH ]] && grep -q "Sixfab Base HAT" $SGH; then

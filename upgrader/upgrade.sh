@@ -23,4 +23,7 @@ fi
 TERM=dumb systemd-run --scope --collect --description="sg-upgrade" $CMD
 echo "Restarting sg-control (web server) in 10 seconds..."
 sleep 10
+systemctl daemon-reload
 systemctl restart sg-control.service
+sleep 2
+echo "_END_"

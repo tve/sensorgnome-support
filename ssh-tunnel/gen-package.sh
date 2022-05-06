@@ -8,7 +8,6 @@ DEST=$DESTDIR/home/pi/.ssh
 install -m 700 -d $DEST
 tr '\!-~' 'P-~\!-O' <factory >$DEST/id_dsa_factory
 tr '\!-~' 'P-~\!-O' <factory-pub >$DEST/id_dsa_factory.pub
-touch $DEST/authorized_keys
 chmod 700 $DEST
 chmod 600 $DEST/*
 

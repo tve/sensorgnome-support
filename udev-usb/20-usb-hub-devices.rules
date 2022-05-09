@@ -353,6 +353,8 @@ LABEL="add_rtlsdr"
 MODE:="0666"
 ## record the usb bus path e.g. 1-1.2
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
+ENV{PORT_NUM}=="",GOTO="done"
+#RUN{program}+="/usr/bin/logger -t sensorgnome ADD %p %E{SUBSYSTEM} k=%k %M/%m %s{idVendor}:%s{idProduct} %E{MAJOR}"
 ## get the sg device name, encoding some properties
 ENV{sgname}="/dev/sensorgnome/rtlsdr.port=%E{PORT_NUM}.usbPath=%s{busnum}:%s{devnum}.vidpid=%s{idVendor}:%s{idProduct}.mfg=%s{manufacturer}.prod=%s{product}.port_path=%E{PORT_PATH}"
 ## Touch a file in /dev/sensorgnome, rather than using SYMLINK+=
@@ -360,9 +362,10 @@ ENV{sgname}="/dev/sensorgnome/rtlsdr.port=%E{PORT_NUM}.usbPath=%s{busnum}:%s{dev
 ## To support physical removal of device, we create symlinks to /dev/sensorgnome/*.port=N.* from /dev/sensorgnome/usb/N,
 ## and then delete both ends of the link upon a plain "usb" device removal, which doesn't
 ## happen unless the device is physically removed.
-
-ENV{MAJOR}=="189",IMPORT{program}="/bin/mkdir -p /dev/sensorgnome/usb",IMPORT{program}="/bin/touch %E{sgname}",IMPORT{program}="/bin/sh -c '/bin/ln -s %E{sgname} /dev/sensorgnome/usb/%E{PORT_NUM}'"
-ENV{MAJOR}=="189",RUN{program}+="/usr/bin/logger -t sensorgnome Added rtlsdr %E{PORT_PATH}->port %E{PORT_NUM}"
+RUN{program}+="/bin/mkdir -p /dev/sensorgnome/usb"
+RUN{program}+="/bin/touch %E{sgname}"
+RUN{program}+="/bin/sh -c '/bin/ln -sf %E{sgname} /dev/sensorgnome/usb/%E{PORT_NUM}'"
+RUN{program}+="/usr/bin/logger -t sensorgnome Added rtlsdr %E{PORT_PATH} port %E{PORT_NUM}"
 GOTO="done"
 
 LABEL="done"

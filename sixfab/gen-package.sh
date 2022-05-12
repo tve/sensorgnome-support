@@ -16,6 +16,13 @@ mv $DEST/core_manager* $DEST/core_manager
 install -m644 env.yaml $DEST/.env.yaml
 install -m755 eepflash.sh postinstall.sh $DEST
 
+# install sixfab UPS HAT python lib (SHA 04a9624 is V1 release)
+DEST2=$DESTDIR/opt/sensorgnome/ups-hat
+install -d $DEST2
+curl -L https://github.com/sixfab/sixfab-power-python-api/archive/04a9624.tar.gz | \
+    tar -C $DEST2 -zxf -
+(cd $DEST2; mv sixfab-power-python*/power_api .; rm -r sixfab-power-python*)
+
 install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
 install -d $DESTDIR/etc/udev/rules.d

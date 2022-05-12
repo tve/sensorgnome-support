@@ -12,7 +12,9 @@ path = sys.argv[1]
 # where the port.port section is the path through hubs
 # Ex: 1-1.1.2.3:1.1 (bus 1, ports 1, 1, 2, 3, configuration 1, interface 1)
 # http://gajjarpremal.blogspot.com/2015/04/sysfs-structures-for-linux-usb.html
-m = re.search(r'/\d-((\d+\.)*\d+):[\d.]+/', path)
+# rtlsdr devices don't end up with a :config.intf part and the venId:devId in the detection, so
+# we also have to support that
+m = re.search(r'/\d-((\d+\.)*\d+)($|:[\d.]+/)', path)
 if not m:
     sys.stderr.write(f"Error: {path} is not a valid path\n")
     sys.exit(1)

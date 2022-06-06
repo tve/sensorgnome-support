@@ -40,6 +40,21 @@ elif [[ "$1" == "capinfo" ]]; then
     else
         echo "off"
     fi
+elif [[ "$1" == "mode" ]]; then
+    if [[ "$2" == "WPA-PSK" ]] || [[ "$2" == "SAE" ]]; then
+        echo "Setting mode to $2"
+        sed -i -e "s/^wpa_passphrase=.*/wpa_passphrase=$3/" \
+               -e "s/^wpa=.*/wpa=2/" \
+               /etc/hostapd/hostapd.conf
+    #elif [[ "$2" == "OWE" ]]; then
+    #    echo "Setting mode to $2"
+    #    sed -i "s/^wpa_passphrase=.*/wpa_passphrase=xxx/" /etc/hostapd/hostapd.conf
+    else
+        echo "Unknown mode $2"
+        exit 1
+    fi
+    sed -i -e "s/^wpa_key_mgmt=.*/wpa_key_mgmt=$2/" /etc/hostapd/hostapd.conf
+    systemctl restart hostapd
 else
     echo "Starting up Wifi HotSpot"
     rfkill unblock wlan # prob not necessary but harmless
@@ -66,8 +81,6 @@ else
     SGID=$(cat /etc/sensorgnome/id)
     sed -i -e "s/^ssid=.*/ssid=SG-$SGID/" \
         /etc/hostapd/hostapd.conf
-#       -e "s/wpa_passphrase=.*/wpa_passphrase=SG-$SGID/" \
-#       -e "s/country_code=.*/country_code=\"$WIFI_COUNTRY\"/" \
 
     systemctl start hostapd
     systemctl start dnsmasq

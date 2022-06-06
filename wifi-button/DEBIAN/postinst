@@ -1,16 +1,20 @@
 #! /usr/bin/bash -e
 echo "Running sg-wifi-button postinst in $(pwd)"
-MISC=/opt/sensorgnome/wifi-button/misc # would be nice to derive that from some env var...
+SRC=/opt/sensorgnome/wifi-button # would be nice to derive that from some env var...
 
 # enable device tree overlay that turns on the button GPIO pull-up
-cp $MISC/gpio_pull.dtbo /boot/overlays # can't let dpkg do that 'cause chmod doesn't work on fat32
+cp $SRC/gpio_pull.dtbo /boot/overlays # can't let dpkg do that 'cause chmod doesn't work on fat32
 # enabling is now done dynamically if HAT detected
 # if ( ! grep -q dtoverlay=gpio_pull /boot/config.txt ); then
 #   printf "#load overlay for SG LED-pushbutton switch\ndtoverlay=gpio_pull\n" >> /boot/config.txt
 # fi
 
+# install hostapd config if not there, if it's there we should merge so we don't clobber current
+# setting, but that's too dicey for now...
+[[ -f /etc/hostapd/hostapd.conf ]] || cp $SRC/etc-hostapd.conf /etc/hostapd/hostapd.conf
+
 # install network.txt if not there
-#[[ -f /etc/sensorgnome/network.txt ]] || cp $MISC/network.txt /etc/sensorgnome
+#[[ -f /etc/sensorgnome/network.txt ]] || cp $SRC/network.txt /etc/sensorgnome
 
 # enable and start/restart gestures and wifi_init units
 for U in wifi-init gestures; do
@@ -41,5 +45,5 @@ egrep -q DNSMASQ_EXCEPT /etc/default/dnsmasq || echo DNSMASQ_EXCEPT=lo >> /etc/d
 
 # disable dhcp client on AP interface
 if ! egrep -q ap0 /etc/dhcpcd.conf; then \
-	  cat $MISC/etc-dhcpcd.conf >>/etc/dhcpcd.conf; \
+	  cat $SRC/etc-dhcpcd.conf >>/etc/dhcpcd.conf; \
 fi

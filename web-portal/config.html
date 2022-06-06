@@ -18,12 +18,12 @@
       <h2>Welcome to your new Sensorgnome</h2>
       <form action="/init/set-config" method="post">
           <p>This Sensorgnome has not yet been configured.<br>
-              Please enter a password that will be used
+              Please enter a Sensorgnome password that will be used
               to secure the Web UI and SSH login.<br>
               The password must be at least 8 characters long and will be checked against a 
               "top-100000 passwords" list.</p>
           </p>
-          <label for="password">Password:</label>
+          <label for="password">Sensorgnome Password:</label>
           <input type="text" name="password" id="password" required />
           <p>Enter a "short name" for this Sensorgnome. It will appear in the filename
               of all data files as well as in Sensorgnome lists on the Motus and Sensorgnome sites.<br>
@@ -32,8 +32,25 @@
           <label for="short_name">Short name:</label>
           <input type="text" name="short_name" id="short_name" minlength="3" maxlength="20"
                  pattern="[\p{Letter}0-9_]+" required />
+                
+          <!--
+          <p>Select an encryption mode for the WiFi Hot-Spot<br>
+            Note: WPA3 requires Windows 10+, MacOS 10.15+, Android 10+, iOS 13+, Linux kernel 3.8+.<br>
+            If you use modern devices WPA3 Enhance Open is a good choice, otherwise choose WPA2-PSK.
+          </p>
+          <input type="checkbox" name="wifi_mode" value="wpa2" id="wifi_wpa2" checked />
+          <label for="wifi_wpa2">WPA2-PSK (encrypted w/password)</label><br>
+          <input type="checkbox" name="wifi_mode" value="wpa3open" id="wifi_wpa3-open" />
+          <label for="wifi_wpa3-open">WPA3 Enhanced Open (no password but encrypted)</label><br>
+          <input type="checkbox" name="wifi_mode" value="wpa3sae" id="wifi_wpa3-sae" />
+          <label for="wifi_wpa3-sae">WPA3-SAE (encrypted w/password)</label><br>
+          </p>-->
+          <p>Enter a password for the WiFi Hot-Spot:</p>
+          <label for="wifi_pass">Hot-Spot Password:</label>
+          <input type="text" name="wifi_pass" id="wifi_pass" placeholder="wifi password" />
+
           <p style="color:red; font-weight:bold"><!--message--></p>
-          <input class="submit" type="submit" value="Submit" />
+          <input class="submit" type="submit" value="Submit" id=""submit" />
           <p>Note: if your form submission hangs and you are on Android, please ensure your
             cellular/mobile connection is disabled</p>
           <p>Sensorgnome IP addresses:</p>
@@ -41,4 +58,15 @@
       </form>
     </div>
   </body>
+  <script>
+    let submit = document.getElementById('submit')
+    submit.addEventListener('click', function() {
+      submit.disabled = true
+      submit.value = 'Submitting...'
+      window.setTimeout(function() {
+        button.disabled = false
+        button.value = 'Submit'
+      }, 20000)
+    })
+  </script>
 </html>

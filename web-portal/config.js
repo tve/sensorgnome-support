@@ -29,7 +29,8 @@ function ifaces_list() {
         let ifn = ifmap[e[0]] || e[0]
         for (let ifc of e[1]) {
             if (ifn !== 'lo' && ifc.family == 'IPv4') {
-                ifaces += `<li>${ifn}: <a href="https://${ifc.address}/">https://${ifc.address}/</a></li>\n`
+                let addr = ifc.address.replace(/\./g, '-') + ".my.local-ip.co"
+                ifaces += `<li>${ifn}: <a href="https://${addr}/">https://${addr}/</a></li>\n`
             }
         }
     }
@@ -43,6 +44,10 @@ function cap_enabled() {
         return info.toString().includes("on")
     } catch(e) { console.log("Error checking captive portal:", e) }
     return false
+}
+
+function check_pass(pwd) {
+
 }
 
 // respond using a string as a template and substituting fields <!--field--> from info.field
@@ -76,15 +81,34 @@ app.post('/set-config', (req, res) => {
     let pw = req.body.password
     let sn = req.body.short_name
     if (pw.length < 8 || pw.length > 32)
-        return respond(res, config_html, {message: "Password must be 8 to 32 characters long"})
+        return respond(res, config_html, {message: "SG Password must be 8 to 32 characters long"})
     if (sn < 3 || sn > 20)
         return respond(res, config_html, {message: "Short-name must be 3 to 20 characters long"})
     if (!sn.match(/^[\u0000-\u0019\u0021-\uFFFF_0-9]+$/))
         return respond(res, config_html, {message: "Short-name must contain only letters, digits and underscore"})
     if (top100k.includes(pw))
-        return respond(res, config_html, {message: "Please choose a less common password :-)"})
+        return respond(res, config_html, {message: "Please choose a less common Sensorgnome password :-)"})
 
-    // change the password
+    // figure out desired wifi
+    let mode = "WPA-PSK"
+    // if (req.body.wifi_mode == "wpa3open") mode = "OWE"
+    // else if (req.body.wifi_mode == "wpa3sae") mode = "SAE"
+    if (mode != "OWE") {
+        let pw = req.body.password
+        if (!(pw?.length > 0))
+            return respond(res, config_html, {message: "Hot-Spot password required"})
+        if (pw.length < 8 || pw.length > 32)
+            return respond(res, config_html, {message: "Hot-Spot Password must be 8 to 32 characters long"})
+        if (top100k.includes(pw))
+            return respond(res, config_html, {message: "Please choose a less common Hot-Spot password :-)"})
+    }
+
+    try {
+        CP.execFileSync(wifi_hotspot, ["mode", mode, pw||""])
+    } catch(e) { console.log("Error setting WiFi mode:", e) }
+    respond(res, config_html, {message: "Error setting WiFi mode"})
+
+    // change the Sensorgnome password
     try {
         CP.execFileSync("/usr/sbin/chpasswd", { input: `pi:${pw}\n` })
     } catch(e) {
@@ -92,7 +116,7 @@ app.post('/set-config', (req, res) => {
     }
     Fs.rmSync("public/need_init")
 
-        // set the shortname
+    // set the shortname
     if (!Fs.existsSync(deployment)) {
         try {
             Fs.writeFileSync(deployment, JSON.stringify({short_label: sn}))

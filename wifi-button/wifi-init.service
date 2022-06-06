@@ -7,7 +7,7 @@ After=sg-boot.service wpa_supplicant.service dhcpcd.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/sensorgnome/wifi-button/scripts/wifi-init.sh
+ExecStart=/opt/sensorgnome/wifi-button/wifi-init.sh
 SyslogIdentifier=sg-wifi-init
 RemainAfterExit=true
 

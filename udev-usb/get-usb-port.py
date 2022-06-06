@@ -2,7 +2,6 @@
 # Output the port number of a USB device given its sysfs device path
 import sys
 import re
-import subprocess
 
 PORT_MAP_FILE = "/etc/sensorgnome/usb-port-map.txt"
 
@@ -18,7 +17,7 @@ m = re.search(r'/\d-((\d+\.)*\d+)($|:[\d.]+/)', path)
 if not m:
     sys.stderr.write(f"Error: {path} is not a valid path\n")
     sys.exit(1)
-#print(f"match={m[1]}")
+# print(f"match={m[1]}")
 port_path = m[1]
 print(f"PORT_PATH={port_path.replace('.', '_')}")
 
@@ -26,10 +25,10 @@ print(f"PORT_PATH={port_path.replace('.', '_')}")
 try:
     with open(PORT_MAP_FILE, 'r') as file:
         for line in file:
-            l = re.search(r'^\s*([\d.]+)\s*->\s*(\d+)', line)
-            if l and l[1] == port_path:
-                print(f"PORT_NUM={l[2]}")
-                sys.stderr.write(f"USB path {port_path} -> port {l[2]}\n")
+            ln = re.search(r'^\s*([\d.]+)\s*->\s*(\d+)', line)
+            if ln and ln[1] == port_path:
+                print(f"PORT_NUM={ln[2]}")
+                sys.stderr.write(f"USB path {port_path} -> port {ln[2]}\n")
                 sys.exit(0)
 except OSError:
     sys.stderr.write(f"No port map file found at {PORT_MAP_FILE}")
@@ -41,7 +40,7 @@ m = list(map(int, m[1].split('.')))
 # we add 100.
 port = (m[0]-1)*100
 if len(m) == 1:
-    # device plugged into root hub, e.g. directly into rPi Zero micro-USB: first digit is port number
+    # device plugged into root hub, e.g. directly into rPi Zero micro-USB: first digit is port num
     port += m[0]
 elif len(m) == 2:
     # device plugged into port on internal hub: second digit is port number

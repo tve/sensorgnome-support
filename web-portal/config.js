@@ -18,7 +18,7 @@ const top100k = Fs.readFileSync("top-100k-passwords.txt").toString().split('\n')
 const sgid = Fs.readFileSync("/etc/sensorgnome/id").toString().trim()
 
 //const dnsmasq_conf = "/etc/dnsmasq.d/wifi-button.conf"
-const wifi_hotspot = "/opt/sensorgnome/wifi-button/scripts/wifi-hotspot.sh"
+const wifi_hotspot = "/opt/sensorgnome/wifi-button/wifi-hotspot.sh"
 const deployment = "/etc/sensorgnome/deployment.json"
 
 // return list of interface ip addresses as HTML list
@@ -102,12 +102,7 @@ app.post('/set-config', (req, res) => {
         if (top100k.includes(pw))
             return respond(res, config_html, {message: "Please choose a less common Hot-Spot password :-)"})
     }
-
-    try {
-        CP.execFileSync(wifi_hotspot, ["mode", mode, pw||""])
-    } catch(e) { console.log("Error setting WiFi mode:", e) }
-    respond(res, config_html, {message: "Error setting WiFi mode"})
-
+    
     // change the Sensorgnome password
     try {
         CP.execFileSync("/usr/sbin/chpasswd", { input: `pi:${pw}\n` })
@@ -125,6 +120,16 @@ app.post('/set-config', (req, res) => {
             return respond(res, config_html, {message: "Error changing password: " + e})
         }
     }        
+
+    // change the wifi async after a short delay so we can send a response back
+    setTimeout(() => {
+        try {
+            CP.execFileSync(wifi_hotspot, ["mode", mode, pw||""])
+        } catch(e) {
+            console.log("Error setting WiFi mode:", e)
+            respond(res, config_html, {message: "Error setting WiFi mode"})
+        }
+    }, 2000)
     
     let ifaces = ifaces_list()
     respond(res, success_html, {shortname: sn})

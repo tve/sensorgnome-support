@@ -19,6 +19,6 @@ else
 fi
 
 # it's still the original password, start the "initial config" app and force the user to change it
-[[ -f public/need_init ]] && /opt/sensorgnome/wifi-button/scripts/wifi-hotspot.sh on
+[[ -f public/need_init ]] && /opt/sensorgnome/wifi-button/wifi-hotspot.sh on
 echo "Starting initial config app"
 node ./config.js

@@ -1,6 +1,6 @@
 #! /bin/bash -ex
 ./gen-package.sh
-PI=pi@${1:-sgpi.local}
+PI=gnome@${1:-sgpi.local}
 PKG=sg-udev-usb_$(date +%Y.%j)_armhf.deb
 scp ../packages/$PKG $PI:
 ssh $PI sudo apt remove -y sg-udev-usb || true

@@ -13,7 +13,7 @@ if [[ -z "$rootfs" ]]; then
   echo "Cannot locate rootfs"
   exit 1
 fi
-if [[ ! -d $rootfs/home/pi ]]; then
+if [[ ! -d $rootfs/home/gnome ]]; then
   echo "Rootfs at $rootfs doesn't seem to be rPi image"
   exit 1
 fi
@@ -30,10 +30,10 @@ echo "Bootfs at $bootfs"
 touch $bootfs/ssh
 
 # copy ssh key
-mkdir -p $rootfs/home/pi/.ssh
-chmod 700 $rootfs/home/pi/.ssh
-cp $HOME/.ssh/$SSH_KEY $rootfs/home/pi/.ssh/authorized_keys
-sudo chown -R 1000 $rootfs/home/pi/.ssh || echo "Oops, can't give .ssh the correct owner"
+mkdir -p $rootfs/home/gnome/.ssh
+chmod 700 $rootfs/home/gnome/.ssh
+cp $HOME/.ssh/$SSH_KEY $rootfs/home/gnome/.ssh/authorized_keys
+sudo chown -R 1000 $rootfs/home/gnome/.ssh || echo "Oops, can't give .ssh the correct owner"
 
 # cause root partition to be sized to 4GB so there's room left for a data partition
 # note that the size is in 512-byte sectors

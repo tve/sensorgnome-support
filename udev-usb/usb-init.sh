@@ -12,13 +12,15 @@ mkdir -p /dev/sensorgnome/usb
 # if there is no port mapping file pick the most appropriate one based on the
 # rPi model.
 cd /opt/sensorgnome/udev-usb
-if ! [[ -f usb-port-map.txt ]]; then
+if ! [[ -f /etc/sensorgnome/usb-port-map.txt ]]; then
   # Raspberry Pi 4 Model B Rev 1.4
-  MODEL=$(sed -E -e 's/[^0-9]*\([0-9]+\)\s*Model\s*(\S+)\s.*/\1\2/' /proc/device-tree/model)
+  MODEL=$(sed -E -e 's/[^0-9]*([0-9]+)\s*Model\s*(\S+)\s.*/\1\2/' /proc/device-tree/model)
   if [[ -f usb-port-map-$MODEL.txt ]]; then
-    cp usb-port-map-$MODEL.txt usb-port-map.txt
+    echo "Model is $MODEL, selecting usb-port-map-$MODEL.txt"
+    cp usb-port-map-$MODEL.txt /etc/sensorgnome/usb-port-map.txt
   else
-    cp usb-port-map-generic.txt usb-port-map.txt
+    echo "Model is $MODEL, selecting usb-port-map-generic.txt"
+    cp usb-port-map-generic.txt /etc/sensorgnome/usb-port-map.txt
   fi
 fi
 
@@ -35,4 +37,3 @@ for dir in /media/disk*port*; do
         fi
     fi
 done
-

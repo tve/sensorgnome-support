@@ -7,9 +7,6 @@ if [[ -f /usr/lib/udev/rules.d/60-gpsd.rules ]]; then
     sed -i -e '/"10c4".*"ea60"/d' /usr/lib/udev/rules.d/60-gpsd.rules
 fi
 
-# //etc/sensorgnome exists, so this must be an update, put usb-port-map.txt there unless it exists
-[[ -f /etc/sensorgnome/usb-port-map.txt ]] || cp $SRC/usb-port-map.txt /etc/sensorgnome
-
 # cause udev to heed the new rules we may have just installed udev rules
 udevadm control --reload-rules
 

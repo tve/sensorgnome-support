@@ -4,7 +4,7 @@
 # the station will get a new ID...
 # Currently this only works for rpi, will need to be enhanced for BBB
 
-RPI_ID=$(grep Serial </proc/cpuinfo | /bin/sed -re 's/^.*(.{4})(.{4})/\1====\2/'  | tr [:lower:] [:upper:])
+RPI_ID=$(grep Serial /proc/cpuinfo | /bin/sed -re 's/^.*(.{4})(.{4})/\1====\2/'  | tr [:lower:] [:upper:])
 # Distinguish between "regular RPI" and "RPI Zero"
 CLASS=RPI
 egrep -qi zero /proc/device-tree/model && CLASS=RPZ

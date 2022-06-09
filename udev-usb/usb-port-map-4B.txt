@@ -1,0 +1,22 @@
+# Path -> port mappings
+
+# Mappings for rPi4B built-in ports
+#1.4 -> 1
+#1.3 -> 2
+#1.2 -> 3
+#1.1 -> 4
+
+# Mappings for 4-port hub plugged into rPi4B port 4
+1.4.1 -> 4
+1.4.2 -> 5
+1.4.3 -> 6
+1.4.4 -> 7
+
+# Mappings for 7-port Dlink DUBH7 hub plugged into rPi4B port 4
+#1.4.1 -> 4
+#1.4.2 -> 5
+#1.4.3 -> 6
+1.4.4.1 -> 7
+1.4.4.2 -> 8
+1.4.4.3 -> 9
+1.4.4.4 -> 0

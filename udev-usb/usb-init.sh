@@ -9,6 +9,19 @@
 # which would break hubman.js's Fs.watch() of it.
 mkdir -p /dev/sensorgnome/usb
 
+# if there is no port mapping file pick the most appropriate one based on the
+# rPi model.
+cd /opt/sensorgnome/udev-usb
+if ! [[ -f usb-port-map.txt ]]; then
+  # Raspberry Pi 4 Model B Rev 1.4
+  MODEL=$(sed -E -e 's/[^0-9]*\([0-9]+\)\s*Model\s*(\S+)\s.*/\1\2/' /proc/device-tree/model)
+  if [[ -f usb-port-map-$MODEL.txt ]]; then
+    cp usb-port-map-$MODEL.txt usb-port-map.txt
+  else
+    cp usb-port-map-generic.txt usb-port-map.txt
+  fi
+fi
+
 # - delete any empty unmounted directories named /media/disk_portX.Y
 #   These might be leftover from previous boots with disks plugged
 #   into different slots.  As a failsafe, if the directory isn't

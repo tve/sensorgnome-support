@@ -1,0 +1,19 @@
+# Path -> port mappings
+
+# Mappings for rPi Zero 2W built-in ports
+1 -> 1
+
+# Mappings for 4-port hub plugged into rPi Zero 2W
+1.1 -> 2
+1.2 -> 3
+1.3 -> 4
+1.4 -> 5
+
+# Mappings for 7-port Dlink DUBH7 hub plugged into rPi Zero 2W
+#1.1 -> 2
+#1.2 -> 3
+#1.3 -> 4
+1.4.1 -> 5
+1.4.2 -> 6
+1.4.3 -> 7
+1.4.4 -> 8

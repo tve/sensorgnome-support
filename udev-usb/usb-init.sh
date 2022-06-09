@@ -14,7 +14,11 @@ mkdir -p /dev/sensorgnome/usb
 cd /opt/sensorgnome/udev-usb
 if ! [[ -f /etc/sensorgnome/usb-port-map.txt ]]; then
   # Raspberry Pi 4 Model B Rev 1.4
-  MODEL=$(sed -E -e 's/[^0-9]*([0-9]+)\s*Model\s*(\S+)\s.*/\1\2/' /proc/device-tree/model)
+  # Raspberry Pi Zero 2 W Rev 1.0
+  MODEL=generic
+  egrep -q 'Pi 4 Model B' /proc/device-tree/model && MODEL=4B
+  egrep -q 'Pi 3 Model B' /proc/device-tree/model && MODEL=3B
+  egrep -q 'Pi Zero 2' /proc/device-tree/model && MODEL=Z2
   if [[ -f usb-port-map-$MODEL.txt ]]; then
     echo "Model is $MODEL, selecting usb-port-map-$MODEL.txt"
     cp usb-port-map-$MODEL.txt /etc/sensorgnome/usb-port-map.txt

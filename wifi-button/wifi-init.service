@@ -1,5 +1,5 @@
 [Unit]
-Description=Init wifi according to network.txt
+Description=Init wifi
 # wpa-supplicant is required because we talk to it
 # dhcpcd is required because it starts wpa_supplicant for the wlan interface
 Requires=sg-boot.service wpa_supplicant.service dhcpcd.service

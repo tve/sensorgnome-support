@@ -22,6 +22,7 @@ install -d $DEST2
 curl -L https://github.com/sixfab/sixfab-power-python-api/archive/04a9624.tar.gz | \
     tar -C $DEST2 -zxf -
 (cd $DEST2; mv sixfab-power-python*/power_api .; rm -r sixfab-power-python*)
+install -m 755 ups_manager.py $DEST2
 
 install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system

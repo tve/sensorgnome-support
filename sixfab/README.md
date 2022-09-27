@@ -4,6 +4,9 @@ SixFab HAT support (GPS & UPS)
 This directory contains support for the Sixfab "Raspberry Pi 4G/LTE Cellular Modem HAT" and
 the Sixfab "Power management & UPS HAT".
 
+Cheat sheet for all buttons and LEDs:
+https://docs.google.com/spreadsheets/d/1LPCTtBtX-1I8b2Jpw2137RnhGbd2eT4Sk81jD0RiH5c
+
 Cellular Modem HAT
 -----------------
 
@@ -32,4 +35,8 @@ rPi GPIO pins:
 Power management & UPS HAT
 -------------------------
 
-
+- microcontroller: Atmel SAMD21 (G18A-U)
+- battery charger: Ti BQ25703A
+- fuel gauge: Ti BQ27441A
+- input mosfet: OnSemi FDMC510P
+- other: Ti 2S402, Ti CDS17551, HK7AA, B219

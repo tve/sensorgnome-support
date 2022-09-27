@@ -3,7 +3,7 @@ DTP=/proc/device-tree/hat/product
 SGH=/dev/sensorgnome/hat
 mkdir -p /dev/sensorgnome
 
-# Detect Adafruit GPS HAT. It's EEPROM causes /proc/device-tree/hat/product to be set
+# Detect Adafruit GPS HAT. Its EEPROM causes /proc/device-tree/hat/product to be set
 if [[ -f $DTP ]] && grep -q "Ultimate GPS HAT" $DTP; then
     echo "Adafruit GPS HAT detected"
     /usr/bin/systemctl stop serial-getty@ttyS0.service
@@ -32,3 +32,5 @@ if [[ -f $SGH ]] && grep -q "Sixfab Base HAT" $SGH; then
     atcom -v -p /dev/ttyUSB3 --rts-cts --dsr-dtr 'AT$GPSSAV'
     exit 0
 fi
+
+echo "No GPS HAT detected"

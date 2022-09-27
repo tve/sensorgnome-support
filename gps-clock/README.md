@@ -54,10 +54,11 @@ signal in seconds.
 Running `sudo ntpshmmon` displays the info passed from gpsd to chrony via shared memory.
 The NTP0 lines correspond to basic NMEA stanzas, the NTP2 lines to PPS.
 
-Running `chronyc sources` (or `watch chronyc sources`) shows what chrony thinks. A `*` in the second
-character column indicates the current locked on source. A `x` indicates the backup source. The
-NMEA source is just the serial data, which is delayed and a bit inaccurate. The PPS source is the
-most accurate, if there is a good fix.
+Running `chronyc sources` (or `watch chronyc sources`) shows what chrony thinks.
+A `*` in the second character column indicates the current locked on source.
+A `x` indicates the backup source.
+The NMEA source is just the serial data, which is delayed and a bit inaccurate.
+The PPS source is the most accurate, if there is a good fix.
 
 Dev notes
 ---------

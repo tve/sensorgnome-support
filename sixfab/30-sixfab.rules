@@ -1,11 +1,4 @@
 # Rules to enable the sixfab core manager service if one of the modems is found
-ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="1bc7",GOTO="l1"
-GOTO="l2"
-LABEL="l1"
-RUN{program}+="/usr/bin/logger -t sensorgnome Found Telit modem"
-LABEL="l2"
-
-
 
 # Quectel
 ACTION=="add",SUBSYSTEM=="usb",ATTRS{idVendor}=="2c7c",ATTRS{idProduct}=="012?",GOTO="sixfab"

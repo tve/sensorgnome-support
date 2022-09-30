@@ -1,12 +1,14 @@
 # Path -> port mappings
 
 # Mappings for rPi4B built-in ports
-1.4 -> 1
-1.3 -> 2
-1.2 -> 3
-1.1 -> 4
+# Port 1: bottom outer port
+1.1 -> 1
+1.2 -> 2
+1.3 -> 3
+1.4 -> 4
 
 # Mappings for 4-port hub plugged into rPi4B port 4
+# Port 4: top blue USB3 port next to ethernet
 1.4.1 -> 4
 1.4.2 -> 5
 1.4.3 -> 6

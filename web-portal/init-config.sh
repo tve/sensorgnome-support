@@ -8,7 +8,13 @@ if egrep '^gnome:[^!x:][^:]{10,}' /etc/shadow; then
     rm -f public/need_init
 fi
 
-# it's still the original password, start the "initial config" app and force the user to change it
-[[ -f public/need_init ]] && /opt/sensorgnome/wifi-button/wifi-hotspot.sh on
+# start the landing page and initial config app
+if [[ -f public/need_init ]]; then
+    # initial config needed, ensure hotspot is on to do it
+    /opt/sensorgnome/wifi-button/wifi-hotspot.sh on
+else
+    # initial config done, for now unconditionally turn on hot-spot, should have a setting somewhere
+    /opt/sensorgnome/wifi-button/wifi-hotspot.sh on
+fi
 echo "Starting initial config app"
 node ./config.js

@@ -19,6 +19,7 @@ if [[ "$1" == "off" ]]; then
     iptables -t nat -D $ipt_route
     iptables -t nat -D $ipt_self
 elif [[ "$1" == "capon" ]]; then
+    # capon doesn't turn the interface on, it just configures iptables
     if ! iptables -t nat -n -L PREROUTING | egrep -q '192.168.7.2:82'; then
         echo "Turning captive portal on"
         iptables -t nat -D $ipt_reset
@@ -27,6 +28,7 @@ elif [[ "$1" == "capon" ]]; then
         echo "Captive portal already on"
     fi
 elif [[ "$1" == "capoff" ]]; then
+    # capoff doesn't turn the interface off, it just configures iptables
     if ! iptables -t nat -n -L PREROUTING | egrep -q '192.168.7.2:83'; then
         echo "Turning captive portal off"
         iptables -t nat -D $ipt_route

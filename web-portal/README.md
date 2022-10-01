@@ -11,11 +11,11 @@ Prerequisites:
 
 Thereafter:
 
-- Caddy runs on ports 80, 81, 82 and 443:
+- Caddy listens on ports 80, 81, 82 and 443:
   - port 80: is redirected by Caddy to 443 by virtue of Caddy being configured to run HTTPS
   - port 81: receives connections to port 80 from ethernet and client wifi,
-    it serves up a pretty basic "click here to redirect to to HTTPS" page
-  - port 82: receives connections to port 80 from the hotspot interface,
+    it serves up a pretty basic "click here to redirect to HTTPS" page
+  - port 82: receives connections to port 80 of the hotspot interface,
     it serves up a more involved redirect page that allows the captive portal stuff to be
     enabled/disabled
   - port 443: is configured to auto-issue self-signed certs 

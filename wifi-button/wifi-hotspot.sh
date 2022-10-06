@@ -47,6 +47,7 @@ elif [[ "$1" == "mode" ]]; then
         echo "Setting mode to $2"
         sed -i -e "s/^wpa_passphrase=.*/wpa_passphrase=$3/" \
                -e "s/^wpa=.*/wpa=2/" \
+               -e "/^ssid=/s/-init//" \
                /etc/hostapd/hostapd.conf
     #elif [[ "$2" == "OWE" ]]; then
     #    echo "Setting mode to $2"
@@ -78,11 +79,13 @@ else
     fi
 
     # Ensure hostapd has the correct ssid/psk
+    # Use different SSIDs for initial open hotspot than for "final" hostspot 'cause Android gets
+    # confused when it switches from password-less to w/password.
     # FIXME: should also set the country code, but there may not be a NETWORK.TXT file
     # But the "global" country code 00 is probably just fine
-    SGID=$(cat /etc/sensorgnome/id)
-    sed -i -e "s/^ssid=.*/ssid=SG-$SGID/" \
-        /etc/hostapd/hostapd.conf
+    SSID="SG-$(cat /etc/sensorgnome/id)"
+    egrep -q wpa=0 /etc/hostapd/hostapd.conf && SSID="$SSID-init"
+    sed -i -e "s/^ssid=.*/ssid=$SSID/" /etc/hostapd/hostapd.conf
 
     systemctl start hostapd
     systemctl start dnsmasq

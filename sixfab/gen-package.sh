@@ -24,10 +24,9 @@ install -d $DEST2
 wget https://github.com/sixfab/sixfab-power-python-api/archive/refs/heads/master.zip
 unzip master.zip sixfab-power-python-api-master/power_api/
 rm master.zip
-mv sixfab-power-python-api-master/power_api .
+mv sixfab-power-python-api-master/power_api $DEST2
 rmdir sixfab-power-python-api-master
 
-(cd $DEST2; mv sixfab-power-python*/power_api .; rm -r sixfab-power-python*)
 install -m 755 ups_manager.py $DEST2
 
 install -d $DESTDIR/etc/systemd/system

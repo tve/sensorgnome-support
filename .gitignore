@@ -4,3 +4,6 @@ funcube/firmware
 spellright.dict
 uploader/
 node_modules
+supervisor/main.js
+supervisor/README.md
+supervisor/telegraf-init.sh

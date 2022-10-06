@@ -129,7 +129,7 @@ app.post('/set-config', (req, res) => {
             console.log("Error setting WiFi mode:", e)
             respond(res, config_html, {message: "Error setting WiFi mode"})
         }
-    }, 2000)
+    }, 5000)
     
     let ifaces = ifaces_list()
     respond(res, success_html, {shortname: sn})

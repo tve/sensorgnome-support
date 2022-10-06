@@ -19,8 +19,14 @@ install -m755 eepflash.sh postinstall.sh $DEST
 # install sixfab UPS HAT python lib (SHA 04a9624 is V1 release)
 DEST2=$DESTDIR/opt/sensorgnome/ups-hat
 install -d $DEST2
-curl -L https://github.com/sixfab/sixfab-power-python-api/archive/04a9624.tar.gz | \
-    tar -C $DEST2 -zxf -
+# curl -L https://github.com/sixfab/sixfab-power-python-api/archive/04a9624.tar.gz | \
+#     tar -C $DEST2 -zxf -
+wget https://github.com/sixfab/sixfab-power-python-api/archive/refs/heads/master.zip
+unzip master.zip sixfab-power-python-api-master/power_api/
+rm master.zip
+mv sixfab-power-python-api-master/power_api .
+rmdir sixfab-power-python-api-master
+
 (cd $DEST2; mv sixfab-power-python*/power_api .; rm -r sixfab-power-python*)
 install -m 755 ups_manager.py $DEST2
 

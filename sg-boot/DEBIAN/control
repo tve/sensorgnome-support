@@ -4,7 +4,7 @@ Architecture: armhf
 Section: misc
 Priority: standard
 Essential: no
-Depends: parted, telegraf
+Depends: parted
 Homepage: https://github.com/sensorgnome-support
 Maintainer: TvE (tvoneicken@gmail.com)
 Description: Sensorgnome basic system initialization

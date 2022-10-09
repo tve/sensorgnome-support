@@ -22,15 +22,3 @@ hostname "$HOSTNAME"
 # Note: originally the model was derived from /proc/cpuinfo's REVISION field. Up-to-date info
 # on mapping that can be found at https://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
 # in case the method needs to be reverted.
-
-# Push ID into telegraf monitoring config
-if grep -q 'SGID' /etc/default/telegraf; then
-    sed -i "s/SGID=.*/SGID=$RPI_ID/" /etc/default/telegraf
-else
-    echo "SGID=$RPI_ID" >>/etc/default/telegraf
-fi
-
-if ! grep -q SGKEY /etc/default/telegraf; then
-    key=$(dd if=/dev/urandom bs=100 count=1 2>/dev/null | md5sum | sed -e 's/ .*//')
-    echo "SGKEY=$key" >>/etc/default/telegraf
-fi

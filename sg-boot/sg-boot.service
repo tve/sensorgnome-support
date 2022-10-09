@@ -1,7 +1,6 @@
 [Unit]
 Description=Init Sensorgnome system basics
 After=local-fs.target
-Before=telegraf.service
 
 [Service]
 Type=oneshot

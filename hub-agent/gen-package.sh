@@ -9,7 +9,7 @@ install -m 755 *.sh $DEST
 install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
 install -d $DESTDIR/etc/telegraf
-install -m 755 telegraf.conf $DESTDIR/etc/telegraf
+install -m 755 telegraf.conf $DESTDIR/etc/telegraf/telegraf.new
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

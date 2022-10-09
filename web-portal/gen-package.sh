@@ -22,7 +22,7 @@ install -d $DESTDIR/etc/sensorgnome
 # cat local-ip.pem local-ip-chain.pem >$DESTDIR/etc/sensorgnome/local-ip.pem
 curl -L -o $DESTDIR/etc/sensorgnome/local-ip.key http://local-ip.co/cert/server.key
 curl -L -o $DESTDIR/etc/sensorgnome/local-ip.pem http://local-ip.co/cert/server.pem
-curl -L -o - http://local-ip.co/cert/chain.pem | tee -a $DESTDIR/etc/sensorgnome/local-ip.pem
+curl -L -o - http://local-ip.co/cert/chain.pem >> $DESTDIR/etc/sensorgnome/local-ip.pem
 chmod 644 $DESTDIR/etc/sensorgnome/local-ip.*
 
 # Boilerplate package generation

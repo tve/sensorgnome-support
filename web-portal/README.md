@@ -11,6 +11,8 @@ Prerequisites:
 
 Thereafter:
 
+(The text below is slightly inaccurate since the switch of the hot-spot from https to http!)
+
 - Caddy listens on ports 80, 81, 82 and 443:
   - port 80: is redirected by Caddy to 443 by virtue of Caddy being configured to run HTTPS
   - port 81: receives connections to port 80 from ethernet and client wifi,

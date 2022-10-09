@@ -1,0 +1,10 @@
+#! /usr/bin/bash -e
+echo "Running sg-hub-agent postinst in $(pwd)"
+MISC=/opt/sensorgnome/hub-agent # would be nice to derive that from some env var...
+
+# Change logrotate config so old log files get a date extension to make it easier to sync them
+# to the hub
+if ! egrep -q dateext /etc/logrotate.d/rsyslog; then
+    sed -i 's/endscript/endscript\n\tdateext\n\tdateyesterday/' /etc/logrotate.d/rsyslog
+    rm -f /var/log/syslog.*
+fi

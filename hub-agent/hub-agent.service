@@ -1,0 +1,17 @@
+[Unit]
+Description=Sensorgnome hub monitoring and log shipping agent
+After=sg-boot.service
+Requires=sg-boot.service
+Before=telegraf.service
+
+[Service]
+Type=exec
+WorkingDirectory=/opt/sensorgnome/hub-agent
+ExecStartPre=/opt/sensorgnome/hub-agent/telegraf-init.sh
+ExecStart=/usr/bin/node hub-agent.js
+SyslogIdentifier=sg-hub-agent
+RestartSec=60s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

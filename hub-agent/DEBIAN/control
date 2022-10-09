@@ -1,0 +1,11 @@
+Package: sg-hub-agent
+Version: 1.0
+Architecture: armhf
+Section: misc
+Priority: standard
+Essential: no
+Depends: telegraf
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sensorgnome hub agent
+  Runs telegraf monitoring to ship info to sensorgnome.net, and runs an agent to ship logs.

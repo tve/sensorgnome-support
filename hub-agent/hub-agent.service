@@ -9,6 +9,7 @@ Type=exec
 WorkingDirectory=/opt/sensorgnome/hub-agent
 ExecStartPre=/opt/sensorgnome/hub-agent/telegraf-init.sh
 ExecStart=/usr/bin/node hub-agent.js
+StandardOutput=journal
 SyslogIdentifier=sg-hub-agent
 RestartSec=60s
 Restart=on-failure

@@ -5,7 +5,7 @@ mkdir $DESTDIR
 
 DEST=$DESTDIR/opt/sensorgnome/hub-agent
 install -d $DEST
-install -m 755 *.sh $DEST
+install -m 755 *.sh *.js $DEST
 install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
 install -d $DESTDIR/etc/telegraf

@@ -5,13 +5,6 @@ MISC=/opt/sensorgnome/hub-agent # would be nice to derive that from some env var
 # sg-boot owns /etc/telegraf.conf due to a boo-boo
 [[ -f /etc/telegraf/telegraf.new ]] && mv /etc/telegraf/telegraf.new /etc/telegraf/telegraf.conf
 
-# Change logrotate config so old log files get a date extension to make it easier to sync them
-# to the hub
-if ! egrep -q dateext /etc/logrotate.d/rsyslog; then
-    sed -i 's/endscript/endscript\n\tdateext\n\tdateyesterday/' /etc/logrotate.d/rsyslog
-    rm -f /var/log/syslog.*
-fi
-
 # enable and start/restart hub-agent units
 for U in hub-agent; do
     # code from debhelper's postinst-systemd-enable template

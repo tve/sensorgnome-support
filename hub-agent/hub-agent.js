@@ -87,8 +87,8 @@ class LogShipper {
     let reset = false
     // handle log file reset
     if (pos > size) {
-      console.log(f, ': reset from', pos, 'to', size, 'bytes')
-      pos = this.state.logs[f] = 0
+      console.log(`${f}: reset from ${pos} to ${size} bytes`)
+      pos = this.state.logs[f].pos = 0
       reset = true
     }
     if (pos == size) return cb(true)
@@ -102,7 +102,7 @@ class LogShipper {
     // send log file chunk
     this.sendData(f, reset, pos, rlen, buf, (result) => {
       if (result) {
-        this.state.logs[f].pos = pos + len
+        this.state.logs[f].pos = pos + rlen
         cb(true)
       } else {
         cb(false)

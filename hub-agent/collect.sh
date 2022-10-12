@@ -1,0 +1,47 @@
+#! /bin/bash
+
+echo -n "bootcount: "
+cat /etc/sensorgnome/bootcount
+echo -n "short_label: "
+jq .short_label /etc/sensorgnome/deployment.json
+echo "find_tags: " $(jq .module_options.find_tags.params /etc/sensorgnome/deployment.json)
+echo -n "version: "
+cat /etc/sensorgnome/version
+
+echo -n "default route: "
+ip route get 1.1.1.1 | head -1
+
+echo
+echo "ip addresses"
+ip addr
+echo
+echo "route table"
+ip route
+echo
+echo "wifi"
+wpa_cli status
+echo
+
+echo chrony
+chronyc -n sources
+echo
+
+echo packages
+sg="$(dpkg -s sensorgnome)"
+echo "pkg sensorgnome:" $(echo "$sg" | grep Version | cut -d' ' -f2)
+deps=$(echo "$sg" | grep Depends | sed -e 's/.*: //' -e 's/[(][^)]*[)],*//g')
+#echo "dependencies: $deps"
+for d in $deps; do
+   echo "pkg $d: $(dpkg -s $d | grep Version | cut -d' ' -f2)"
+done
+echo
+
+echo services
+for s in sg-control sg-web-portal gpsd gestures caddy chrony; do
+   echo "$s: $(systemctl status $s | grep Active)"
+done
+echo
+
+echo usb
+lsusb
+echo

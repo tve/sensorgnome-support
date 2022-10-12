@@ -1,10 +1,13 @@
 // hub-agent - simple log collector and remote execution agent
 // Copyright ©2022 Thorsten von Eicken, see LICENSE
 
+// this agent only uses modules built-into node.js, there is no npm install...
+
 const https = require('https')
 const fs = require('fs')
 const process = require('process')
 const Buffer = require('buffer').Buffer
+const cp = require('child_process')
 const stateFile = '/data/hub-agent.json'
 const logPrefixes = ['syslog', 'sg-control']
 const sghub = "www.sensorgnome.net"
@@ -16,6 +19,44 @@ const sgkey = fs.readFileSync('/etc/default/telegraf').toString().
 if (!sgid || !sgkey) {
   console.log("hub-agent: SGID or SGKEY not set, exiting")
   process.exit(1)
+}
+
+// async execFile
+function execFile(cmd, args) {
+  return new Promise((resolve, reject) => {
+      cp.execFile(cmd, args, (code, stdout, stderr) => {
+          //console.log(`Exec "${cmd} ${args.join(" ")}" -> code=${code} stdout=${stdout} stderr=${stderr}`)
+          if (code || stderr)  reject(new Error(`${cmd} ${args.join(" ")} failed: ${stderr||code}`))
+          else resolve(stdout)
+      })
+  })
+}
+
+// async sleep
+function sleep(time) { return new Promise(resolve => setTimeout(resolve, time)) }
+
+// async http request from https://medium.com/@gevorggalstyan/how-to-promisify-node-js-http-https-requests-76a5a58ed90c
+function request(path, method='GET', options={}, postData) {
+  const lib = https // url.startsWith('https://') ? https : http
+  const params = { method, host:sghub, port:443, path, ...options }
+
+  return new Promise((resolve, reject) => {
+    const req = lib.request(params, res => {
+      const data = []
+      res.on('data', chunk => { data.push(chunk) })
+      res.on('end', () => {
+        const body = Buffer.concat(data).toString()
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          reject(new Error(`HTTP status ${res.statusCode}: ${body.trim()}`))
+        } else {
+          resolve(body)
+        }
+      })
+    })
+    req.on('error', reject)
+    if (postData) { req.write(postData) }
+    req.end()
+  })
 }
 
 class LogShipper {
@@ -47,38 +88,26 @@ class LogShipper {
 
   // perform an http request to send data to sghub
   // when done, calls cb with true->success, false->failure
-  sendData(file, reset, pos, len, data, cb) {
+  async sendData(file, reset, pos, len, data) {
     //console.log("Sending", len, "bytes to", sghub)
+    const path = `/agent/logs?file=${file}&pos=${pos}&reset=${reset}`
     const options = {
-      hostname: sghub,
-      port: 443,
-      path: `/agent/logs?file=${file}&pos=${pos}&reset=${reset}`,
-      method: 'POST',
       headers: {
         'Content-Type': 'application/octet-stream',
         'Content-Length': len,
       },
       auth: `${sgid}:${sgkey}`,
     }
-    const req = https.request(options, res => {
-      res.on('data', d => {
-        process.stdout.write(d)
-      })
-      const ok = res.statusCode == 200 || res.statusCode == 204
-      if (!ok) console.log(`${file} statusCode: ${res.statusCode}`)
-      cb(ok)
-    })
-    req.on('error', error => {
-      console.error(`${file}: ${error}`)
-      cb(false)
-    })
-    req.write(data)
-    req.end()
+    try {
+      return await request(path, 'POST', options, data)
+    } catch (e) {
+      console.log(`${file}: ${e}`)
+      throw new Error("sendData failed")
+    }
   }
 
   // process one log file
-  // when done, call cb with true->success, false->failure
-  processFile(f, cb) {
+  async processFile(f) {
     const path = '/var/log/'+f
     const stat = fs.statSync(path)
     const size = stat.size
@@ -91,7 +120,7 @@ class LogShipper {
       pos = this.state.logs[f].pos = 0
       reset = true
     }
-    if (pos == size) return cb(true)
+    if (pos == size) return
     // read the file chunk
     const len = Math.min(size - pos, 16*1024)
     if (len < size-pos) console.log(`${f}: sending ${len} of ${size-pos} bytes`)
@@ -100,51 +129,54 @@ class LogShipper {
     const buf = Buffer.alloc(len)
     const rlen = fs.readSync(fd, buf, 0, len, pos)
     // send log file chunk
-    this.sendData(f, reset, pos, rlen, buf, (result) => {
-      if (result) {
-        this.state.logs[f].pos = pos + rlen
-        cb(true)
-      } else {
-        cb(false)
-      }
-    })
+    await this.sendData(f, reset, pos, rlen, buf)
+    this.state.logs[f].pos = pos + rlen
   }
 
   // process all log files
-  processAll(cb) {
-    
-    const processOne = (cb) => {
-      const f = logFiles.shift()
-      if (!f) return cb(true)
-      this.processFile(f, (result) => {
-        if (result) processOne(cb)
-        else cb(false)
-      })
-    }
-    
-    const logFiles = this.logFileList()
+  async processAll() {
+        const logFiles = this.logFileList()
     const now = (new Date()).toTimeString().replace(/ .*/, '')
     console.log(`${now}: Processing ${logFiles.length} log files`)
     //console.log(logFiles.join(', '))
 
-    processOne((result) => {
-      if (result) {
-        fs.writeFileSync(stateFile, JSON.stringify(this.state))
-        console.log("Done")
-      } else {
-        console.log("Aborting")
-      }
-      cb()
-    })
+    for (const f of logFiles) {
+      await this.processFile(f)
+    }
+    fs.writeFileSync(stateFile, JSON.stringify(this.state))
   }
-  
+}
+
+async function shipInfo() {
+  try {
+    const info = await execFile('/usr/bin/bash', ['collect.sh'])
+    const options = {
+      headers: {
+        'Content-Type': 'application/text',
+        'Content-Length': info.length,
+      },
+      auth: `${sgid}:${sgkey}`,
+    }
+    await request(`/agent/info`, 'POST', options, info)
+  } catch (e) {
+    console.log(`shipInfo: ${e}`)
+    throw new Error("shipInfo failed")
+  }
 }
 
 const shipper = new LogShipper()
-function doit() {
-  shipper.processAll(() => {
+async function doit() {
+  while (true) {
+    try {
+      await shipInfo()
+      await shipper.processAll()
+    } catch (e) {
+      console.log("Aborting", e)
+    }
+    return
     const delay = period - 30 + Math.random()*60
-    setTimeout(doit, delay*1000)
-  })
+    console.log("Sleeping", delay, "seconds")
+    await sleep(delay*1000)
+  }
 }
-doit()
+doit().then(()=>{console.log("Done")})

@@ -168,7 +168,7 @@ async function shipInfo() {
 const shipper = new LogShipper()
 async function doit() {
   while (true) {
-    try { await shipInfo() } catch() {}
+    try { await shipInfo() } catch(e) {}
     try {
       await shipper.processAll()
     } catch (e) {

@@ -34,6 +34,13 @@ for U in wifi-init gestures; do
             deb-systemd-helper update-state $U >/dev/null || true
         fi
     fi
+
+    # Restart service, if it is running
+    systemctl daemon-reload
+    if systemctl is-active --quiet $U.service; then
+        echo "Restarting $U.service"
+        systemctl restart $U.service
+    fi
 done
 
 # disable hostapd and dnsmasq auto-startup, we want to start them ourselves when appropriate

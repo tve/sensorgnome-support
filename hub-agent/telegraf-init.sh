@@ -3,9 +3,9 @@
 # Push ID into telegraf monitoring config
 SGID=$(cat /etc/sensorgnome/id)
 if grep -q 'SGID' /etc/default/telegraf; then
-    sed -i "s/SGID=.*/SGID=$RPI_ID/" /etc/default/telegraf
+    sed -i "s/SGID=.*/SGID=SG-$RPI_ID/" /etc/default/telegraf
 else
-    echo "SGID=$RPI_ID" >>/etc/default/telegraf
+    echo "SGID=SG-$RPI_ID" >>/etc/default/telegraf
 fi
 
 if ! grep -q SGKEY /etc/default/telegraf; then

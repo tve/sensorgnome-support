@@ -11,7 +11,8 @@ const cp = require('child_process')
 const stateFile = '/data/hub-agent.json'
 const logPrefixes = ['syslog', 'sg-control']
 const sghub = "www.sensorgnome.net"
-const period = 300 // in seconds +/-60
+let period = 300 // starting period in seconds +/-60
+const max_period = 3600 // period increases by 1.5x until max_period
 
 const sgid = fs.readFileSync('/etc/sensorgnome/id').toString().trim()
 const sgkey = fs.readFileSync('/etc/default/telegraf').toString().
@@ -167,14 +168,14 @@ async function shipInfo() {
 const shipper = new LogShipper()
 async function doit() {
   while (true) {
+    try { await shipInfo() } catch() {}
     try {
-      await shipInfo()
       await shipper.processAll()
     } catch (e) {
       console.log("Aborting", e)
     }
-    return
     const delay = period - 30 + Math.random()*60
+    period = Math.min(max_period, period * 1.5)
     console.log("Sleeping", delay, "seconds")
     await sleep(delay*1000)
   }

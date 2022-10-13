@@ -4,7 +4,7 @@ Architecture: armhf
 Section: misc
 Priority: standard
 Essential: no
-Depends: telegraf
+Depends: telegraf, jq
 Homepage: https://github.com/sensorgnome-support
 Maintainer: TvE (tvoneicken@gmail.com)
 Description: Sensorgnome hub agent

@@ -16,5 +16,5 @@ else
     # initial config done, for now unconditionally turn on hot-spot, should have a setting somewhere
     /opt/sensorgnome/wifi-button/wifi-hotspot.sh on
 fi
-echo "Starting initial config app"
+echo "Starting web portal/landing page app"
 node ./config.js

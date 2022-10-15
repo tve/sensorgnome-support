@@ -9,10 +9,11 @@ const process = require('process')
 const Buffer = require('buffer').Buffer
 const cp = require('child_process')
 const stateFile = '/data/hub-agent.json'
-const logPrefixes = ['syslog', 'sg-control']
+const logPrefixes = ['syslog', 'sg-control', 'upgrade.log']
 const sghub = "www.sensorgnome.net"
 let period = 300 // starting period in seconds +/-60
 const max_period = 3600 // period increases by 1.5x until max_period
+const chunkSize = 128*1024 // upload at most this much per log file at a time
 
 const sgid = fs.readFileSync('/etc/sensorgnome/id').toString().trim()
 const sgkey = fs.readFileSync('/etc/default/telegraf').toString().
@@ -123,7 +124,7 @@ class LogShipper {
     }
     if (pos == size) return
     // read the file chunk
-    const len = Math.min(size - pos, 16*1024)
+    const len = Math.min(size - pos, chunkSize)
     if (len < size-pos) console.log(`${f}: sending ${len} of ${size-pos} bytes`)
     else console.log(`${f}: sending ${len} bytes`)
     const fd = fs.openSync(path, 'r')

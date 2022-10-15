@@ -1,0 +1,7 @@
+/var/log/upgrade.log {
+    daily
+    rotate 7
+    copytruncate
+    dateext
+    dateyesterday
+}

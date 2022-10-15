@@ -32,7 +32,5 @@ echo ""
 
 # Boilerplate package generation
 sed -e "/^Version/s/:.*/: $(TZ=PST8PDT date +%Y.%j)/" -i $DESTDIR/DEBIAN/control # set version: YYYY.DDD
-mkdir -p packages
-dpkg-deb --root-owner-group --build $DESTDIR packages
+dpkg-deb --root-owner-group --build $DESTDIR ../packages
 # dpkg-deb --contents ../packages
-ls -lh packages

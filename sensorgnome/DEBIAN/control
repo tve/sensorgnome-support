@@ -1,0 +1,13 @@
+Package: sensorgnome
+Version: 1.0
+Architecture: armhf
+Section: misc
+Priority: standard
+Essential: no
+Depends: fcd, find-tags-unifile, vamp-alsa-host, vamp-plugins, sensorgnome-librtlsdr,
+    sg-boot, sg-gps-clock, sg-udev-usb, sg-web-portal, sg-wifi-button,
+    sg-control, sg-upgrader, sg-sixfab, sg-hub-agent
+Homepage: https://github.com/tve/sensorgnome-support/sensorgnome
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sensorgnome software system 
+  Empty package that depends on all the packages that make-up the sensorgnome software.

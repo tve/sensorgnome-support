@@ -36,4 +36,10 @@ sync
 # boot is a fat32 filesystem where the user can edit some config files before first boot
 echo "Moving data from /boot to /etc/sensorngome"
 shopt -s nullglob
-mv $(ls /boot/*.{txt,json,sqlite,csv} | egrep -v '(cmdline|config|issue)') /etc/sensorgnome || true
+[[ -n $(echo /boot/*tag*.sqlite) ]] && cp /boot/*tag*.sqlite /etc/sensorgnome/SG_tag_database.sqlite
+if [[ -n $(echo /boot/*.pub) ]]; then
+    mkdir -p /home/gnome/.ssh
+    cat /boot/*.pub >>/home/gnome/.ssh/authorized_keys
+    chown -R gnome /home/gnome/.ssh
+    chmod 644 /home/gnome/.ssh/*
+fi

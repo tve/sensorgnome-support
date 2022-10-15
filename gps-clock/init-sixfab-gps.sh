@@ -14,7 +14,7 @@ mkdir -p /dev/sensorgnome
 # We do have a udev rule in the sg-sixfab package that creates the $SGH file, though...
 if [[ -f $SGH ]] && grep -q "Sixfab Base HAT" $SGH; then
     echo "Sixfab Base HAT detected"
-    ls -ls /dev/serial/by-id  # FIXME: this will initially fail, svr restarts, then succeeds
+    ls -ls /dev/serial/by-id  # FIXME: this will initially fail, svc restarts, then succeeds
     ttygps=/dev/serial/by-id/*LE91*-if04-*
     ttyat=/dev/serial/by-id/*LE91*-if05-*
     sudo ln -f -s $ttygps /dev/sensorgnome/gps.port=0.pps=1.kind=hat.model=sixfab

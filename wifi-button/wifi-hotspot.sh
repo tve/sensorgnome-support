@@ -83,7 +83,7 @@ else
     # confused when it switches from password-less to w/password.
     # FIXME: should also set the country code, but there may not be a NETWORK.TXT file
     # But the "global" country code 00 is probably just fine
-    SSID="SG-$(cat /etc/sensorgnome/id)"
+    SSID=$(cat /etc/sensorgnome/id)
     egrep -q wpa=0 /etc/hostapd/hostapd.conf && SSID="$SSID-init"
     sed -i -e "s/^ssid=.*/ssid=$SSID/" /etc/hostapd/hostapd.conf
 

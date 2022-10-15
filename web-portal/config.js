@@ -53,7 +53,7 @@ function check_pass(pwd) {
 // respond using a string as a template and substituting fields <!--field--> from info.field
 function respond(res, template, info) {
     info.ipaddrs = ifaces_list()
-    info.sgid = "SG-"+sgid
+    info.sgid = sgid
     let html = template.replace(/<!--([a-z]+)-->/g, (m, p1) => info[p1]||"")
     html = html.replace(/\/\*([a-z]+)\*\//g, (m, p1) => info[p1]||"")
     res.end(html)

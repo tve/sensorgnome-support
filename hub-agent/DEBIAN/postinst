@@ -5,6 +5,9 @@ MISC=/opt/sensorgnome/hub-agent # would be nice to derive that from some env var
 # sg-boot owns /etc/telegraf.conf due to a boo-boo
 [[ -f /etc/telegraf/telegraf.new ]] && mv /etc/telegraf/telegraf.new /etc/telegraf/telegraf.conf
 
+# dir for hub-agent state
+mkdir -p /var/lib/sensorgnome
+
 # enable and start/restart hub-agent units
 for U in sg-hub-agent; do
     # code from debhelper's postinst-systemd-enable template

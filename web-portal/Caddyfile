@@ -46,16 +46,16 @@
 
 # Site on HTTPS with any IP address using a wild-card cert for my.local-ip.co
 :443 {
-        log {
-                format filter {
-                        wrap console
-                        fields {
-                                request>headers delete
-                                resp_headers delete
-                                user_id replace "HTTPS-443"
-                        }
-                }
-        }
+        # log {
+        #         format filter {
+        #                 wrap console
+        #                 fields {
+        #                         request>headers delete
+        #                         resp_headers delete
+        #                         user_id replace "HTTPS-443"
+        #                 }
+        #         }
+        # }
         import main
         # ensure we get automatic certs and redirect from HTTP
         tls /etc/sensorgnome/local-ip.pem /etc/sensorgnome/local-ip.key
@@ -63,16 +63,16 @@
 
 # Site on HTTP for hotspot interface only
 :88 {
-        log {
-                format filter {
-                        wrap console
-                        fields {
-                                request>headers delete
-                                resp_headers delete
-                                user_id replace "HTTP-88"
-                        }
-                }
-        }
+        # log {
+        #         format filter {
+        #                 wrap console
+        #                 fields {
+        #                         request>headers delete
+        #                         resp_headers delete
+        #                         user_id replace "HTTP-88"
+        #                 }
+        #         }
+        # }
         #bind 192.168.7.2 ,_ doesn't work 'cause ap0 may not have an IP address'
         @denied not remote_ip 192.168.7.0/24
         respond @denied 403 {

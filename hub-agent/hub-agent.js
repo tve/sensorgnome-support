@@ -58,7 +58,6 @@ function request(url, method='GET', options={}, postData) {
         if (res.statusCode < 200 || res.statusCode >= 300) {
           reject(new Error(`HTTP status ${res.statusCode}: ${body.trim()}`))
         } else {
-          console.log("RESPONSE:", body)
           resolve(body)
         }
       })
@@ -163,7 +162,7 @@ async function shipInfo() {
     let info = await execFile('/usr/bin/bash', ['collect.sh'])
     // query sg-control for its monitoring contribution
     try {
-      const i = await request('http://localhost:8080/monitoring')
+      const i = await request(sgmon)
       info += `\n\json: ${i}`
     } catch (e) {
       info += `\n\njson: { error: ${e.message} }`

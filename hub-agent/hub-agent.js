@@ -4,13 +4,15 @@
 // this agent only uses modules built-into node.js, there is no npm install...
 
 const https = require('https')
+const http = require('http')
 const fs = require('fs')
 const process = require('process')
 const Buffer = require('buffer').Buffer
 const cp = require('child_process')
 const stateFile = '/var/lib/sensorgnome/hub-agent.json'
 const logPrefixes = ['syslog', 'sg-control', 'upgrade.log']
-const sghub = "www.sensorgnome.net"
+const sghub = "https://www.sensorgnome.net"
+const sgmon = "http://localhost:8080/monitoring"
 let period = 300 // starting period in seconds +/-60
 const max_period = 3600 // period increases by 1.5x until max_period
 const chunkSize = 128*1024 // upload at most this much per log file at a time
@@ -38,9 +40,14 @@ function execFile(cmd, args) {
 function sleep(time) { return new Promise(resolve => setTimeout(resolve, time)) }
 
 // async http request from https://medium.com/@gevorggalstyan/how-to-promisify-node-js-http-https-requests-76a5a58ed90c
-function request(path, method='GET', options={}, postData) {
-  const lib = https // url.startsWith('https://') ? https : http
-  const params = { method, host:sghub, port:443, path, ...options }
+function request(url, method='GET', options={}, postData) {
+  const m = url.match(/^(https?):\/\/([^:/]+)(:[0-9]+)?(\/.*)$/)
+  if (!m) throw new Error(`Invalid URL: ${url}`)
+  const lib = m[1] == 'https' ? https : http
+  const host = m[2]
+  const port = m[3] ? m[3].substr(1) : (m[1] == 'https' ? 443 : 80)
+  const path = m[4] || '/'
+  const params = { method, host, port, path, ...options }
 
   return new Promise((resolve, reject) => {
     const req = lib.request(params, res => {
@@ -51,6 +58,7 @@ function request(path, method='GET', options={}, postData) {
         if (res.statusCode < 200 || res.statusCode >= 300) {
           reject(new Error(`HTTP status ${res.statusCode}: ${body.trim()}`))
         } else {
+          console.log("RESPONSE:", body)
           resolve(body)
         }
       })
@@ -101,7 +109,7 @@ class LogShipper {
       auth: `${sgid}:${sgkey}`,
     }
     try {
-      return await request(path, 'POST', options, data)
+      return await request(sghub + path, 'POST', options, data)
     } catch (e) {
       console.log(`${file}: ${e}`)
       throw new Error("sendData failed")
@@ -151,7 +159,17 @@ class LogShipper {
 
 async function shipInfo() {
   try {
-    const info = await execFile('/usr/bin/bash', ['collect.sh'])
+    // run collect.sh for general OS info
+    let info = await execFile('/usr/bin/bash', ['collect.sh'])
+    // query sg-control for its monitoring contribution
+    try {
+      const i = await request('http://localhost:8080/monitoring')
+      info += `\n\json: ${i}`
+    } catch (e) {
+      info += `\n\njson: { error: ${e.message} }`
+      console.log('shipInfo: ' + e)
+    }
+    // send the data to the hub
     const options = {
       headers: {
         'Content-Type': 'application/text',
@@ -159,7 +177,7 @@ async function shipInfo() {
       },
       auth: `${sgid}:${sgkey}`,
     }
-    await request(`/agent/info`, 'POST', options, info)
+    await request(sghub + `/agent/info`, 'POST', options, info)
   } catch (e) {
     console.log(`shipInfo: ${e}`)
     throw new Error("shipInfo failed")

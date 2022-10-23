@@ -1,4 +1,6 @@
 #! /bin/bash
+# Simple script to collect a bunch of operating system info and output it
+# in a simple format on stdout.
 
 echo -n "bootcount: "
 cat /etc/sensorgnome/bootcount
@@ -29,7 +31,7 @@ echo
 echo packages
 sg="$(dpkg -s sensorgnome)"
 echo "pkg sensorgnome:" $(echo "$sg" | grep Version | cut -d' ' -f2)
-deps=$(echo "$sg" | grep Depends | sed -e 's/.*: //' -e 's/[(][^)]*[)],*//g')
+deps=$(echo "$sg" | grep Depends | sed -E -e 's/.*: //' -e 's/([(][^)]*[)])?,*//g')
 #echo "dependencies: $deps"
 for d in $deps; do
    echo "pkg $d: $(dpkg -s $d | grep Version | cut -d' ' -f2)"

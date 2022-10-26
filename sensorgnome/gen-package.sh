@@ -10,14 +10,12 @@ TZ=PST8PDT date +'SG %Y-%j' > $DEST/version
 
 # Figure out exact versions of sensorgnome dependencies
 cp -r DEBIAN $DESTDIR
-# wget https://sensorgnome.s3.us-east-2.amazonaws.com/dists/testing/main/binary-armhf/Packages
-# deps=$(awk -v ORS= '/^Depends:/,/[^,]$/' DEBIAN/control | sed -e 's/^\S*://' -e 's/ *, */ /g')
-# echo "Versions found in repo:"
-# for d in $deps; do
-#     version=$(awk '/^Package:/{pkg=$2} /^Version/&&pkg=="'$d'"{print $2}' Packages | sort | tail -1)
-#     echo "$d: $version"
-#     sed -ie "s/$d/$d (>= $version)/" $DESTDIR/DEBIAN/control
-# done
+# get version of sg-control package 'cause it's not in this repo
+wget https://sensorgnome.s3.us-east-2.amazonaws.com/dists/testing/main/binary-armhf/Packages
+version=$(egrep -A1 'Package: sg-control' Packages | egrep Version | sort | tail -1 | cut "-d " -f2)
+echo "sg-control $version"
+sed -ie "s/sg-control/sg-control (>= $version)/" $DESTDIR/DEBIAN/control
+# handle local packages
 for d in ../packages/*.deb; do
     version=$(echo $d | sed -r -e 's/.*_(.*)_.*/\1/')
     pkg=$(basename $d | sed -e 's/_.*//')

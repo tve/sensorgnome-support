@@ -165,7 +165,7 @@ async function shipInfo() {
       const i = await request(sgmon)
       info += `\n\json: ${i}`
     } catch (e) {
-      info += `\n\njson: { error: ${e.message} }`
+      info += `\n\njson: { "error": "${e.message.replace(/"/g, '\"')}" }`
       console.log('shipInfo: ' + e)
     }
     // send the data to the hub

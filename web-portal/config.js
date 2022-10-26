@@ -19,7 +19,7 @@ const sgid = Fs.readFileSync("/etc/sensorgnome/id").toString().trim()
 
 //const dnsmasq_conf = "/etc/dnsmasq.d/wifi-button.conf"
 const wifi_hotspot = "/opt/sensorgnome/wifi-button/wifi-hotspot.sh"
-const deployment = "/etc/sensorgnome/deployment.json"
+const acquisition = "/etc/sensorgnome/acquisition.json"
 
 // return list of interface ip addresses as HTML list
 function ifaces_list() {
@@ -112,10 +112,13 @@ app.post('/set-config', (req, res) => {
     Fs.rmSync("public/need_init")
 
     // set the shortname
-    if (!Fs.existsSync(deployment)) {
+    if (!Fs.existsSync(acquisition)) {
         try {
-            Fs.writeFileSync(deployment, JSON.stringify({short_label: sn}))
+            let acq = Fs.readFileSync(acquisition, {encoding: 'utf8'})
+            acq.replace(/"short_label":\s*"[^"]*"/s, `"short_label": "${sn}"`)
+            Fs.writeFileSync(acquisition, acq)
             CP.execFileSync("systemctl", ["restart", "sg-control"]) // yuck...
+            CP.execFileSync("systemctl", ["restart", "sg-hub-agent"]) // yuck...
         } catch(e) {
             return respond(res, config_html, {message: "Error changing password: " + e})
         }

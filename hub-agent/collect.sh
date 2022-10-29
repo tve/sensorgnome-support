@@ -2,7 +2,7 @@
 # Simple script to collect a bunch of operating system info and output it
 # in a simple format on stdout.
 
-echo -n "date: $(date +%s) $(date)"
+echo "date: $(date +%s) $(date)"
 echo -n "bootcount: "
 cat /etc/sensorgnome/bootcount
 echo -n "short_label: "

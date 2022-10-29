@@ -295,13 +295,19 @@ SUBSYSTEMS=="usb", ATTRS{idVendor}=="1f4d", ATTRS{idProduct}=="d803",GOTO="add_r
 GOTO="done"
 
 LABEL="add_rtlsdr"
-# Can't use 'add' action, symlink gets removed due to subseq bind
-ACTION!="bind",GOTO="done"
+RUN{program}+="/usr/bin/logger -t sensorgnome DBG RTLSDR"
+# Can't just use 'add' action, symlink gets removed due to subseq bind, but there's no bind
+# at boot time on a fast rpi4, so need both !?
+ACTION=="add",GOTO="rtlsdr2"
+ACTION=="bind",GOTO="rtlsdr2"
+GOTO="done"
+
+LABEL="rtlsdr2"
+RUN{program}+="/usr/bin/logger -t sensorgnome DBG add/bind RTLSDR %p %k %s{idVendor}:%s{idProduct}"
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
 ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/rtlsdr.port=%E{PORT_NUM}.usbPath=%s{busnum}:%s{devnum}.port_path=%E{PORT_PATH}.vidpid=%s{idVendor}:%s{idProduct}.mfg=%s{manufacturer}.prod=%s{product}"
 ENV{PORT_NUM}!="",RUN{program}+="/usr/bin/logger -t sensorgnome Added rtlsdr %E{PORT_PATH}->port %E{PORT_NUM}"
 GOTO="done"
-
 
 
 LABEL="done"

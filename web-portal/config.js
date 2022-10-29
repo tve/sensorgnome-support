@@ -114,7 +114,7 @@ app.post('/set-config', (req, res) => {
     // set the shortname
     try {
         let acq = Fs.readFileSync(acquisition, {encoding: 'utf8'})
-        acq.replace(/"short_label":\s*"[^"]*"/s, `"short_label": "${sn}"`)
+        acq = acq.replace(/"label":\s*"[^"]*"/s, `"label": "${sn}"`)
         Fs.writeFileSync(acquisition, acq)
         CP.execFileSync("systemctl", ["restart", "sg-control"]) // yuck...
         CP.execFileSync("systemctl", ["restart", "sg-hub-agent"]) // yuck...

@@ -2,11 +2,11 @@
 # Simple script to collect a bunch of operating system info and output it
 # in a simple format on stdout.
 
-echo "date: $(date +%s) $(date)"
+echo "date: $(date +%s) $(date -u)"
 echo -n "bootcount: "
 cat /etc/sensorgnome/bootcount
-echo -n "short_label: "
-jq .short_label /etc/sensorgnome/acquisition.json
+echo -n "label: "
+jq .label /etc/sensorgnome/acquisition.json
 echo -n "lotek_freq: "
 jq .lotek_freq /etc/sensorgnome/acquisition.json
 echo "find_tags: " $(jq .module_options.find_tags.params /etc/sensorgnome/acquisition.json)

@@ -112,17 +112,15 @@ app.post('/set-config', (req, res) => {
     Fs.rmSync("public/need_init")
 
     // set the shortname
-    if (!Fs.existsSync(acquisition)) {
-        try {
-            let acq = Fs.readFileSync(acquisition, {encoding: 'utf8'})
-            acq.replace(/"short_label":\s*"[^"]*"/s, `"short_label": "${sn}"`)
-            Fs.writeFileSync(acquisition, acq)
-            CP.execFileSync("systemctl", ["restart", "sg-control"]) // yuck...
-            CP.execFileSync("systemctl", ["restart", "sg-hub-agent"]) // yuck...
-        } catch(e) {
-            return respond(res, config_html, {message: "Error changing password: " + e})
-        }
-    }        
+    try {
+        let acq = Fs.readFileSync(acquisition, {encoding: 'utf8'})
+        acq.replace(/"short_label":\s*"[^"]*"/s, `"short_label": "${sn}"`)
+        Fs.writeFileSync(acquisition, acq)
+        CP.execFileSync("systemctl", ["restart", "sg-control"]) // yuck...
+        CP.execFileSync("systemctl", ["restart", "sg-hub-agent"]) // yuck...
+    } catch(e) {
+        return respond(res, config_html, {message: "Error changing short-name: " + e})
+    }
 
     // change the wifi async after a short delay so we can send a response back
     setTimeout(() => {

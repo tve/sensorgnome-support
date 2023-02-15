@@ -93,13 +93,14 @@ app.post('/set-config', (req, res) => {
     let mode = "WPA-PSK"
     // if (req.body.wifi_mode == "wpa3open") mode = "OWE"
     // else if (req.body.wifi_mode == "wpa3sae") mode = "SAE"
+    let wpw = ""
     if (mode != "OWE") {
-        let pw = req.body.password
-        if (!(pw?.length > 0))
+        wpw = req.body.wifi_pass
+        if (!(wpw?.length > 0))
             return respond(res, config_html, {message: "Hot-Spot password required"})
-        if (pw.length < 8 || pw.length > 32)
+        if (wpw.length < 8 || wpw.length > 32)
             return respond(res, config_html, {message: "Hot-Spot Password must be 8 to 32 characters long"})
-        if (top100k.includes(pw))
+        if (top100k.includes(wpw))
             return respond(res, config_html, {message: "Please choose a less common Hot-Spot password :-)"})
     }
     
@@ -125,7 +126,7 @@ app.post('/set-config', (req, res) => {
     // change the wifi async after a short delay so we can send a response back
     setTimeout(() => {
         try {
-            CP.execFileSync(wifi_hotspot, ["mode", mode, pw||""])
+            CP.execFileSync(wifi_hotspot, ["mode", mode, wpw||""])
         } catch(e) {
             console.log("Error setting WiFi mode:", e)
             respond(res, config_html, {message: "Error setting WiFi mode"})

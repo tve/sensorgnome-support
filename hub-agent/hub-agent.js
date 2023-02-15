@@ -11,6 +11,8 @@ const Buffer = require('buffer').Buffer
 const cp = require('child_process')
 const stateFile = '/var/lib/sensorgnome/hub-agent.json'
 const logPrefixes = ['syslog', 'sg-control', 'upgrade.log']
+const keyFile = "/etc/sensorgnome/local-ip.key"
+const certFile = "/etc/sensorgnome/local-ip.pem"
 const sghub = "https://www.sensorgnome.net"
 const sgmon = "http://localhost:8080/monitoring"
 let period = 300 // starting period in seconds +/-60
@@ -183,15 +185,39 @@ async function shipInfo() {
   }
 }
 
+async function checkCerts() {
+  try {
+    const serverMD5 = (await request(sghub + '/agent/tls-key-MD5')).trim()
+    const localMD5 = (await execFile('/usr/bin/md5sum', [keyFile])).trim()
+    if (serverMD5 == localMD5) return
+    console.log("Updating TLS cert & key")
+    const cert = await request(sghub + '/agent/tls-cert')
+    const key = await request(sghub + '/agent/tls-key')
+    fs.writeFileSync(certFile, cert)
+    fs.writeFileSync(keyFile, key)
+    await execFile('systemctl', ['reload', 'caddy.service'])
+  } catch (e) {
+    console.log(`checkCerts: ${e}`)
+  }
+}
+
 const shipper = new LogShipper()
+
 async function doit() {
   while (true) {
+    // first ship the info
     try { await shipInfo() } catch(e) {}
+    // then ship log files
     try {
       await shipper.processAll()
     } catch (e) {
       console.log("Aborting", e)
     }
+    // check whether there are new certs available
+    await checkCerts()
+    // finally see whether we need to run something
+
+    // delay 'til the next iteration
     const delay = period - 30 + Math.random()*60
     period = Math.min(max_period, period * 1.5)
     console.log("Sleeping", delay, "seconds")

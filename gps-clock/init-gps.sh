@@ -16,6 +16,9 @@ if [[ -f $DTP ]] && grep -q "Ultimate GPS HAT" $DTP; then
     exit 0
 fi
 
+# To use a generic GPS attached to GPIO14&15 (like the adafruit GPS) then:
+# sudo raspi-config nonint do_serial 2
+
 # Moved to separate script
 # # Detect SixFab Base HAT with modem that has GPS. While this HAT has an EEPROM it may be used in
 # # in combination with a UPS HAT which also has an EEPROM and that causes the detection to be scrambled

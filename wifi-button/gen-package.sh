@@ -25,6 +25,6 @@ install -m 644 etc-dnsmasq.conf $DESTDIR/etc/dnsmasq.d/wifi-button.conf
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR
 sed -e "/^Version/s/:.*/: $(TZ=PST8PDT date +%Y.%j)/" -i $DESTDIR/DEBIAN/control # set version: YYYY.DDD
-dpkg-deb --root-owner-group --build $DESTDIR ../packages
+dpkg-deb -Zxz --root-owner-group --build $DESTDIR ../packages
 # dpkg-deb --contents ../packages
 ls -lh ../packages

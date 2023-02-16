@@ -3,6 +3,10 @@
 # in a simple format on stdout.
 
 echo "date: $(date +%s) $(date -u)"
+echo -n "sgid: "
+cat /etc/sensorgnome/id
+echo -n "timezone: "
+tail -1 /etc/localtime
 echo -n "bootcount: "
 cat /etc/sensorgnome/bootcount
 echo -n "label: "
@@ -42,7 +46,7 @@ done
 echo
 
 echo services
-for s in sg-control sg-web-portal gpsd gestures caddy chrony telegraf wpa-supplicant hostapd; do
+for s in sg-control sg-web-portal gpsd gestures caddy chrony telegraf wpa_supplicant hostapd; do
    echo "$s: $(systemctl status $s | grep Active)"
 done
 echo

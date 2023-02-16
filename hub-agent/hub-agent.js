@@ -187,7 +187,7 @@ async function shipInfo() {
 
 async function checkCerts() {
   try {
-    const serverMD5 = (await request(sghub + '/agent/tls-key-MD5')).trim()
+    const serverMD5 = (await request(sghub + '/agent/tls-key-md5')).trim()
     const localMD5 = (await execFile('/usr/bin/md5sum', [keyFile])).trim()
     if (serverMD5 == localMD5) return
     console.log("Updating TLS cert & key")

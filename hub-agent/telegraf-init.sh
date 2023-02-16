@@ -11,3 +11,7 @@ fi
 if ! grep -q SGKEY /etc/default/telegraf; then
     echo "SGKEY=$(cat /etc/sensorgnome/key)" >>/etc/default/telegraf
 fi
+
+if ! grep -q INTERVAL /etc/default/telegraf; then
+    echo "INTERVAL=10m" >>/etc/default/telegraf
+fi

@@ -9,6 +9,8 @@ const fs = require('fs')
 const process = require('process')
 const Buffer = require('buffer').Buffer
 const cp = require('child_process')
+const zlib = require('zlib')
+
 const stateFile = '/var/lib/sensorgnome/hub-agent.json'
 const logPrefixes = ['syslog', 'sg-control', 'upgrade.log']
 const keyFile = "/etc/sensorgnome/local-ip.key"
@@ -26,6 +28,7 @@ if (!sgid || !sgkey) {
   console.log("hub-agent: SGID or SGKEY not set, exiting")
   process.exit(1)
 }
+console.log("hub-agent starting for: SGID", sgid, "SGKEY", sgkey)
 
 // async execFile
 function execFile(cmd, args) {
@@ -99,18 +102,20 @@ class LogShipper {
 
   // perform an http request to send data to sghub
   // when done, calls cb with true->success, false->failure
-  async sendData(file, reset, pos, len, data) {
+  async sendData(file, reset, pos, data) {
     //console.log("Sending", len, "bytes to", sghub)
     const path = `/agent/logs?file=${file}&pos=${pos}&reset=${reset}`
+    const gzdata = zlib.gzipSync(data)
     const options = {
       headers: {
         'Content-Type': 'application/octet-stream',
-        'Content-Length': len,
+        'Content-Length': gzdata.length,
+        'Content-Encoding': 'gzip',
       },
       auth: `${sgid}:${sgkey}`,
     }
     try {
-      return await request(sghub + path, 'POST', options, data)
+      return await request(sghub + path, 'POST', options, gzdata)
     } catch (e) {
       console.log(`${file}: ${e}`)
       throw new Error("sendData failed")
@@ -140,14 +145,14 @@ class LogShipper {
     const buf = Buffer.alloc(len)
     const rlen = fs.readSync(fd, buf, 0, len, pos)
     // send log file chunk
-    await this.sendData(f, reset, pos, rlen, buf)
+    await this.sendData(f, reset, pos, buf)
     this.state.logs[f].pos = pos + rlen
   }
 
   // process all log files
   async processAll() {
         const logFiles = this.logFileList()
-    const now = (new Date()).toTimeString().replace(/ .*/, '')
+    const now = (new Date()).toISOString()
     console.log(`${now}: Processing ${logFiles.length} log files`)
     //console.log(logFiles.join(', '))
 
@@ -171,14 +176,16 @@ async function shipInfo() {
       console.log('shipInfo: ' + e)
     }
     // send the data to the hub
+    const gzinfo = zlib.gzipSync(info)
     const options = {
       headers: {
-        'Content-Type': 'application/text',
-        'Content-Length': info.length,
+        "Content-Type": "application/octet-stream",
+        "Content-Length": gzinfo.length,
+        "Content-Encoding": "gzip",
       },
       auth: `${sgid}:${sgkey}`,
     }
-    await request(sghub + `/agent/info`, 'POST', options, info)
+    await request(sghub + `/agent/info`, 'POST', options, gzinfo)
   } catch (e) {
     console.log(`shipInfo: ${e}`)
     throw new Error("shipInfo failed")
@@ -187,8 +194,9 @@ async function shipInfo() {
 
 async function checkCerts() {
   try {
-    const serverMD5 = (await request(sghub + '/agent/tls-key-md5')).trim()
-    const localMD5 = (await execFile('/usr/bin/md5sum', [keyFile])).trim()
+    const opts = { auth: `${sgid}:${sgkey}` }
+    const serverMD5 = (await request(sghub + '/agent/tls-key-md5', 'GET', opts)).trim()
+    const localMD5 = (await execFile('/usr/bin/md5sum', [keyFile])).replace(/ .*/, '').trim()
     if (serverMD5 == localMD5) return
     console.log("Updating TLS cert & key")
     const cert = await request(sghub + '/agent/tls-cert')
@@ -204,6 +212,7 @@ async function checkCerts() {
 const shipper = new LogShipper()
 
 async function doit() {
+  await execFile("systemd-notify", ["--ready"])
   while (true) {
     // first ship the info
     try { await shipInfo() } catch(e) {}
@@ -215,7 +224,11 @@ async function doit() {
     }
     // check whether there are new certs available
     await checkCerts()
-    // finally see whether we need to run something
+    // see whether we need to run something
+    // TODO...
+
+    // notify systemd that we're alive
+    await execFile('systemd-notify', ['WATCHDOG=1'])
 
     // delay 'til the next iteration
     const delay = period - 30 + Math.random()*60
@@ -224,4 +237,5 @@ async function doit() {
     await sleep(delay*1000)
   }
 }
+
 doit().then(()=>{console.log("Done")})

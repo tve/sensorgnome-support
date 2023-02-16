@@ -12,7 +12,9 @@ ExecStart=/usr/bin/node hub-agent.js
 StandardOutput=journal
 SyslogIdentifier=sg-hub-agent
 RestartSec=60s
-Restart=on-failure
+Restart=always
+WatchdogSec=8000
+NotifyAccess=1
 
 [Install]
 WantedBy=multi-user.target

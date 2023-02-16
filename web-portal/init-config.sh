@@ -3,7 +3,7 @@
 cd /opt/sensorgnome/web-portal
 touch public/need_init # used by caddy to route
 
-if egrep '^gnome:[^!x:][^:]{10,}' /etc/shadow; then
+if egrep -q '^gnome:[^!x:][^:]{10,}' /etc/shadow; then
     echo "Password has been set"
     rm -f public/need_init
 fi

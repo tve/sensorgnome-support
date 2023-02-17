@@ -10,7 +10,8 @@ install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
 install -d $DESTDIR/etc/telegraf
 install -m 755 telegraf.conf $DESTDIR/etc/telegraf/telegraf.new
-sudo gpg --dearmor -o $DESTDIR/etc/apt/trusted.gpg.d/influxdb.gpg <influxdata-archive_compat.key
+mkdir -p $DESTDIR/etc/apt/trusted.gpg.d
+gpg --dearmor -o $DESTDIR/etc/apt/trusted.gpg.d/influxdb.gpg <influxdata-archive_compat.key
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

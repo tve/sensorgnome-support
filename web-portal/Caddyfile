@@ -2,7 +2,7 @@
 #
 
 {
-        admin on
+        # admin off
         ocsp_stapling off
         auto_https off
         # on_demand_tls {

@@ -105,17 +105,18 @@ class LogShipper {
   async sendData(file, reset, pos, data) {
     //console.log("Sending", len, "bytes to", sghub)
     const path = `/agent/logs?file=${file}&pos=${pos}&reset=${reset}`
-    const gzdata = zlib.gzipSync(data)
+    const gzip = !file.endsWith('.gz')
+    if (gzip) data = zlib.gzipSync(data)
     const options = {
       headers: {
         'Content-Type': 'application/octet-stream',
-        'Content-Length': gzdata.length,
-        'Content-Encoding': 'gzip',
+        'Content-Length': data.length,
       },
       auth: `${sgid}:${sgkey}`,
     }
+    if (gzip) options.headers['Content-Encoding'] = 'gzip'
     try {
-      return await request(sghub + path, 'POST', options, gzdata)
+      return await request(sghub + path, 'POST', options, data)
     } catch (e) {
       console.log(`${file}: ${e}`)
       throw new Error("sendData failed")

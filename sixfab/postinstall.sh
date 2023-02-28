@@ -32,3 +32,11 @@ chown -R sixfab /var/log/sixfab
 # python prereqs are installed in the image:
 #pip3 install --no-cache-dir -U atcom (also pyyaml and pyusb)
 #sudo -u sixfab pip3 install -r core_manager/requirements.txt --no-cache-dir
+
+# prevent installation of the sixfab software from the sixfab site 'cause it ends
+# up in conflicts
+if [[ -d /opt/sixfab/core ]]; then
+    mv -f /opt/sixfab/core /opt/sixfab/core.disabled
+fi
+echo "DO NOT INSTALL THE SIXFAB SOFTWARE FROM THEIR SITE" > /opt/sixfab/core
+echo "https://github.com/tve/sensorgnome-build/blob/pimod/SIXFAB.md" >> /opt/sixfab/core

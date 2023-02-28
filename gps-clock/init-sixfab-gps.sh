@@ -14,11 +14,23 @@ mkdir -p /dev/sensorgnome
 # We do have a udev rule in the sg-sixfab package that creates the $SGH file, though...
 if [[ -f $SGH ]] && grep -q "Sixfab Base HAT" $SGH; then
     echo "Sixfab Base HAT detected"
-    ls -ls /dev/serial/by-id  # FIXME: this will initially fail, svc restarts, then succeeds
-    ttygps=/dev/serial/by-id/*LE91*-if04-*
-    ttyat=/dev/serial/by-id/*LE91*-if05-*
+    dsbi=/dev/serial/by-id
+    if ! [[ -d $dsbi ]]; then echo "Modem not ready"; exit 1; fi
+    ls -ls $dsbi  # FIXME: this will initially fail, svc restarts, then succeeds
+    if [ -e $dsbi/*LE91*-if04-* ]; then
+        ttygps=$dsbi/*LE91*-if04-*
+        ttyat=$dsbi/*LE91*-if05-*
+    elif [ -e $dsbi/Quectel_E[CG]25-*-if01-* ]; then
+        ttygps=$dsbi/Quectel_E[CG]25-*-if01-*
+        ttyat=$dsbi/Quectel_E[CG]25-*-if02-*
+    else
+        echo "Modem not recognized"
+        if [ -e $dsbi/*-if04-* ]; then exit 0; else exit 1; fi # 0->dead, 1->retry
+    fi
     sudo ln -f -s $ttygps /dev/sensorgnome/gps.port=0.pps=1.kind=hat.model=sixfab
     sudo ln -f -s $ttygps /dev/ttyGPS
+    sudo gpsdctl add /dev/ttyGPS
+    sudo systemctl restart gestures.service
     # This HAT does not have a PPS output :-(
     # power-up GPS
     atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT$GPSP=1'

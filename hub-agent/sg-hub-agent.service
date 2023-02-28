@@ -14,7 +14,7 @@ SyslogIdentifier=sg-hub-agent
 RestartSec=60s
 Restart=always
 WatchdogSec=8000
-NotifyAccess=1
+NotifyAccess=all
 
 [Install]
 WantedBy=multi-user.target

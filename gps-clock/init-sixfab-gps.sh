@@ -20,9 +20,9 @@ if [[ -f $SGH ]] && grep -q "Sixfab Base HAT" $SGH; then
     if [ -e $dsbi/*LE91*-if04-* ]; then
         ttygps=$dsbi/*LE91*-if04-*
         ttyat=$dsbi/*LE91*-if05-*
-    elif [ -e $dsbi/Quectel_E[CG]25-*-if01-* ]; then
-        ttygps=$dsbi/Quectel_E[CG]25-*-if01-*
-        ttyat=$dsbi/Quectel_E[CG]25-*-if02-*
+    elif [ -e $dsbi/*Quectel_E[CG]25-*-if01-* ]; then
+        ttygps=$dsbi/*Quectel_E[CG]25-*-if01-*
+        ttyat=$dsbi/*Quectel_E[CG]25-*-if02-*
     else
         echo "Modem not recognized"
         if [ -e $dsbi/*-if04-* ]; then exit 0; else exit 1; fi # 0->dead, 1->retry

@@ -20,9 +20,11 @@ if [[ -f $SGH ]] && grep -q "Sixfab Base HAT" $SGH; then
     if [ -e $dsbi/*LE91*-if04-* ]; then
         ttygps=$dsbi/*LE91*-if04-*
         ttyat=$dsbi/*LE91*-if05-*
+        type=telit
     elif [ -e $dsbi/*Quectel_E[CG]25-*-if01-* ]; then
         ttygps=$dsbi/*Quectel_E[CG]25-*-if01-*
         ttyat=$dsbi/*Quectel_E[CG]25-*-if02-*
+        type=quectel
     else
         echo "Modem not recognized"
         if [ -e $dsbi/*-if04-* ]; then exit 0; else exit 1; fi # 0->dead, 1->retry
@@ -32,11 +34,17 @@ if [[ -f $SGH ]] && grep -q "Sixfab Base HAT" $SGH; then
     sudo gpsdctl add /dev/ttyGPS
     sudo systemctl restart gestures.service
     # This HAT does not have a PPS output :-(
-    # power-up GPS
-    atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT$GPSP=1'
-    # enable output on ttyUSB1 with GGA, GLL, GSA, GSV, and RMC sentences
-    atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT$GPSNMUN=2,1,1,1,1,1,0'
-    # save settings
-    atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT$GPSSAV'
-    exit 0
+    if [[ $type == "telit" ]]; then
+        # power-up GPS
+        sudo -u sixfab atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT$GPSP=1'
+        # enable output on ttyUSB1 with GGA, GLL, GSA, GSV, and RMC sentences
+        sudo -u sixfab atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT$GPSNMUN=2,1,1,1,1,1,0'
+        # save settings
+        sudo -u sixfab atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT$GPSSAV'
+    elif [[ $type == "quectel" ]]; then
+        # enable GPS at start-up
+        sudo -u sixfab atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT+QGPSCFG="autogps",1'
+        # power-up GPS
+        sudo -u sixfab atcom -v -p $ttyat --rts-cts --dsr-dtr 'AT+QGPS=1'
+    fi
 fi

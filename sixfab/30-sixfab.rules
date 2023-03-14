@@ -13,7 +13,7 @@ GOTO="done"
 # Actions when finding a sixfab HAT
 LABEL="sixfab"
 RUN{program}+="/usr/bin/logger -t sensorgnome Found Sixfab HAT"
-TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
+#TAG+="systemd",ENV{SYSTEMD_WANTS}="sixfab-core.service"
 RUN{program}+="/usr/bin/mkdir -p /dev/sensorgnome"
 RUN{program}+="/usr/bin/bash -c 'echo Sixfab Base HAT | /usr/bin/tee /dev/sensorgnome/hat'"
 GOTO="done"

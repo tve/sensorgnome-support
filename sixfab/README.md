@@ -7,6 +7,14 @@ the Sixfab "Power management & UPS HAT".
 Cheat sheet for all buttons and LEDs:
 https://docs.google.com/spreadsheets/d/1LPCTtBtX-1I8b2Jpw2137RnhGbd2eT4Sk81jD0RiH5c
 
+
+**The code in this directory has been effectively disabled!**
+
+The cellular modem is managed "generically" using `../cellular` and the UPS HAT is not supported
+anymore because it's API is too flakey to be usable. The only thing remaining here that is used
+is the detection of the SixFAB base (cellular) HAT 'cause that's used to enable the user button
+to trigger the hot-spot.
+
 Cellular Modem HAT
 -----------------
 

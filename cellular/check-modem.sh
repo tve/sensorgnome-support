@@ -23,7 +23,7 @@ while [[ -n "$modem" ]]; do
     if (( $count > 1 )); then
         [[ -n "$reconfigure" ]] && exit 0
         (( $count > 5 )) && exit 1  # we'll come back in a few minutes...
-        sleep 2
+        sleep 5
         eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
         m=$(basename $modem)
     fi

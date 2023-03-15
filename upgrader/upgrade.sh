@@ -8,7 +8,7 @@ if [[ "$#" == 0 ]]; then
     exit 1
 fi
 
-export DEBIAN_FRONTEND=noninteractive
+export 
 date
 set -x
 
@@ -21,7 +21,8 @@ fi
 # need to use systemd-run so it runs outside of the sg-control service cgroup, which may get
 # restarted as part of the upgrade and we don't want to be affected by that
 #TERM=dumb systemd-run --scope --collect --pipe --description="sg-upgrade" $CMD
-TERM=dumb systemd-run --wait --pipe --collect --description="sg-upgrade" $CMD
+TERM=dumb systemd-run --wait --pipe --collect --description="sg-upgrade" \
+    -E DEBIAN_FRONTEND=noninteractive $CMD
 echo "Restarting sg-control (web server) in 10 seconds..."
 sleep 10
 systemctl daemon-reload

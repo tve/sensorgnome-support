@@ -7,7 +7,7 @@ echo
 echo -n '===== check-modem '
 date
 
-config=$(cat /etc/sensorgnome/cellular.json)
+config=$(cat /etc/sensorgnome/cellular.json) || true
 apn=$(jq -r .apn <<<$config)
 iptype=$(jq -r '.["ip-type"]' <<<$config)
 [[ -z $iptype ]] && iptype=ipv4v6

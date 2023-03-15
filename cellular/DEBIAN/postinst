@@ -1,0 +1,8 @@
+#! /usr/bin/bash -ex
+echo "Running sg-cellular postinst in $(pwd)"
+SRC=/opt/sensorgnome/cellular # would be nice to derive that from some env var...
+
+systemctl daemon-reload
+systemctl enable check-modem.timer
+systemctl start check-modem.timer
+echo "Done"

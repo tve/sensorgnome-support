@@ -1,0 +1,9 @@
+[Unit]
+Description=Check modem timer
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=multi-user.target

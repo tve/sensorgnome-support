@@ -1,0 +1,9 @@
+[Unit]
+Description=Baby-sit cellular modem
+Requires=sg-boot.service install-mm.service
+After=sg-boot.service install-mm.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/bash -e /opt/sensorgnome/cellular/check-modem.sh
+SyslogIdentifier=sg-check-modem

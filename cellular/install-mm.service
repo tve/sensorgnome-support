@@ -1,0 +1,14 @@
+[Unit]
+Description=Ensure ModemManager is installed
+Requires=install-mm.service
+After=sg-boot.service install-mm.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sensorgnome/cellular
+ExecStart=/usr/bin/bash -e ./install-mm.sh
+SyslogIdentifier=sg-install-mm
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

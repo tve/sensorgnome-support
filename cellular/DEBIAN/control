@@ -1,0 +1,11 @@
+Package: sg-cellular
+Version: 1.0
+Architecture: armhf
+Section: misc
+Priority: standard
+Essential: no
+Depends: modemmanager, dhcpcd5, vnstat
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: Sensorgnome cellular support
+  Scripts to baby-sit cellular modems.

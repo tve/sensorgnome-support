@@ -55,8 +55,12 @@ while [[ -n "$modem" ]]; do
     iface=$(jq -r .bearer.status.interface <<<$binfo)
     echo "Interface: $iface"
     if ! grep $iface <<<$defrt; then
-        echo "No default route via $iface, resetting modem"
-        mmcli -m $m --reset
+        if (( $count == 1 )); then
+            echo "No default route via $iface, resetting modem"
+            mmcli -m $m --reset
+        else
+            echo "No default route via $iface, waiting..."
+        fi
         continue
     fi
 

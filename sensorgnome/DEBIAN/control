@@ -6,7 +6,7 @@ Priority: standard
 Essential: no
 Depends: fcd, find-tags-unifile, vamp-alsa-host, vamp-plugins, sensorgnome-librtlsdr,
     sg-boot, sg-gps-clock, sg-udev-usb, sg-web-portal, sg-wifi-button,
-    sg-control (>= 9.4.1), sg-upgrader, sg-sixfab, sg-hub-agent, sg-cellular
+    sg-control, sg-upgrader, sg-sixfab, sg-hub-agent, sg-cellular
 Homepage: https://github.com/tve/sensorgnome-support/sensorgnome
 Maintainer: TvE (tvoneicken@gmail.com)
 Description: Sensorgnome software system 

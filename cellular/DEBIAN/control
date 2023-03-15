@@ -4,7 +4,7 @@ Architecture: armhf
 Section: misc
 Priority: standard
 Essential: no
-Depends: modemmanager, dhcpcd5, vnstat
+Depends: modemmanager, dhcpcd5 (>= 9.4.1), vnstat
 Homepage: https://github.com/sensorgnome-support
 Maintainer: TvE (tvoneicken@gmail.com)
 Description: Sensorgnome cellular support

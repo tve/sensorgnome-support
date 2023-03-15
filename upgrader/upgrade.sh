@@ -13,9 +13,9 @@ date
 set -x
 
 if [[ "$1" == -s ]]; then
-    CMD="apt-get -y upgrade"
+    CMD="apt-get -y -o Dpkg::Options::="--force-confold" upgrade"
 else
-    CMD="apt-get -y install $@"
+    CMD="apt-get -y -o Dpkg::Options::="--force-confold" install $@"
 fi
 
 # need to use systemd-run so it runs outside of the sg-control service cgroup, which may get

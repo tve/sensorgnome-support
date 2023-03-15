@@ -8,5 +8,5 @@ if ! [[ -f /etc/apt/sources.list.d/bullseye-backports.list ]]; then
     echo 'deb http://deb.debian.org/debian/ bullseye-backports main' | \
         sudo tee /etc/apt/sources.list.d/bullseye-backports.list
     apt-get update
-    apt-get install -y -t bullseye-backports modem-manager
+    apt-get install -y -t bullseye-backports modemmanager
 fi

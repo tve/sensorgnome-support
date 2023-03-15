@@ -50,7 +50,5 @@ deb-systemd-helper disable dnsmasq.service
 # prevent dnsmasq from becoming the system resolver:
 egrep -q DNSMASQ_EXCEPT /etc/default/dnsmasq || echo DNSMASQ_EXCEPT=lo >> /etc/default/dnsmasq
 
-# disable dhcp client on AP interface
-if ! egrep -q ap0 /etc/dhcpcd.conf; then \
-	  cat $SRC/etc-dhcpcd.conf >>/etc/dhcpcd.conf; \
-fi
+# install dhcpcd customizations
+cp $SRC/dhcpcd.conf /etc/dhcpcd.conf

@@ -1,7 +1,7 @@
 [Unit]
 Description=Ensure ModemManager is installed
-Requires=install-mm.service
-After=sg-boot.service install-mm.service
+Requires=sg-boot.service
+After=sg-boot.service
 
 [Service]
 Type=oneshot

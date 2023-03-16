@@ -11,7 +11,7 @@ install -m 755 *.sh $DEST
 # install in system location
 install -d $DESTDIR/etc/ModemManager/connection.d $DESTDIR/etc/systemd/system
 install -m 644 *.service *.timer $DESTDIR/etc/systemd/system
-install -m 644 [0-9][0-9]-* $DESTDIR/etc/ModemManager/connection.d
+install -m 755 [0-9][0-9]-* $DESTDIR/etc/ModemManager/connection.d
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

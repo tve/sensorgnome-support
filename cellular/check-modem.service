@@ -7,3 +7,5 @@ After=sg-boot.service install-mm.service
 Type=simple
 ExecStart=/usr/bin/bash -e /opt/sensorgnome/cellular/check-modem.sh
 SyslogIdentifier=sg-check-modem
+StandardOutput=syslog
+StandardError=syslog

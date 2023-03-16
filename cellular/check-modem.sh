@@ -18,8 +18,9 @@ echo Modem: $modem
 
 if [[ -n "$modem" ]] && [[ -z "$apn" ]]; then
     # Pre-configured APNs...
-    iccid=$(mmcli -m $modem -i 0 | grep 'iccid:' | awk '{print $2}')
-    if [[ $iccid == 8988307* ]] && [[ $iccid == 8988323* ]]; then
+    sim=$(mmcli -J -m $modem | jq -r .modem.generic.sim)
+    iccid=$(mmcli -m $modem -i $sim -K | grep 'iccid' | sed -e 's/.*: *//')
+    if [[ $iccid == 8988307* ]] || [[ $iccid == 8988323* ]]; then
         apn=super
     fi    
 fi
@@ -63,7 +64,7 @@ while [[ -n "$modem" ]]; do
     defrt=$(ip route show default)
     iface=$(jq -r .bearer.status.interface <<<$binfo)
     echo "Interface: $iface"
-    if ! grep $iface <<<$defrt; then
+    if ! grep -e "$iface" <<<$defrt; then
         if (( $count == 1 )); then
             echo "No default route via $iface, resetting modem"
             mmcli -m $m --reset

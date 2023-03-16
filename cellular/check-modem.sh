@@ -11,11 +11,20 @@ config=$(cat /etc/sensorgnome/cellular.json) || true
 apn=$(jq -r .apn <<<$config)
 iptype=$(jq -r '.["ip-type"]' <<<$config)
 [[ -z $iptype ]] && iptype=ipv4v6
-echo "APN: $apn, IP type: $iptype"
 
 # we could iterate through all modems, but for now we only do the last (see last() in jq expr)
 eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
 echo Modem: $modem
+
+if [[ -n "$modem" ]] && [[ -z "$apn" ]]; then
+    # Pre-configured APNs...
+    iccid=$(mmcli -m $modem -i 0 | grep 'iccid:' | awk '{print $2}')
+    if [[ $iccid == 8988307* ]] && [[ $iccid == 8988323* ]]; then
+        apn=super
+    fi    
+fi
+echo "APN: $apn, IP type: $iptype"
+
 count=0 # iteration count, if > 0 we're reconnecting
 while [[ -n "$modem" ]]; do
     m=$(basename $modem)

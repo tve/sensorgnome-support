@@ -1,4 +1,4 @@
-#! /bin/bash -e
+#! /bin/bash
 # Configure and baby-sit cellular modem using mmcli (ModemManager)
 
 [[ "$1" == "-r" ]] && reconfigure=1  # reconfigure unconditionally

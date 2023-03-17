@@ -16,6 +16,8 @@ jq .lotek_freq /etc/sensorgnome/acquisition.json
 echo "find_tags: " $(jq .module_options.find_tags.params /etc/sensorgnome/acquisition.json)
 echo -n "version: "
 cat /etc/sensorgnome/version
+echo -n "train: "
+awk '{print $3}' </etc/apt/sources.list.d/sensorgnome.list
 
 echo -n "default route: "
 ip route get 1.1.1.1 | head -1
@@ -53,4 +55,8 @@ echo
 
 echo usb
 lsusb
+echo
+
+echo vnstat
+vnstat
 echo

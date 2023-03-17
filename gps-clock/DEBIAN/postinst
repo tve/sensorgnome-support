@@ -15,8 +15,16 @@ if ! grep -q "enable_uart" /boot/config.txt; then
   echo enable_uart=1 >>/boot/config.txt
 fi
 
-# We update chrony's config file, so restart it
 systemctl daemon-reload
+
+deb-systemd-helper disable sg-gps-init.service || true
+deb-systemd-helper enable sg-ada-gps-init.service
+deb-systemd-helper enable sg-mm-gps-init.service
+if systemctl is-active --quiet sg-mm-gps-init.service; then
+  systemctl restart sg-mm-gps-init.service
+fi
+
+# We update chrony's config file, so restart it
 if systemctl is-active --quiet chrony.service; then
   systemctl restart chrony.service
 fi

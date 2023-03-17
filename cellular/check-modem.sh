@@ -63,6 +63,11 @@ while [[ -n "$modem" ]]; do
     # Check that we have a default route
     defrt=$(ip route show default)
     iface=$(jq -r .bearer.status.interface <<<$binfo)
+    if [[ "$iface" == ttyUSB* ]]; then
+        net=$(jq -r '.modem.generic.ports | last | sub(" .*"; "")' <<<$info)
+        echo "Interface $iface -> $net"
+        iface=$net
+    fi
     echo "Interface: $iface"
     if ! grep -e "$iface" <<<$defrt; then
         if (( $count == 1 )); then
@@ -86,7 +91,7 @@ while [[ -n "$modem" ]]; do
             continue
         fi
     else
-        echo "Default route is not via $iface"
+        echo "System default route is not via $iface"
     fi
 
     echo "Modem $m is OK"

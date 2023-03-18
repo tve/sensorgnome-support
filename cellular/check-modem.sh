@@ -3,35 +3,43 @@
 
 [[ "$1" == "-r" ]] && reconfigure=1  # reconfigure unconditionally
 
-echo
-echo -n '===== check-modem '
-date
-
-config=$(cat /etc/sensorgnome/cellular.json) || true
+if [[ -f /etc/sensorgnome/cellular.json ]]; then
+    config=$(cat /etc/sensorgnome/cellular.json)
+else
+    echo '{"apn":"","ip-type":"ipv4v6"}' >/etc/sensorgnome/cellular.json
+    config=""
+fi
 apn=$(jq -r .apn <<<$config)
 iptype=$(jq -r '.["ip-type"]' <<<$config)
 [[ -z $iptype ]] && iptype=ipv4v6
 
 # we could iterate through all modems, but for now we only do the last (see last() in jq expr)
 eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
-echo Modem: $modem
+if [[ -z "$modem" ]]; then
+    echo "No modem found"
+    exit 0
+fi
 
+# handle APN auto-detection for some SIM cards
 if [[ -n "$modem" ]] && [[ -z "$apn" ]]; then
     # Pre-configured APNs...
     sim=$(mmcli -J -m $modem | jq -r .modem.generic.sim)
     iccid=$(mmcli -m $modem -i $sim -K | grep 'iccid' | sed -e 's/.*: *//')
+    # Twilio / sixfab "super SIM"
     if [[ $iccid == 8988307* ]] || [[ $iccid == 8988323* ]]; then
+        echo "Twilio super SIM detected, using APN=super"
         apn=super
+        iptype=ipv4v6
+        echo '{"apn":"super","ip-type":"ipv4v6"}' >/etc/sensorgnome/cellular.json
     fi    
 fi
-echo "APN: $apn, IP type: $iptype"
 
 count=0 # iteration count, if > 0 we're reconnecting
 while [[ -n "$modem" ]]; do
     m=$(basename $modem)
     count=$((count+1))
     if (( $count > 1 )); then
-        [[ -n "$reconfigure" ]] && exit 0
+        [[ -n "$reconfigure" ]] && exit 0  # don't loop if we're reconfiguring
         (( $count > 5 )) && exit 1  # we'll come back in a few minutes...
         sleep 5
         eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
@@ -41,7 +49,7 @@ while [[ -n "$modem" ]]; do
     # Check if the modem is connected
     info=$(mmcli -J -m $m)
     state=$(jq -r .modem.generic.state <<<$info)
-    echo "Modem state: $state"
+    echo "Modem: $modem, state: $state, APN: $apn, IP type: $iptype"
     if [[ "$state" != "connected" ]]; then
         echo Not connected, reason: $(jq -r '.modem.generic["state-failed-reason"]' <<<$info)
         echo "Connecting modem $m, apn=$apn ip-type=$iptype"
@@ -53,7 +61,6 @@ while [[ -n "$modem" ]]; do
     bearer=$(jq -r '.modem.generic.bearers[0]' <<<$info)  # bearers[0] is the latest, phew...
     binfo=$(mmcli -J -m $m -b $bearer)
     cur_apn=$(jq -r .bearer.properties.apn <<<$binfo)
-    echo "APN: $cur_apn"
     if [[ "$cur_apn" != "$apn" ]]; then
         echo "Configured APN is $apn, reconnecting modem"
         mmcli -m $m --simple-connect="apn=$apn,ip-type=$iptype"
@@ -68,11 +75,11 @@ while [[ -n "$modem" ]]; do
         echo "Interface $iface -> $net"
         iface=$net
     fi
-    echo "Interface: $iface"
     if ! grep -e "$iface" <<<$defrt; then
         if (( $count == 1 )); then
             echo "No default route via $iface, resetting modem"
             mmcli -m $m --reset
+            sleep 20
         else
             echo "No default route via $iface, waiting..."
         fi
@@ -88,13 +95,13 @@ while [[ -n "$modem" ]]; do
         if (( $rx < 10240 )); then
             echo "No traffic in last 90 minutes, resetting modem"
             mmcli -m $m --reset
-            continue
+            exit 1
         fi
     else
         echo "System default route is not via $iface"
     fi
 
-    echo "Modem $m is OK"
+    #echo "Modem $m is OK"
     exit 0
 
 done

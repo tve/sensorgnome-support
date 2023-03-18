@@ -82,7 +82,7 @@ class LogShipper {
       const s = JSON.parse( fs.readFileSync(stateFile, { encoding: 'utf8' }) )
       if (s && s.logs) this.state = s
     } catch (e) { }
-    console.log(`state: ${JSON.stringify(this.state)}`)
+    //console.log(`state: ${JSON.stringify(this.state)}`)
   }
 
   // get list of log files to process
@@ -221,7 +221,7 @@ async function doit() {
     try {
       await shipper.processAll()
     } catch (e) {
-      console.log("Aborting", e)
+      console.log("Aborting:", e.message)
     }
     // check whether there are new certs available
     await checkCerts()

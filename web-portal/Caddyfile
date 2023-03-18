@@ -42,6 +42,16 @@
         respond @need_init 404
         # normal sg-control app only if init is done
         reverse_proxy localhost:8080
+        log {
+                format filter {
+                        wrap console
+                        fields {
+                                request>headers delete
+                                resp_headers delete
+                                user_id replace "HTTPS-443"
+                        }
+                }
+        }
 }
 
 # Site on HTTPS with any IP address using a wild-card cert for my.local-ip.co

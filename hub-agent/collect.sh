@@ -48,7 +48,10 @@ done
 echo
 
 echo services
-for s in sg-control sg-web-portal gpsd gestures caddy chrony telegraf wpa_supplicant hostapd; do
+for s in \
+      sg-control sg-web-portal gpsd gestures caddy chrony telegraf wpa_supplicant hostapd \
+      check-modem ModemManager
+do
    echo "$s: $(systemctl status $s | grep Active)"
 done
 echo

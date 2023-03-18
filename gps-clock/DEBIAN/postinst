@@ -3,8 +3,8 @@ echo "Running sg-gps-clock postinst in $(pwd)"
 MISC=/opt/sensorgnome/gps-clock # would be nice to derive that from some env var...
 
 # Ensure gpsd looks at the appropriate hardware devices
-# serial0:Adafruit HAT, ttyGPS:sixfab HAT, ttyUSB1:"catchall generic USB GPS"
-sed -i -e 's;^DEVICES.*;DEVICES="/dev/serial0 /dev/ttyUSB1 /dev/ttyGPS /dev/pps0";' /etc/default/gpsd
+# serial0:Adafruit HAT, ttyGPS:cellular modem or other explicitly linked GPSs
+sed -i -e 's;^DEVICES.*;DEVICES="/dev/serial0 /dev/ttyGPS /dev/pps0";' /etc/default/gpsd
 # Ensure gpsd starts without waiting for a client to connect (-n)
 # Ensure gpsd propagates time at start-up even without fix thanks to battery RTC (-r)
 sed -i -e 's/^GPSD_OPTIONS.*/GPSD_OPTIONS="-n -r"/' /etc/default/gpsd

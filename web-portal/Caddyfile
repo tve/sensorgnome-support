@@ -8,6 +8,17 @@
         # on_demand_tls {
         #         ask http://localhost:8081/ip-ok
         # }
+        log default {
+                format filter {
+                        wrap console
+                        fields {
+                                request>headers delete
+                                request>tls delete
+                                request>remote_port delete
+                                resp_headers delete
+                        }
+                }
+        }
 }
 
 # main site access, sends to the config service if not yet configured, else sg-control service
@@ -47,6 +58,8 @@
                         wrap console
                         fields {
                                 request>headers delete
+                                request>tls delete
+                                request>remote_port delete
                                 resp_headers delete
                                 user_id replace "HTTPS-443"
                         }

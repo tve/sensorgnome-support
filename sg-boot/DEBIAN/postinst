@@ -30,3 +30,8 @@ ln -sf /usr/share/zoneinfo/UTC /etc/localtime
 if ! egrep -q nodelaycompress /etc/logrotate.d/rsyslog; then
     sed -i 's/delaycompress/nodelaycompress/' /etc/logrotate.d/rsyslog
 fi
+
+if ! egrep -q 'Sensorgnome.*v1' /boot/config.txt; then
+    sed -i -e '/Sensorgnome/,$d' /boot/config.txt
+    cat /boot/config-sg.txt >>/boot/config.txt
+fi

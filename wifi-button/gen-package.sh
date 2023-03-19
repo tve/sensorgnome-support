@@ -14,7 +14,7 @@ install -m 755 *.sh $DEST
 install -m 644 gpio_pull.dtbo $DEST
 install -m 644 *.txt $DEST
 install -m 644 etc-dhcpcd.conf $DEST
-install -m 644 etc-hostapd.conf $DEST
+install -m 600 etc-hostapd.conf $DEST
 # install in system location
 install -d $DESTDIR/etc/hostapd $DESTDIR/etc/systemd/system $DESTDIR/etc/dnsmasq.d
 install -d $DESTDIR/boot $DESTDIR/boot/overlays

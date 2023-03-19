@@ -5,16 +5,27 @@
 [board-type=10]
 dtparam=i2c_arm=on
 dtparam=i2c1=on
-dtoverlay=i2c-rtc,ds3231 # RTC
-dtoverlay=pps-gpio,gpiopin=13 # GPS PPS input pin
+# real-time-clock support
+dtoverlay=i2c-rtc,ds3231
+# GPS PPS input pin
+dtoverlay=pps-gpio,gpiopin=13
+# disable bluetooth as it uses a uart
 dtoverlay=pi3-disable-bt
-gpio=24=op,dh # drive high: power USB hubs
-gpio=25=op,dl # drive low: disable modem power
-gpio=19=op,dh # drive high: power ADC
-core_freq=250 # required to use uart1
-dtparam=spi=on # screen uses SPI
+# drive high: power USB hubs
+gpio=24=op,dh
+# drive low: disable modem power
+gpio=25=op,dl
+# drive high: power ADC
+gpio=19=op,dh
+# drive low: keep GPS in reset to allow console
+gpio=28=op,dl
+# required to use uart1
+core_freq=250
+# e-paper display uses SPI
+dtparam=spi=on
 # don't enable the modem tx/rx 'cause it's a useless 2G device
-#dtoverlay=uart1,txd1_pin=32,rxd1_pin=33 # modem tx/rx
+# modem tx/rx
+#dtoverlay=uart1,txd1_pin=32,rxd1_pin=33
 
 [all]
 enable_uart=1

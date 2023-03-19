@@ -26,7 +26,7 @@ parted -ms -a none $ROOT_DEV unit s mkpart primary fat32 $FREE_START $FREE_END
 parted -ms $ROOT_DEV p
 
 # create filesystem
-DATA_PART="/dev/$(lsblk -nl -o NAME | tail -n 1)"
+DATA_PART="$(lsblk -nl -o PATH | grep ${ROOT_PART%?} | tail -n 1)"
 echo "Creating FAT32 filesystem in $DATA_PART"
 mkfs.fat -n DATA $DATA_PART
 mkdir -p /data

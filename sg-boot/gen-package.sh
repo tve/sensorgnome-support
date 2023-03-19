@@ -10,6 +10,8 @@ install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
 install -d $DESTDIR/dev/sensorgnome
 install -d $DESTDIR/etc/sensorgnome
+install -d $DESTDIR/boot
+install -m 644 config-*.txt $DESTDIR/boot
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

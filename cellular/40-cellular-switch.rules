@@ -1,0 +1,7 @@
+# Sensorgnome cellular support
+# Many cell modems support multiple "compositions" of USB devices to support different driver configurations
+# such as MBIM, cdc_ether, QMI, etc.
+# The rules below issue AT commands to switch the modem to the correct composition
+
+# Telit LE910C4 - switch from composition 6 to composition 0 which supports QMI
+ATTR{idVendor}=="1bc7", ATTR{idProduct}=="1206", RUN+="/bin/bash /opt/sensorgnome/cellular/modeswitch.sh 1bc7:1206 -2 'AT#USBCFG=0'"

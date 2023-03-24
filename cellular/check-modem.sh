@@ -1,21 +1,30 @@
 #! /bin/bash
 # Configure and baby-sit cellular modem using mmcli (ModemManager)
+# Expects to be run periodically, e.g. on a timer, but not too frequently, e.g. every 5 minutes
+# at the shortest. If it does something it loops a few times to check the outcome and nudge
+# things forward. Passing -r does only one pass and is used when the UI reconfighures the
+# modem to avoid having multiple instances of this script running at the same time.
+# If the configuration looks correct check-modem.sh will exit without doing anything.
+# Not implemented: If -p is passed, it will actually ping 1.1.1.1 to check connectivity and reset the modem if
+# it doesn't work. This is used by the uploading apps when they find that they don't have
+# connectivity.
 
-[[ "$1" == "-r" ]] && reconfigure=1  # reconfigure unconditionally
+[[ "$1" == "-r" ]] && reconfigure=1  # reconfiguring
 
 if [[ -f /etc/sensorgnome/cellular.json ]]; then
     config=$(cat /etc/sensorgnome/cellular.json)
 else
-    echo '{"apn":"","ip-type":"ipv4v6"}' >/etc/sensorgnome/cellular.json
+    echo '{"apn":"","ip-type":"ipv4v6","allow-roaming":"yes"}' >/etc/sensorgnome/cellular.json
     config=""
 fi
 apn=$(jq -r .apn <<<$config)
 iptype=$(jq -r '.["ip-type"]' <<<$config)
+roaming=$(jq -r '.["allow-roaming"]' <<<$config)
 [[ -z $iptype ]] && iptype=ipv4v6
 
 # we could iterate through all modems, but for now we only do the last (see last() in jq expr)
 eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
-if [[ -z "$modem" ]]; then
+if [[ "$modem" == null ]]; then
     echo "No modem found"
     exit 0
 fi
@@ -30,7 +39,8 @@ if [[ -n "$modem" ]] && [[ -z "$apn" ]]; then
         echo "Twilio super SIM detected, using APN=super"
         apn=super
         iptype=ipv4v6
-        echo '{"apn":"super","ip-type":"ipv4v6"}' >/etc/sensorgnome/cellular.json
+        roaming=yes
+        echo '{"apn":"super","ip-type":"ipv4v6","allow-roaming":"yes"}' >/etc/sensorgnome/cellular.json
     fi    
 fi
 
@@ -45,25 +55,33 @@ while [[ -n "$modem" ]]; do
         eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
         m=$(basename $modem)
     fi
+    info=$(mmcli -J -m $m)
+    bearer=$(jq -r '.modem.generic.bearers[0]' <<<$info)  # bearers[0] is the latest, phew...
 
     # Check if the modem is connected
-    info=$(mmcli -J -m $m)
     state=$(jq -r .modem.generic.state <<<$info)
     echo "Modem: $modem, state: $state, APN: $apn, IP type: $iptype"
-    if [[ "$state" != "connected" ]]; then
+    if [[ "$state" != "connected" ]] || [[ "$bearer" == "null" ]]; then
         echo Not connected, reason: $(jq -r '.modem.generic["state-failed-reason"]' <<<$info)
-        echo "Connecting modem $m, apn=$apn ip-type=$iptype"
-        mmcli -m $m --simple-connect="apn=$apn,ip-type=$iptype"
+        if [[ "$bearer" == null ]]; then
+            echo Disconnecting existing bearer
+            mmcli -m $m --simple-disconnect
+            sleep 2
+        fi
+        echo "Configuring initial EPS bearer settings"
+        mmcli -m $m --3gpp-set-initial-eps-bearer-settings="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
+        sleep 2
+        echo "Connecting modem $m, apn=$apn ip-type=$iptype allow-roaming=$roaming"
+        mmcli -m $m --simple-connect="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
         continue
     fi
 
     # Check that we have the correct APN
-    bearer=$(jq -r '.modem.generic.bearers[0]' <<<$info)  # bearers[0] is the latest, phew...
     binfo=$(mmcli -J -m $m -b $bearer)
     cur_apn=$(jq -r .bearer.properties.apn <<<$binfo)
     if [[ "$cur_apn" != "$apn" ]]; then
-        echo "Configured APN is $apn, reconnecting modem"
-        mmcli -m $m --simple-connect="apn=$apn,ip-type=$iptype"
+        echo "Configured APN is $apn, disconnecting bearer"
+        mmcli -m $m --simple-disconnect
         continue
     fi
 
@@ -90,15 +108,22 @@ while [[ -n "$modem" ]]; do
     vnstat=$(vnstat -i $iface --json f 18)
     rx=$(jq -c '.interfaces[0].traffic.fiveminute | map(.rx) | add' <<<$vnstat)
     echo "RX bytes in last 90 minutes: $rx"
-    if [[ $(ip route get 1.1.1.1) =~ $iface ]]; then
+    dr=$(ip route get 1.1.1.1)
+    if [[ "$dr" = *${iface}* ]]; then
         echo "Default route uses $iface"
         if (( $rx < 10240 )); then
-            echo "No traffic in last 90 minutes, resetting modem"
-            mmcli -m $m --reset
-            exit 1
+            echo "No traffic in last 90 minutes, pinging 1.1.1.1"
+            if ping -n -c 20 -I $iface 1.1.1.1 | grep -q ' 0 received'; then
+                echo "Resetting modem"
+                mmcli -m $m --reset
+                exit 1
+            else
+                echo "Ping OK"
+            fi
         fi
     else
-        echo "System default route is not via $iface"
+        dr=$(echo $dr | sed -e 's/.*dev \([^ ]*\).*/\1/')
+        echo "System default route is via $dr, not $iface (OK)"
     fi
 
     #echo "Modem $m is OK"

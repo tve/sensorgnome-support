@@ -4,6 +4,7 @@
 # Usage: modeswitch.sh vendor_id:product_id device_number command
 # The device number is a parameter to "tail" and can be +n or -n
 # Ex: modeswitch.sh 1bc7:1201 -3 'AT#USBCFG=4'
+logger -t "modeswitch" "Modeswitch $*"
 
 # return the devices that correspond to a given VID:PID
 # from https://unix.stackexchange.com/a/668691/89116
@@ -18,9 +19,12 @@ vidpid_to_devs(){
 # Figure out the device to use
 devs=$(vidpid_to_devs $1)
 echo Devices: $devs
+logger -t modeswitch Devices: $devs
 dev=$(tail -n $2 <<<"$devs" | head -1)
 
 # Send the AT command
 echo "Sending $3 to $dev"
+logger -t modeswitch "Sending $3 to $dev"
 res=$(echo "$3" | socat -T 5 - ${dev},crnl)
 echo "$res" | od -c
+logger -t modeswitch $(echo "$res" | od -c)

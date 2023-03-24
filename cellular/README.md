@@ -21,3 +21,10 @@ In addition, sg-control queries mmcli directly to display the current modem stat
   DHCP server you connect to is specific to QMI (if you switch modem into MBIM mode there will be
   no DHCP server any more), and located on the modem, it is serving this static IP to the client.
 
+- Undocumented mmcli commands:
+  - sudo mmcli -m 1 --3gpp-profile-manager-list
+  - sudo mmcli -m 0 --3gpp-set-initial-eps-bearer-settings=apn=m2mglobal,ip-type=ipv4
+
+- Sixfab HAT:
+  - GPIO13 is DTR, pulse low to wake-up modem from deep sleep
+  - GPIO26 controls power: pull high to turn power OFF

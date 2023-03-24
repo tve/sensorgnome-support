@@ -1,10 +1,10 @@
 #! /usr/bin/bash -e
-DTP=/proc/device-tree/hat/product
+#DTP=/proc/device-tree/hat/product
 SGH=/dev/sensorgnome/hat
 mkdir -p /dev/sensorgnome
 
 # Detect Adafruit GPS HAT. Its EEPROM causes /proc/device-tree/hat/product to be set
-if [[ -f $DTP ]] && grep -q "Ultimate GPS HAT" $DTP; then
+if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     echo "Adafruit GPS HAT detected, enabling PPS input to chrony"
     /usr/bin/systemctl stop serial-getty@ttyS0.service
     ln -f -s /dev/serial0 /dev/sensorgnome/gps.port=0.pps=1.kind=hat.model=adafruit

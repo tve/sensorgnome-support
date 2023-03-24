@@ -2,6 +2,8 @@
 SGH=/dev/sensorgnome/hat
 mkdir -p /dev/sensorgnome
 
+NOT USED ANYMORE!
+
 # This script needs to be triggered by the USB detection of the Telit (or other) modem.
 # The udev rules for this are in the sg-sixfab package.
 # This script is run as pre-exec for sixfab-core service so it doesn't get run umpteen times

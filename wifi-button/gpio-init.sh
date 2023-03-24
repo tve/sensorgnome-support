@@ -1,13 +1,13 @@
 #! /usr/bin/bash -e
 # export gpio pins for use with either the adafruit pushbutton LED switch or the button/LED on
 # the sixfab cellular hat
-DTP=/proc/device-tree/hat/product
+#DTP=/proc/device-tree/hat/product
 SGH=/dev/sensorgnome/hat
 
 LED_GPIO=
 
 # Detect Adafruit GPS HAT. It's EEPROM causes /proc/device-tree/hat/product to be set
-if [[ -f $DTP ]] && grep -q "Ultimate GPS HAT" $DTP; then
+if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     echo "Adafruit GPS HAT detected"
     dtoverlay gpio_pull
     LED_GPIO=17
@@ -22,6 +22,14 @@ if [[ -f $SGH ]] && grep -q "Sixfab Base HAT" $SGH; then
     echo "Sixfab Base HAT detected"
     LED_GPIO=27
     SW_GPIO=22
+fi
+
+# Detect Ad-hoc button HAT.
+if [[ -f $SGH ]] && grep -q "button-17-18" $SGH; then
+    echo "Ad-hoc button HAT detected"
+    dtoverlay gpio_pull
+    LED_GPIO=17
+    SW_GPIO=18
 fi
 
 if [[ -z "$LED_GPIO" ]]; then

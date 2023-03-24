@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# boot-time tasks for Sensor Gnome (for debian 7.0 armhf
+# boot-time tasks for Sensor Gnome (for debian 7.0 armhf)
 # These must be run before network interfaces are brought up!
 
 # Generate the sensorgnome unique system ID into /etc/sensorgnome/id
@@ -45,3 +45,9 @@ if [[ -n $(echo /boot/*.pub) ]]; then
     chmod 644 /home/gnome/.ssh/*
     rm /boot/*.pub
 fi
+
+# Detect any HAT with the ability to explicitly override for HATs that don't detect properly,
+# for example when stacking two HATs, which is something the rpi cannot detect.
+mkdir -p /etc/sensorgnome
+cp /dev/sensorgnome/hat /etc/sensorgnome/hat
+[[ -f /etc/sensorgnome/force-hat ]] && cp /etc/sensorgnome/force-hat /etc/sensorgnome/hat

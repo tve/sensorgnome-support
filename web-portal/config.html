@@ -25,7 +25,7 @@
       <form action="/init/set-config" method="post" onSubmit="disableForm()">
           <p>This Sensorgnome has not yet been configured.<br>
               Please enter a Sensorgnome password that will be used
-              to secure the Web UI and SSH login.<br>
+              to secure the Web UI, SSH logins, and Hot-Spot access.<br>
               The password must be at least 8 characters long and will be checked against a 
               "top-100000 passwords" list.</p>
           </p>
@@ -51,9 +51,10 @@
           <input type="checkbox" name="wifi_mode" value="wpa3sae" id="wifi_wpa3-sae" />
           <label for="wifi_wpa3-sae">WPA3-SAE (encrypted w/password)</label><br>
           </p>-->
+          <!--
           <p>Enter a password for the WiFi Hot-Spot:</p>
           <label for="wifi_pass">Hot-Spot Password:</label>
-          <input type="text" name="wifi_pass" id="wifi_pass" placeholder="wifi password" />
+          <input type="text" name="wifi_pass" id="wifi_pass" placeholder="wifi password" /> -->
 
           <p style="color:red; font-weight:bold"><!--message--></p>
           <input class="submit" type="submit" value="Submit" id="submit" />

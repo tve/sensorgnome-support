@@ -9,6 +9,7 @@ const BodyParser = require('body-parser')
 const Morgan = require("morgan")  // request logger middleware
 const app = Express()
 const CP = require('child_process')
+const crypto = require("crypto")
 
 const config_html = Fs.readFileSync("public/config.html").toString()
 const redirect_html = Fs.readFileSync("public/redirect.html").toString()
@@ -95,13 +96,14 @@ app.post('/set-config', (req, res) => {
     // else if (req.body.wifi_mode == "wpa3sae") mode = "SAE"
     let wpw = ""
     if (mode != "OWE") {
-        wpw = req.body.wifi_pass
+        wpw = pw // req.body.wifi_pass
         if (!(wpw?.length > 0))
             return respond(res, config_html, {message: "Hot-Spot password required"})
         if (wpw.length < 8 || wpw.length > 32)
             return respond(res, config_html, {message: "Hot-Spot Password must be 8 to 32 characters long"})
         if (top100k.includes(wpw))
             return respond(res, config_html, {message: "Please choose a less common Hot-Spot password :-)"})
+        wpw = crypto.pbkdf2Sync(wpw, sgid, 4096, 256 / 8, "sha1")
     }
     
     // change the Sensorgnome password

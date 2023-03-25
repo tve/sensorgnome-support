@@ -106,7 +106,9 @@ app.post('/set-config', (req, res) => {
     
     // change the Sensorgnome password
     try {
-        CP.execFileSync("/usr/sbin/chpasswd", { input: `gnome:${pw}\n` })
+        const pwdfile = Fs.readFileSync("/etc/passwd").toString()
+        const username = /^([^:]+):[^:]*:1000:/m.exec(pwdfile)?.[1] || "gnome"
+        CP.execFileSync("/usr/sbin/chpasswd", { input: `${username}:${pw}\n` })
     } catch(e) {
         return respond(res, config_html, {message: "Error changing password: " + e})
     }

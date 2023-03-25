@@ -36,18 +36,31 @@ sync
 # boot is a fat32 filesystem where the user can edit some config files before first boot
 echo "Moving data from /boot to /etc/sensorngome"
 shopt -s nullglob
-[[ -n $(echo /boot/*tag*.sqlite) ]] && mv /boot/*tag*.sqlite /etc/sensorgnome/SG_tag_database.sqlite
-[[ -f /boot/usb-port-map.txt ]] && mv /boot/usb-port-map.txt /etc/sensorgnome/
+if [[ -n $(echo /boot/*tag*.sqlite) ]]; then
+    mv /boot/*tag*.sqlite /etc/sensorgnome/SG_tag_database.sqlite
+fi
+if [[ -f /boot/usb-port-map.txt ]]; then
+    mv /boot/usb-port-map.txt /etc/sensorgnome/
+fi
 if [[ -n $(echo /boot/*.pub) ]]; then
-    mkdir -p /home/gnome/.ssh
-    cat /boot/*.pub >>/home/gnome/.ssh/authorized_keys
-    chown -R gnome /home/gnome/.ssh
-    chmod 644 /home/gnome/.ssh/*
+    username=`getent passwd 1000 | cut -d: -f1`
+    mkdir -p "/home/${username}/.ssh"
+    cat /boot/*.pub >>"/home/${username}/.ssh/authorized_keys"
+    chown -R "${username}" "/home/${username}/.ssh"
+    chmod 644 "/home/${username}/.ssh/*"
     rm /boot/*.pub
 fi
 
 # Detect any HAT with the ability to explicitly override for HATs that don't detect properly,
 # for example when stacking two HATs, which is something the rpi cannot detect.
-mkdir -p /etc/sensorgnome
-cp /dev/sensorgnome/hat /etc/sensorgnome/hat
-[[ -f /etc/sensorgnome/force-hat ]] && cp /etc/sensorgnome/force-hat /etc/sensorgnome/hat
+mkdir -p /dev/sensorgnome
+if [[ -f /proc/device-tree/hat/product ]]; then
+    cp /proc/device-tree/hat/product /dev/sensorgnome/hat
+fi
+if [[ -f /etc/sensorgnome/force-hat ]]; then
+    cp /etc/sensorgnome/force-hat /dev/sensorgnome/hat
+fi
+
+# ensure we're running in UTC
+rm -f /etc/localtime
+ln -sf /usr/share/zoneinfo/UTC /etc/localtime

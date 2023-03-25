@@ -26,10 +26,6 @@ for U in sg-boot; do
     fi
 done
 
-# ensure we're running on UTC
-rm -f /etc/localtime
-ln -sf /usr/share/zoneinfo/UTC /etc/localtime
-
 # change rsyslog config
 if ! egrep -q nodelaycompress /etc/logrotate.d/rsyslog; then
     sed -i 's/delaycompress/nodelaycompress/' /etc/logrotate.d/rsyslog

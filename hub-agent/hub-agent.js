@@ -71,6 +71,7 @@ function request(url, method = "GET", options = {}, postData) {
         clients[hostport] = client
         console.log("Opened client for ", hostport)
       } catch (err) {
+        console.log(`http2 connect error: ${err}`)
         delete clients[hostport]
         reject(err)
       }
@@ -94,7 +95,11 @@ function request(url, method = "GET", options = {}, postData) {
     }
     //console.log("Headers: ", JSON.stringify(headers))
     const req = client.request(headers)
-    req.on("error", reject)
+    req.on("error", err => {
+      console.log(`http2 request error: ${err}`)
+      delete clients[hostport]
+      reject(err)
+    })
     req.on("response", headers => {
       const status = headers[":status"]
       const data = []
@@ -113,6 +118,14 @@ function request(url, method = "GET", options = {}, postData) {
     if (postData) req.write(postData)
     req.end()
   })
+}
+
+function close_clients() {
+  for (const hostport in clients) {
+    console.log("Closing client for ", hostport)
+    clients[hostport].close()
+    delete clients[hostport]
+  }
 }
 
 // async http 1.1 request from
@@ -388,6 +401,8 @@ async function doit() {
     try {
       await request(sghub + `/agent/next?delay=${delay}`, "POST", { auth: `${sgid}:${sgkey}` })
     } catch (e) {}
+    
+    close_clients()
 
     console.log("Sleeping", delay, "seconds")
     await sleep(delay * 1000)

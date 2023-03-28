@@ -47,7 +47,7 @@ if [[ -n $(echo /boot/*.pub) ]]; then
     mkdir -p "/home/${username}/.ssh"
     cat /boot/*.pub >>"/home/${username}/.ssh/authorized_keys"
     chown -R "${username}" "/home/${username}/.ssh"
-    chmod 644 "/home/${username}/.ssh/*"
+    chmod 644 /home/${username}/.ssh/*
     rm /boot/*.pub
 fi
 

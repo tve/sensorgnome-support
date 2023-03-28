@@ -47,10 +47,6 @@ function cap_enabled() {
     return false
 }
 
-function check_pass(pwd) {
-
-}
-
 // respond using a string as a template and substituting fields <!--field--> from info.field
 function respond(res, template, info) {
     info.ipaddrs = ifaces_list()

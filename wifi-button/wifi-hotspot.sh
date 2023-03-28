@@ -45,7 +45,7 @@ elif [[ "$1" == "capinfo" ]]; then
 elif [[ "$1" == "mode" ]]; then
     if [[ "$2" == "WPA-PSK" ]] || [[ "$2" == "SAE" ]]; then
         echo "Setting mode to $2"
-        sed -i -e "s/^wpa_passphrase=.*/wpa_passphrase=$3/" \
+        sed -i -e "s/^wpa_(passphrase|psk)=.*/wpa_psk=$3/" \
                -e "s/^wpa=.*/wpa=2/" \
                -e "/^ssid=/s/-init//" \
                /etc/hostapd/hostapd.conf
@@ -91,7 +91,7 @@ else
     systemctl start dnsmasq
 
     # Set-up captive portal
-    iptables -t nat -D $ipt_reset
+    iptables -t nat -D $ipt_reset 2>/dev/null || true
     iptables -t nat -A $ipt_self
     iptables -t nat -A $ipt_route
 fi

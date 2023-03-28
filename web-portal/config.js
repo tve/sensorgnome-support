@@ -103,7 +103,7 @@ app.post('/set-config', (req, res) => {
             return respond(res, config_html, {message: "Hot-Spot Password must be 8 to 32 characters long"})
         if (top100k.includes(wpw))
             return respond(res, config_html, {message: "Please choose a less common Hot-Spot password :-)"})
-        wpw = crypto.pbkdf2Sync(wpw, sgid, 4096, 256 / 8, "sha1")
+        wpw = crypto.pbkdf2Sync(wpw, sgid, 4096, 256 / 8, "sha1").toString("hex")
     }
     
     // change the Sensorgnome password

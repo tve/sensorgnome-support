@@ -45,10 +45,10 @@ elif [[ "$1" == "capinfo" ]]; then
 elif [[ "$1" == "mode" ]]; then
     if [[ "$2" == "WPA-PSK" ]] || [[ "$2" == "SAE" ]]; then
         echo "Setting mode to $2"
-        sed -i -e "s/^wpa_(passphrase|psk)=.*/wpa_psk=$3/" \
-               -e "s/^wpa=.*/wpa=2/" \
-               -e "/^ssid=/s/-init//" \
-               /etc/hostapd/hostapd.conf
+        sed -i -r -e "s/^wpa_(passphrase|psk)=.*/wpa_psk=$3/" \
+            -e "s/^wpa=.*/wpa=2/" \
+            -e "/^ssid=/s/-init//" \
+            /etc/hostapd/hostapd.conf
     #elif [[ "$2" == "OWE" ]]; then
     #    echo "Setting mode to $2"
     #    sed -i "s/^wpa_passphrase=.*/wpa_passphrase=xxx/" /etc/hostapd/hostapd.conf

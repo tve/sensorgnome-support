@@ -17,11 +17,12 @@ const keyFile = "/etc/sensorgnome/local-ip.key"
 const certFile = "/etc/sensorgnome/local-ip.pem"
 const sghub = "https://www.sensorgnome.net"
 const sgmon = "http://localhost:8080/monitoring"
-const min_period = 300 // minimum period in seconds +/-60
+const min_period = 120 // minimum period in seconds +/-60
 let period = min_period
 const max_period = 3600 // period increases by 1.5x until max_period
 const chunkSize = 128 * 1024 // upload at most this much per log file at a time
 const connCheck = "/opt/sensorgnome/cellular/check-modem.sh"
+const remote = "/etc/sensorgnome/remote.json"
 
 const sgid = fs.readFileSync("/etc/sensorgnome/id").toString().trim()
 const sgkey = fs
@@ -33,6 +34,15 @@ if (!sgid || !sgkey) {
   process.exit(1)
 }
 console.log("hub-agent starting for: SGID", sgid, "SGKEY", sgkey)
+
+// ensure the remote management config file exists
+if (!fs.existsSync(remote)) {
+  try {
+    fs.writeFileSync(remote, JSON.stringify({ commands: true, webui: true, support: 0 }))
+  } catch (err) {
+    console.log("failed to create remote.json:", err)
+  }
+}
 
 // async execFile
 function execFile(cmd, args) {
@@ -252,6 +262,21 @@ class LogShipper {
   }
 }
 
+function remoteFeatures() {
+  try {
+    const r = JSON.parse(fs.readFileSync(remote)) || {}
+    let f = ""
+    if (r.commands) f += 'c'
+    if (r.webui) f += 'w'
+    if (r.support) f += 's'
+    console.log(`Remote features: ${f}`)
+    return f
+  } catch (e) {
+    console.log("failed to read remote features config: " + e)
+    return ""
+  }
+}
+
 // run collect.sh to collect information about the system, post it to the server, and return
 // any response received (may include a command to execute)
 async function shipInfo() {
@@ -265,6 +290,7 @@ async function shipInfo() {
     info += `\n\njson: { "error": "${e.message.replace(/"/g, '"')}" }`
     console.log("shipInfo: " + e)
   }
+  // get current remote management
   // send the data to the hub
   const gzinfo = zlib.gzipSync(info)
   const options = {
@@ -275,8 +301,9 @@ async function shipInfo() {
     },
     auth: `${sgid}:${sgkey}`,
   }
-  // f=feature flags, c=cmds, t=tunnel
-  return await request(sghub + `/agent/info?features=c`, "POST", options, gzinfo)
+  const f = remoteFeatures()
+  // f=feature flags, c=cmds, w=webui, s=support
+  return await request(sghub + `/agent/info?features=${f}`, "POST", options, gzinfo)
 }
 
 async function checkCerts() {
@@ -329,6 +356,12 @@ async function runcmd(seq, cmdline) {
 
 // perform a command action requested by the server
 async function doCommand(cmd) {
+  const f = remoteFeatures()
+  if (!f.includes('c')) {
+    console.log(`Ignoring command '${cmd.action}' because remote commands are disabled`)
+    logcmd(cmd.seq, "ERR", `Remote commands are disabled`)
+    return
+  }
   switch (cmd.action) {
     case "exec":
       console.log("Executing:", cmd.cmdline)

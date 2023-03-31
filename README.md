@@ -12,14 +12,22 @@ One of the purposes of slicing the support functionality into a number of packag
 hardware implementations of a Sensorgnome can mix and match the support packages they need.
 
 The current subsystems are:
-- funcube: tools related to funcube dongles
+- funcube: tools related to funcube dongles, primarily to update the firmware, this is not
+  actively used
 - gps-clock: scripts to manage GPS, real-time clock, and system clock synchronization
+- hub-agent: simple agent that, together with [telegraf](https://github.com/influxdata/telegraf/)
+  sends monitoring data to the [SG hub](www.sensorgnome.net) and facilitates remote management
+- sensorgnome: umbrella package that depends on all the other packages and is used to install
+  or upgrade all the other packages
 - sg-boot: misc pieces to init a sensorgnome
-- ssh-tunnel: maintain communication channels over SSH
-- udev-usb: manage USB devices, incl hubs
+- sixfab: software related to the SixFab cellular HAT, this is not used anymore and ModemManager
+  is used instead; this dir also has old code for the SixFab UPS HAT, which is not used anymore
+- udev-usb: manage USB devices, incl hubs, this mainly sets up the rules for udev
+- upgrader: small set of scripts to upgrade the sensorgnome, invoked through the web ui
+- web-portal: very simple web app that is used for the initial installation of the software,
+  it presents redirect pages and a simple form to set a password and short-name before
+  the main control process and its web app can be accessed
 - wifi-button: manage wifi client and hotspot using a physical button and LED indicator
-
-The `unused` directory contains files from prior versions that are currently unused.
 
 Development
 -----------
@@ -55,13 +63,9 @@ Open issues
    first runs. It creates the partition in the free space on the SDcard. What should happen if
    the SDcard has no free space because someone installed stuff on an existing rPi OS install?
    Two options: silently continue with /data being on the root partition, or abort with error?
-1. What should happen with a hotspot if there is no gestures.txt, i.e., no button? Always turn
-   hotspot on and if so, for how long?
-1. The service unit sequencing needs to be revisited.
+   (A: currently the latter.)
 1. Need to ensure that the time is set to some obvious bogus value until there is proper
    time sync so it's easy to flag detections where there is no correct time.
-1. Need to check the data usage for cell-based stations, in particular the cost of keep-alives.
-1. Need to revisit USB watchdog.
 1. The organization of the repo into subdirectories with mostly independent subsystems seems
    to work very well. However, whether it makes sense for each subdir to produce its own deb
    package is questionable. The intent is to be able to install just the needed packages on

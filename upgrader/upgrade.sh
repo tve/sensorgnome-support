@@ -23,8 +23,8 @@ fi
 #TERM=dumb systemd-run --scope --collect --pipe --description="sg-upgrade" $CMD
 TERM=dumb systemd-run --wait --pipe --collect --description="sg-upgrade" \
     -E DEBIAN_FRONTEND=noninteractive $CMD
-echo "Restarting sg-control (web server) in 10 seconds..."
-sleep 10
+echo "Restarting sg-control (web server) in 4 seconds..."
+sleep 4
 systemctl daemon-reload
 systemctl restart sg-control.service
 sleep 2

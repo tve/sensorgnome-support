@@ -1,0 +1,43 @@
+#! /usr/bin/bash -e
+echo "Running sg-upgrader postinst"
+SOURCES=/opt/sensorgnome/upgrader/sources
+cd $SOURCES
+
+# copy changed sources.list files to /etc/apt/sources.list.d
+TGT=/etc/apt/sources.list.d
+for s in *.list; do
+    if ! cmp -s "$s" "$TGT/$s"; then
+        echo "Updating $TGT/$s"
+        cp "$s" "$TGT/$s"
+        touch /run/double-update # cause check script to re-run apt update
+    fi
+done
+
+# copy changed key files to /usr/share/keyrings
+TGT=/usr/share/keyrings
+for s in *.gpg; do
+    if ! cmp -s "$s" "$TGT/$s"; then
+        echo "Updating $TGT/$s"
+        cp "$s" "$TGT/$s"
+        touch /run/double-update # cause check script to re-run apt update
+    fi
+done
+
+# run bail-out scripts
+for s in bail-me-out/*.sh; do
+    echo "Running $s"
+    $s
+done
+
+# big hack to upgrade from old versions that didn't have this postinst script
+if ! [[ -f /opt/sensorgnome/upgrader/has-double ]]; then
+    ((
+        # wait for install to finish
+        while pgrep -x 'dpkg|apt|apt-get' > /dev/null; do sleep 1; done
+        export DEBIAN_FRONTEND=noninteractive
+        # make sure no one else is locking the dpkg database
+        flock --exclusive --close /var/lib/dpkg/lock -c \
+            'apt-get update; apt-get install -y sensorgnome'
+    ) 2>&1 >/dev/null </dev/null &)
+    touch /opt/sensorgnome/upgrader/has-double
+fi

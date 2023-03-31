@@ -8,6 +8,7 @@ if ! [[ -f /etc/apt/sources.list.d/bullseye-backports.list ]]; then
     echo 'deb http://deb.debian.org/debian/ bullseye-backports main' | \
         sudo tee /etc/apt/sources.list.d/bullseye-backports.list
     apt-get update
+    # --force-confold causes the old config file to be kept when there is a conflict
     apt-get -o Dpkg::Options::="--force-confold" install -y sensorgnome
     apt-get install -y -t bullseye-backports modemmanager
     echo "Upgraded ModemManager"

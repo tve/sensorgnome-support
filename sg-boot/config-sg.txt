@@ -2,7 +2,7 @@
 # Sensorgnome boot configuration v1 for Raspberry PIs
 
 # CM3+, e.g. SensorStation V1
-[board-type=10]
+[board-type=0x10]
 dtparam=i2c_arm=on
 dtparam=i2c1=on
 # real-time-clock support

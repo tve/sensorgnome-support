@@ -64,3 +64,9 @@ fi
 # ensure we're running in UTC
 rm -f /etc/localtime
 ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+
+# ensure we're close enough to a current date that chrony will sync (10 years)
+if [[ $(date +%Y) -lt 2020 ]]; then
+    echo "Setting date to 2020-01-01"
+    date -s 2020-01-01
+fi

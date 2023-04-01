@@ -12,6 +12,8 @@ https://wiki.alpinelinux.org/wiki/Chrony_and_GPSD.
 A good blog post is at:
 https://austinsnerdythings.com/2021/04/19/microsecond-accurate-ntp-with-a-raspberry-pi-and-pps-gps/
 
+Note that `../sg-boot/boottime.sh` also has some clock tweaks. They're there instead of here 'cause it avoid yet another service and it happens earlier in the boot process.
+
 Operation
 ---------
 

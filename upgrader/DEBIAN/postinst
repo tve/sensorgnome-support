@@ -32,15 +32,10 @@ done
 
 # big hack to upgrade from old versions that didn't have this postinst script
 if ! [[ -f /opt/sensorgnome/upgrader/has-double ]]; then
-    ((
-        echo "*** Will perform double update ***"
-        # wait for install to finish
-        while pgrep -x 'dpkg|apt|apt-get' > /dev/null; do sleep 1; done
-        export DEBIAN_FRONTEND=noninteractive
-        # make sure no one else is locking the dpkg database
-        echo "*** Starting double update ***"
-        flock --exclusive --close /var/lib/dpkg/lock -c \
-            'apt-get update; apt-get install -y sensorgnome'
-    ) </dev/null &)
-    touch /opt/sensorgnome/upgrader/has-double
+    echo "*** Spawning double-upgrade"
+    TERM=dumb systemd-run --service-type=oneshot --description="sg-double-upgrade" \
+        --pipe --no-block --collect \
+        -E DEBIAN_FRONTEND=noninteractive \
+        "/bin/bash -ex -c /opt/sensorgnome/upgrader/do-double.sh" \
+        2>&1 >/tmp/double-upgrade.log </dev/null
 fi

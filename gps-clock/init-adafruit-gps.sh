@@ -21,3 +21,14 @@ else
         systemctl restart chrony.service
     fi
 fi
+
+# Detect Sensorstations with built-in GPS
+if egrep -q 'Module 3 Plus' /proc/device-tree/model; then
+    if [[ "$(lsusb | grep -c 0424:2514)" == 4 ]]; then
+      # Sensorstation V1/V2
+      ln -s /dev/ttyACM0 /dev/ttyGPS
+    else
+      # Sensorstation V3
+      ln -s /dev/ttyACM0 /dev/ttyGPS
+    fi
+fi

@@ -7,7 +7,7 @@ DEST=$DESTDIR/opt/sensorgnome/upgrader
 install -d $DEST $DEST/sources $DEST/bail-me-out
 install -m 755 *.sh $DEST
 install -m 644 sources/* $DEST/sources
-install -m 755 bail-me-out/* $DEST/bail-me-out
+#install -m 755 bail-me-out/* $DEST/bail-me-out
 
 # logrotate control file
 sudo install -d $DESTDIR/etc/logrotate.d

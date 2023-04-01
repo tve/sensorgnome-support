@@ -1,0 +1,19 @@
+# Path -> port mappings
+# Mappings for SensorStation V1/V2 built-in ports
+
+# Ports for 433Mhz radios in the labeled L1..L5 order
+1.2.2 -> 1
+1.3.1 -> 2
+1.3.2 -> 3
+1.3.3 -> 4
+1.3.4 -> 5
+
+# Pluggable ports in the order they
+# are labeled on the PCB (1-7)
+1.4.4 -> 6
+1.4.3 -> 7
+1.4.2 -> 8
+1.4.1 -> 9
+1.1   -> 0
+1.2.3 -> 11
+1.2.4 -> 12

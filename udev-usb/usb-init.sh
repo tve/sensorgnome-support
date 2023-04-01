@@ -15,10 +15,18 @@ cd /opt/sensorgnome/udev-usb
 if ! [[ -f /etc/sensorgnome/usb-port-map.txt ]]; then
   # Raspberry Pi 4 Model B Rev 1.4
   # Raspberry Pi Zero 2 W Rev 1.0
+  # Raspberry Pi Compute Module 3 Plus Rev 1.0
   MODEL=generic
   egrep -q 'Pi 4 Model B' /proc/device-tree/model && MODEL=4B
   egrep -q 'Pi 3 Model B' /proc/device-tree/model && MODEL=3B
   egrep -q 'Pi Zero 2' /proc/device-tree/model && MODEL=Z2
+  if egrep -q 'Module 3 Plus' /proc/device-tree/model; then
+    if [[ "$(lsusb | grep -c 0424:2514)" == 4 ]]; then
+      MODEL=ss12
+    else
+      MODEL=ss3
+    fi
+  fi
   if [[ -f usb-port-map-$MODEL.txt ]]; then
     echo "Model is $MODEL, selecting usb-port-map-$MODEL.txt"
     cp usb-port-map-$MODEL.txt /etc/sensorgnome/usb-port-map.txt

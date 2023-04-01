@@ -3,7 +3,7 @@ echo "Running sg-cellular postinst in $(pwd)"
 SRC=/opt/sensorgnome/cellular # would be nice to derive that from some env var...
 
 # enable and start/restart units
-for U in check-modem.timer init-modem; do
+for U in check-modem.timer init-modem.service; do
     # code from debhelper's postinst-systemd-enable template
     if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
         # This will only remove masks created by d-s-h on package removal.
@@ -13,7 +13,7 @@ for U in check-modem.timer init-modem; do
         if deb-systemd-helper --quiet was-enabled $U; then
             # Enables the unit on first installation, creates new
             # symlinks on upgrades if the unit file has changed.
-            deb-systemd-helper enable $U.service || true
+            deb-systemd-helper enable $U || true
         else
             # Update the statefile to add new symlinks (if any), which need to be
             # cleaned up on purge. Also remove old symlinks.
@@ -24,8 +24,8 @@ for U in check-modem.timer init-modem; do
     # Restart service, if it is running
     systemctl daemon-reload
     if systemctl is-active --quiet $U.service; then
-        echo "Restarting $U.service"
-        systemctl restart $U.service
+        echo "Restarting $U"
+        systemctl restart $U
     fi
 done
 

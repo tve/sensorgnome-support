@@ -5,11 +5,26 @@
 # Currently this only works for rpi
 
 RPI_ID=$(grep Serial /proc/cpuinfo | /bin/sed -re 's/^.*(.{4})(.{4})/\1====\2/'  | tr [:lower:] [:upper:])
-# Distinguish between "regular RPI" and "RPI Zero"
-CLASS=RPI
-egrep -qi zero /proc/device-tree/model && CLASS=RPZ
-# Model digit
-MODEL=$(sed -e 's/[^0-9]*\([0-9]\).*/\1/' /proc/device-tree/model) # first digit, e.g. rpi 400 -> 4
+
+# Treat Compute Modules specially: they belong to a board that presumably is different
+# from a std RPi and may have special hardware that cannot be auto-detected
+if egrep -q 'Module 3 Plus' /proc/device-tree/model; then
+    # Detect Sensorstations
+    if [[ "$(lsusb | grep -c 0424:2514)" == 4 ]]; then
+      # Sensorstation V1/V2
+      MODEL=RPS1
+    else
+      # Sensorstation V3
+      MODEL=RPS3
+    fi
+else
+    # RPi board. distinguish between "regular RPI" and "RPI Zero"
+    CLASS=RPI
+    egrep -qi zero /proc/device-tree/model && CLASS=RPZ
+    # Model digit
+    MODEL=$(sed -e 's/[^0-9]*\([0-9]\).*/\1/' /proc/device-tree/model) # first digit, e.g. rpi 400 -> 4
+fi
+
 RPI_ID=SG-${RPI_ID/====/$CLASS$MODEL}
 echo $RPI_ID > /etc/sensorgnome/id
 

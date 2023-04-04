@@ -4,7 +4,7 @@ MISC=/opt/sensorgnome/sg-boot # would be nice to derive that from some env var..
 
 # Update config.txt
 sed -i -e '/Sensorgnome/,$d' /boot/config.txt
-cat /boot/config-sg.txt >>/boot/config.txt
+cat $MISC/config-sg.txt >>/boot/config.txt
 
 # enable and start/restart systemd units
 for U in sg-boot; do

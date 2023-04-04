@@ -1,6 +1,6 @@
 [Unit]
 Description=Init GPS for Sensorgnome
-After=local-fs.target systemd-udevd.service
+After=sg-boot.service
 
 [Service]
 Type=oneshot

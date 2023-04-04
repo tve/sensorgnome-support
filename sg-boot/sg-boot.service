@@ -1,6 +1,6 @@
 [Unit]
 Description=Init Sensorgnome system basics
-After=local-fs.target
+After=local-fs.target systemd-udevd.service
 
 [Service]
 Type=oneshot

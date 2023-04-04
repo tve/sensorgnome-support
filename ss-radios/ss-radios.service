@@ -1,0 +1,14 @@
+[Unit]
+Description=Program SensorStation radios
+After=sg-boot.service
+Before=sg-control
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/sensorgnome/ss-radios
+ExecStart=/usr/bin/bash -e ./ss-radios.sh
+SyslogIdentifier=ss-radios
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

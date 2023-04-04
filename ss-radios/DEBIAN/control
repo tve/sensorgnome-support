@@ -1,0 +1,11 @@
+Package: ss-radios
+Version: 1.0
+Architecture: armhf
+Section: misc
+Priority: standard
+Essential: no
+Depends: sg-boot
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: SensorStation radio firmware updater
+  Updates the radio firmware at boot, if necessary.

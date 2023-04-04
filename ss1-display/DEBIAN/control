@@ -1,0 +1,11 @@
+Package: ss1-display
+Version: 1.0
+Architecture: armhf
+Section: misc
+Priority: standard
+Essential: no
+Depends: sg-boot
+Homepage: https://github.com/sensorgnome-support
+Maintainer: TvE (tvoneicken@gmail.com)
+Description: SensorStation V1 display software
+  Runs a script that updates the SensorStation V1 E-Ink display every 2 minutes.

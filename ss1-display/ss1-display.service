@@ -1,0 +1,17 @@
+[Unit]
+Description=SensorStation V1 display driver
+After=sg-boot.service
+Requires=sg-boot.service
+
+[Service]
+Type=exec
+WorkingDirectory=/opt/sensorgnome/ss1-display
+ExecCondition=/usr/bin/grep RPS1 /etc/sensorgnome/id
+ExecStart=/usr/bin/python3 ss1-display.py
+StandardOutput=journal
+SyslogIdentifier=ss1-display
+RestartSec=180s
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

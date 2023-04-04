@@ -4,11 +4,13 @@ rm -rf $DESTDIR
 mkdir $DESTDIR
 
 DEST=$DESTDIR/opt/sensorgnome/ss1-display
-install -d $ $DEST/inkyphat
+install -d $DEST $DEST/inky-phat
 install -m 755 *.sh *.py $DEST
 install -d $DESTDIR/etc/systemd/system
 install -m 644 *.service $DESTDIR/etc/systemd/system
-cp -r inkyphat/library $DEST/inkyphat
+ls
+ls $DEST
+cp -r inky-phat/library $DEST/inky-phat
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

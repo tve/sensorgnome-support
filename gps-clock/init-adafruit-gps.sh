@@ -25,5 +25,6 @@ fi
 # Detect Sensorstations with built-in GPS
 if [[ $(cat /etc/sensorgnome/id) == *RPS* ]]; then
     # Sensorstation V1/V2/V3
-    ln -s /dev/ttyACM0 /dev/ttyGPS
+    ln -s /dev/ttyAMA0 /dev/ttyGPS
+    raspi-gpio 28 op dh # Enable GPS power
 fi

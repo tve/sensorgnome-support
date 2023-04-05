@@ -168,48 +168,58 @@ def getTemperature():
     return temperature
 
 
-def getWifiStatus():
-    result = os.popen("wpa_cli -i wlan0 status | grep wpa_state").read()
-    state = result.split("=")[1].strip()
-    print("Wifi state: " + state)
-    if state == "COMPLETED":
-        return "ON"
-    if state == "INACTIVE":
-        return "OFF"
-    return "oOo"
+# def getWifiStatus():
+#     result = os.popen("wpa_cli -i wlan0 status | grep wpa_state").read()
+#     state = result.split("=")[1].strip()
+#     print("Wifi state: " + state)
+#     if state == "COMPLETED":
+#         return "ON"
+#     if state == "INACTIVE":
+#         return "OFF"
+#     return "oOo"
 
 
-def getHotSpotStatus():
-    state = os.popen("ip link show ap0 | grep -Po 'state \K\S+'").read()
-    print("Hotspot state: " + state.strip())
-    if state == "UP":
-        return "ON"
-    if state == "DOWN":
-        return "OFF"
-    return "N/A"
+# def getHotSpotStatus():
+#     state = os.popen("ip link show ap0 | grep -Po 'state \K\S+'").read()
+#     print("Hotspot state: " + state.strip())
+#     if state == "UP":
+#         return "ON"
+#     if state == "DOWN":
+#         return "OFF"
+#     return "N/A"
 
 
-# make an http request to sg-control to get upload/files info
-def getFiles():
+# def getCellStatus():
+#     return "??"
+#     state = os.popen("ip link show ap0 | grep -Po 'state \K\S+'").read()
+#     print("Hotspot state: " + state.strip())
+#     if state == "UP":
+#         return "ON"
+#     if state == "DOWN":
+#         return "OFF"
+#     return "N/A"
+
+
+# make an http request to sg-control to get various info
+def getInfo():
     try:
         response = requests.get("http://localhost:8080/monitoring", timeout=5)
         info = response.json()
         # print("sg-control info: "+str(info))
-        up = info["uploads"]["result"]["status"]
-        if up != "OK":
-            up = "ERR"
+        up = info["files"]["summary"]["last_upload"]
         dl = info["files"]["summary"]["files_to_download"]
-        return (up, dl)
+        # print("sg-control info: " + str(up) + " " + str(dl) + " " + str(info["network"]))
+        return (up, dl, info["network"])
     except:
         print("Error getting sg-control info: " + str(sys.exc_info()[0]))
-        return ("??", "??")
+        return ("??", "??", {})
 
 
 # read the software version file
 def getVersion():
     try:
         with open("/etc/sensorgnome/version", "r") as f:
-            return f.read().strip()
+            return f.read().replace("SG","").strip()
     except:
         print("Error reading version file: " + str(sys.exc_info()[0]))
         return "???"
@@ -232,10 +242,10 @@ sg_version = getVersion()
 #      GPIO.output(_DIAG_B_1)
 
 
-font_small = ImageFont.truetype(inkyphat.fonts.FredokaOne, 14)
+font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", 14)
 font_large = ImageFont.truetype(inkyphat.fonts.AmaticSCBold, 24)
 font_mega = ImageFont.truetype(inkyphat.fonts.AmaticSCBold, 36)
-font_fixed = ImageFont.truetype(inkyphat.fonts.PressStart2P, 9)
+font_fixed = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf", 12)
 
 
 def displayWelcome():
@@ -246,42 +256,56 @@ def displayWelcome():
     inkyphat.set_image(img)
     inkyphat.show()
 
+netmap = {
+    "connected": "OK", "disconnected": "OFF", "unknown": "???", "no-modem": "N/A", "error": "ERR"
+}
+def mapNetStatus(s):
+    sl = s.lower()
+    if sl in netmap:
+        return netmap[sl]
+    return s
 
 def displayHandler():
     while 1:
-        draw.rectangle(((0, 0), (212, 20)), fill=1)
-        draw.rectangle(((0, 20), (212, 84)), fill=0)
-        draw.rectangle(((0, 84), (212, 104)), fill=1)
-        draw.line(((106, 20), (106, 84)), fill=1)
-        draw.text((4, 2), "SG-FC32RPI3EE0F ("+sg_version+")", 0, font_small)
+        draw.rectangle(((0, 0), (212, 104)), fill=0)
+        draw.rectangle(((0, 0), (212, 11)), fill=1)
+        draw.rectangle(((0, 93), (212, 104)), fill=1)
+        draw.line(((106, 14), (106, 90)), fill=1)
+        draw.text((4, -3), "SG-FC32RPI3EE0F v"+sg_version, 0, font_small)
+        y = 12
+        inc = 13
         # battery
         batt = getVoltage()
         if batt < 11.3:
             color = 2
         else:
             color = 1
-        draw.text((4, 25), "Bat   " + str(round(batt, 1)) + "V", color, font_fixed)
+        draw.text((4, y), "Bat   " + str(round(batt, 1)) + "V", color, font_fixed)
+        y += inc
         # solar
         solar = getSolarVoltage()
         if solar < 12:
             color = 2
         else:
             color = 1
-        draw.text((4, 40), "Solar " + str(round(solar, 1)) + "V", color, font_fixed)
+        draw.text((4, y), "Solar " + str(round(solar, 1)) + "V", color, font_fixed)
+        y += inc
         # rtc battery
         rtc = 3.0
         if rtc < 2.6:
             color = 2
         else:
             color = 1
-        draw.text((4, 55), "RTC   " + str(round(rtc, 1)) + "V", color, font_fixed)
+        draw.text((4, y), "RTC   " + str(round(rtc, 1)) + "V", color, font_fixed)
+        y += inc
         # temperature
         temp = getTemperature()
         if temp > 60:
             color = 2
         else:
             color = 1
-        # draw.text((4,70),"Temp  "+str(round(temp))+"C", color, font_fixed)
+        draw.text((4,y),"Temp  "+str(round(temp))+"C", color, font_fixed)
+        y += inc
         # disk usage
         result = os.popen("df -h | grep /data").read()
         disk = result.split("%")[0].split("  ")[-1]
@@ -289,40 +313,79 @@ def displayHandler():
             color = 2
         else:
             color = 1
-        draw.text((4, 70), "Disk  " + disk + "%", color, font_fixed)
+        draw.text((4, y), "Disk  " + disk + "%", color, font_fixed)
+        y += inc
+        # spare
+        # draw.text((4, y), "Spare", 1, font_fixed)
+        y += inc
+
+        # right column
+        (up, dl, net) = getInfo()
         # wifi
-        wifi = getWifiStatus()
-        if wifi == "ON":
+        y = 12
+        wifi = mapNetStatus(net["wifi"])
+        if wifi != "OK" and wifi != "N/A":
             color = 2
         else:
             color = 1
-        draw.text((112, 25), "WiFi", 1, font_fixed)
-        draw.text((184, 25), wifi, color, font_fixed)
+        draw.text((112, y), "WiFi", 1, font_fixed)
+        draw.text((184, y), wifi, color, font_fixed)
+        y += inc
         # hotspot
-        hotspot = getHotSpotStatus()
-        if hotspot == "ON":
+        hotspot = mapNetStatus(net["hotspot"])
+        if hotspot != "ON" and hotspot != "N/A":
             color = 2
         else:
             color = 1
-        draw.text((112, 40), "HotSpot", 1, font_fixed)
-        draw.text((184, 40), hotspot, color, font_fixed)
+        draw.text((112, y), "HotSpot", 1, font_fixed)
+        draw.text((184, y), hotspot, color, font_fixed)
+        y += inc
+        # cell modem
+        cell = mapNetStatus(net["cell"])
+        if cell != "OK" and cell != "N/A":
+            color = 2
+        else:
+            color = 1
+        draw.text((112, y), "Cell", 1, font_fixed)
+        draw.text((184, y), cell, color, font_fixed)
+        y += inc
+        # Inet
+        inet = mapNetStatus(net["inet"])
+        if inet == "none":
+            color = 2
+        else:
+            color = 1
+        draw.text((112, y), "Inet", 1, font_fixed)
+        draw.text((210 - len(inet) * 7, y), inet, color, font_fixed)
+        y += inc
         # last upload
-        (up, dl) = getFiles()
-        if up == "OK":
-            color = 1
-        else:
-            color = 2
-        draw.text((112, 55), "Upload", 1, font_fixed)
-        draw.text((184, 55), up, color, font_fixed)
+        color = 1
+        if up != "??":
+            delta = time.time() - up
+            if delta > 10000:
+                color = 2
+            # produce ago string
+            if delta < 120:
+                up = str(round(delta)) + "sec"
+            elif delta < 7200:
+                up = str(round(delta / 60)) + "min"
+            elif delta < 2*86400:
+                up = str(round(delta / 3600)) + "hrs"
+            else:
+                up = str(round(delta / 86400)) + "days"
+        draw.text((112, y), "Upload", 1, font_fixed)
+        draw.text((210 - len(up) * 7, y), up, color, font_fixed)
+        y += inc
         # files to download
-        draw.text((112, 70), "Files", 1, font_fixed)
+        draw.text((112, y), "DL files", 1, font_fixed)
         dl = str(dl)
-        draw.text((210 - len(dl) * 9, 70), str(dl), 1, font_fixed)
+        draw.text((210 - len(dl) * 7, y), str(dl), 1, font_fixed)
+        y += inc
         # current time
-        draw.rectangle(((0, 84), (212, 104)), fill=1)
         now = datetime.datetime.now().isoformat(" ", "seconds")
-        draw.text((20, 86), now + " UTC", 0, font_small)
+        draw.text((20, 91), now + " UTC", 0, font_small)
         #
+        #draw.line(((0,0),(212,104)), 2) # diagonal to measure spaces
         inkyphat.set_image(img)
         inkyphat.show()
         time.sleep(120)

@@ -59,7 +59,16 @@ elif [[ "$1" == "mode" ]]; then
     sed -i -e "s/^wpa_key_mgmt=.*/wpa_key_mgmt=$2/" /etc/hostapd/hostapd.conf
     systemctl restart hostapd
 else
-    echo "Starting up Wifi HotSpot"
+    # Ensure hostapd has the correct ssid/psk
+    # Use different SSIDs for initial open hotspot than for "final" hostspot 'cause Android gets
+    # confused when it switches from password-less to w/password.
+    # FIXME: should also set the country code, but there may not be a NETWORK.TXT file
+    # But the "global" country code 00 is probably just fine
+    SSID=$(cat /etc/sensorgnome/id)
+    egrep -q wpa=0 /etc/hostapd/hostapd.conf && SSID="$SSID-init"
+    sed -i -e "s/^ssid=.*/ssid=$SSID/" /etc/hostapd/hostapd.conf
+
+    echo "Starting up Wifi HotSpot, SSID=$SSID"
     rfkill unblock wlan # prob not necessary but harmless
 
     # Ensure we have a device for the AP
@@ -77,15 +86,6 @@ else
         echo "deny_interfaces=lo.dnsmasq" >> /etc/resolvconf.conf
         resolvconf -u
     fi
-
-    # Ensure hostapd has the correct ssid/psk
-    # Use different SSIDs for initial open hotspot than for "final" hostspot 'cause Android gets
-    # confused when it switches from password-less to w/password.
-    # FIXME: should also set the country code, but there may not be a NETWORK.TXT file
-    # But the "global" country code 00 is probably just fine
-    SSID=$(cat /etc/sensorgnome/id)
-    egrep -q wpa=0 /etc/hostapd/hostapd.conf && SSID="$SSID-init"
-    sed -i -e "s/^ssid=.*/ssid=$SSID/" /etc/hostapd/hostapd.conf
 
     systemctl start hostapd
     systemctl start dnsmasq

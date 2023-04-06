@@ -12,7 +12,7 @@ install -m 755 *.sh $DEST
 install -d $DESTDIR/etc/ModemManager/connection.d $DESTDIR/etc/systemd/system $DESTDIR/etc/udev/rules.d
 install -m 644 *.service *.timer $DESTDIR/etc/systemd/system
 install -m 755 20-*.mm $DESTDIR/etc/ModemManager/connection.d
-install -m 755 *.rules $DESTDIR/etc/udev/rules.d
+install -m 644 *.rules $DESTDIR/etc/udev/rules.d
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

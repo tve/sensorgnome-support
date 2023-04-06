@@ -1,10 +1,11 @@
 [Unit]
 Description=Init USB devs for sensorgnome
+After: sg-boot.service
 
 [Service]
 Type=oneshot
 WorkingDirectory=/opt/sensorgnome/udev-usb
-ExecStart=/usr/bin/bash -ex ./usb-init.sh
+ExecStart=/usr/bin/bash ./usb-init.sh
 SyslogIdentifier=sg-usb-init
 RemainAfterExit=true
 

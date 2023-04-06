@@ -1,6 +1,6 @@
 [Unit]
 Description=Detect and init modems managed by ModemManager
-After=ModemManager.service
+After=ModemManager.service sg-boot.service
 
 [Service]
 Type=exec

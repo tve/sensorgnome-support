@@ -10,6 +10,8 @@ RPI_ID=$(grep Serial /proc/cpuinfo | /bin/sed -re 's/^.*(.{4})(.{4})/\1====\2/' 
 # from a std RPi and may have special hardware that cannot be auto-detected
 if egrep -q 'Module 3 Plus' /proc/device-tree/model; then
     # Detect Sensorstations
+    # This is a tad iffy 'cause we look at USB, which may not be fully discovered yet, but
+    # the sg-boot service depends on local-fs.target, which should make it all work OK.
     if [[ "$(lsusb | grep -c 0424:2514)" == 4 ]]; then
       # Sensorstation V1/V2
       MODEL=RPS1

@@ -1,7 +1,7 @@
 [Unit]
 Description=Detect and init GPS in modem managed by ModemManager
-After=wifi-init.service
-Requires=wifi-init.service
+After=ModemManager.service
+Requires=ModemManager.service
 
 [Service]
 Type=exec

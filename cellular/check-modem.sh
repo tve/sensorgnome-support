@@ -106,7 +106,8 @@ while [[ -n "$modem" ]]; do
 
     # If we're *the* default route, check that we have traffic in the past 90 minutes
     vnstat=$(vnstat -i $iface --json f 18)
-    rx=$(jq -c '.interfaces[0].traffic.fiveminute | map(.rx) | add' <<<$vnstat)
+    rx=$(jq -c '.interfaces[0].traffic.fiveminute | map(.rx) | add' <<<$vnstat) || \
+        echo "Error getting RX bytes from vnstat: $vnstat"
     echo "RX bytes in last 90 minutes: $rx"
     dr=$(ip route get 1.1.1.1)
     if [[ "$dr" = *${iface}* ]]; then

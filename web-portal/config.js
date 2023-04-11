@@ -134,7 +134,7 @@ app.post('/set-config', (req, res) => {
     }, 5000)
     
     let ifaces = ifaces_list()
-    respond(res, success_html, {shortname: sn})
+    respond(res, success_html, {}) // {shortname: sn})
 })
 
 app.get('/redirect', (req, res) => {

@@ -72,17 +72,17 @@ app.post('/set-config', (req, res) => {
         return respond(res, config_html,
             {message: "This Sensorgnome has already been initialized, use the std web UI to re-init"})
     //console.log("Body:", req.body)
-    if (!(req.body.password?.length > 0 && req.body.short_name?.length > 0)) {
-        return respond(res, config_html, {message: "Password and short-name required"})
+    if (!(req.body.password?.length > 0)) { // } && req.body.short_name?.length > 0)) {
+        return respond(res, config_html, {message: "Password required"})
     }
+    // let sn = req.body.short_name
+    // if (sn < 3 || sn > 20)
+    //     return respond(res, config_html, {message: "Short-name must be 3 to 20 characters long"})
+    // if (!sn.match(/^[\u0000-\u0019\u0021-\uFFFF_0-9]+$/))
+    //     return respond(res, config_html, {message: "Short-name must contain only letters, digits and underscore"})
     let pw = req.body.password
-    let sn = req.body.short_name
     if (pw.length < 8 || pw.length > 32)
         return respond(res, config_html, {message: "SG Password must be 8 to 32 characters long"})
-    if (sn < 3 || sn > 20)
-        return respond(res, config_html, {message: "Short-name must be 3 to 20 characters long"})
-    if (!sn.match(/^[\u0000-\u0019\u0021-\uFFFF_0-9]+$/))
-        return respond(res, config_html, {message: "Short-name must contain only letters, digits and underscore"})
     if (top100k.includes(pw))
         return respond(res, config_html, {message: "Please choose a less common Sensorgnome password :-)"})
 
@@ -113,15 +113,15 @@ app.post('/set-config', (req, res) => {
     Fs.rmSync("public/need_init")
 
     // set the shortname
-    try {
-        let acq = Fs.readFileSync(acquisition, {encoding: 'utf8'})
-        acq = acq.replace(/"label":\s*"[^"]*"/s, `"label": "${sn}"`)
-        Fs.writeFileSync(acquisition, acq)
-        CP.execFileSync("systemctl", ["restart", "sg-control"]) // yuck...
-        CP.execFileSync("systemctl", ["restart", "sg-hub-agent"]) // yuck...
-    } catch(e) {
-        return respond(res, config_html, {message: "Error changing short-name: " + e})
-    }
+    // try {
+    //     let acq = Fs.readFileSync(acquisition, {encoding: 'utf8'})
+    //     acq = acq.replace(/"label":\s*"[^"]*"/s, `"label": "${sn}"`)
+    //     Fs.writeFileSync(acquisition, acq)
+    //     CP.execFileSync("systemctl", ["restart", "sg-control"]) // yuck...
+    //     CP.execFileSync("systemctl", ["restart", "sg-hub-agent"]) // yuck...
+    // } catch(e) {
+    //     return respond(res, config_html, {message: "Error changing short-name: " + e})
+    // }
 
     // change the wifi async after a short delay so we can send a response back
     setTimeout(() => {

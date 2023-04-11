@@ -221,7 +221,7 @@ class LogShipper {
     }
   }
 
-  // process one log file
+  // process one log file, returns true if fully pushed
   async processFile(f) {
     const path = "/var/log/" + f
     const stat = fs.statSync(path)
@@ -235,7 +235,7 @@ class LogShipper {
       pos = this.state.logs[f].pos = 0
       reset = true
     }
-    if (pos == size) return
+    if (pos == size) return true
     // read the file chunk
     const len = Math.min(size - pos, chunkSize)
     if (len < size - pos) console.log(`${f}: sending ${len} of ${size - pos} bytes`)
@@ -246,19 +246,23 @@ class LogShipper {
     // send log file chunk
     await this.sendData(f, reset, pos, buf)
     this.state.logs[f].pos = pos + rlen
+    return pos + rlen == size
   }
 
-  // process all log files
+  // process all log files, returns true if all fully pushed
   async processAll() {
     const logFiles = this.logFileList()
     const now = new Date().toISOString()
     console.log(`${now}: Processing ${logFiles.length} log files`)
     //console.log(logFiles.join(', '))
 
+    let allDone = true
     for (const f of logFiles) {
-      await this.processFile(f)
+      const full = await this.processFile(f)
+      if (!full) allDone = false
     }
     fs.writeFileSync(stateFile, JSON.stringify(this.state))
+    return allDone
   }
 }
 
@@ -402,6 +406,7 @@ let failed = 0 // number of consecutive failed uploads
 async function doit() {
   if (process.env.NOTIFY_SOCKET) await execFile("systemd-notify", ["--ready"])
   while (true) {
+    let logall = false, logdone = true
     try {
       // first ship the info
       const resp = await shipInfo()
@@ -414,9 +419,10 @@ async function doit() {
           await doCommand(ctrl.cmd)
           period = min_period
         }
+        if (ctrl.logall) logall = true
       }
       // then ship log files
-      await shipper.processAll()
+      logdone = await shipper.processAll()
     } catch (e) {
       failed++
       console.log(`Aborting: ${e.message}`)
@@ -428,8 +434,13 @@ async function doit() {
     if (process.env.NOTIFY_SOCKET) await execFile("systemd-notify", ["WATCHDOG=1"])
     
     // calculate the delay 'til the next iteration
-    const delay = period - 30 + Math.random() * 60
-    period = Math.min(max_period, period * 1.5)
+    let delay
+    if (logall && !logdone) {
+      delay = 10
+    } else {
+      delay = period - 30 + Math.random() * 60
+      period = Math.min(max_period, period * 1.5)
+    }
 
     try {
       await request(sghub + `/agent/next?delay=${delay}`, "POST", { auth: `${sgid}:${sgkey}` })

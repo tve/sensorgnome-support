@@ -2,6 +2,8 @@
 
 # start with a simple apt update
 date
+echo "** Running apt-get update"
+
 apt-get update
 
 # Hacky hook to allow us to tweak things before apt actually performs any upgrade, specifically,

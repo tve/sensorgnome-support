@@ -11,7 +11,7 @@ ExecStart=/usr/bin/python3 ss1-display.py
 StandardOutput=journal
 SyslogIdentifier=ss1-display
 RestartSec=180s
-Restart=always
+Restart=on-abnormal
 
 [Install]
 WantedBy=multi-user.target

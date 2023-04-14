@@ -6,6 +6,7 @@
 const http2 = require("http2")
 const http = require("http")
 const fs = require("fs")
+const fsp = require("fs/promises")
 const process = require("process")
 const Buffer = require("buffer").Buffer
 const cp = require("child_process")
@@ -327,6 +328,21 @@ async function checkCerts() {
   }
 }
 
+async function gotDefaultRoute() {
+  try {
+    const routes = await fsp.readFile("/proc/net/route", "utf8")
+    for (const line of routes.split("\n")) {
+      const fields = line.trim().split("\t")
+      if (fields.length < 11) continue
+      if (fields[1] == "00000000" && fields[3] == "0003") return true
+    }
+    return false
+  } catch(e) {
+    console.log(`gotDefaultRoute: ${e}`)
+    return true
+  }
+}
+
 async function logcmd(seq, status, output) {
   try {
     const opts = { auth: `${sgid}:${sgkey}` }
@@ -407,35 +423,38 @@ async function doit() {
   if (process.env.NOTIFY_SOCKET) await execFile("systemd-notify", ["--ready"])
   while (true) {
     let logall = false, logdone = true
-    try {
-      // first ship the info
-      const resp = await shipInfo()
-      failed = 0
-      // check whether we have some commands to execute
-      if (resp && resp.length > 0 && resp.startsWith("{")) {
-        const ctrl = JSON.parse(resp)
-        if ("tunnel" in ctrl) await updateTunnel(ctrl.tunnel)
-        if ("cmd" in ctrl) {
-          await doCommand(ctrl.cmd)
-          period = min_period
+    const online = await gotDefaultRoute()
+    if (online) {
+      try {
+        // first ship the info
+        const resp = await shipInfo()
+        failed = 0
+        // check whether we have some commands to execute
+        if (resp && resp.length > 0 && resp.startsWith("{")) {
+          const ctrl = JSON.parse(resp)
+          if ("tunnel" in ctrl) await updateTunnel(ctrl.tunnel)
+          if ("cmd" in ctrl) {
+            await doCommand(ctrl.cmd)
+            period = min_period
+          }
+          if (ctrl.logall) logall = true
         }
-        if (ctrl.logall) logall = true
+        // then ship log files
+        logdone = await shipper.processAll()
+      } catch (e) {
+        failed++
+        console.log(`Aborting: ${e.message}`)
       }
-      // then ship log files
-      logdone = await shipper.processAll()
-    } catch (e) {
-      failed++
-      console.log(`Aborting: ${e.message}`)
+      // check whether there are new certs available
+      await checkCerts()
     }
-    // check whether there are new certs available
-    await checkCerts()
 
     // notify systemd that we're alive
     if (process.env.NOTIFY_SOCKET) await execFile("systemd-notify", ["WATCHDOG=1"])
     
     // calculate the delay 'til the next iteration
     let delay
-    if (logall && !logdone) {
+    if (!online || (logall && !logdone)) {
       delay = 10
     } else {
       delay = period - 30 + Math.random() * 60
@@ -443,7 +462,8 @@ async function doit() {
     }
 
     try {
-      await request(sghub + `/agent/next?delay=${delay}`, "POST", { auth: `${sgid}:${sgkey}` })
+      if (online)
+        await request(sghub + `/agent/next?delay=${delay}`, "POST", { auth: `${sgid}:${sgkey}` })
     } catch (e) {}
     
     close_clients()

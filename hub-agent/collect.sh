@@ -19,7 +19,7 @@ awk '{print $3}' </etc/apt/sources.list.d/sensorgnome.list
 
 h=$(cat /etc/sensorgnome/hostname-init)
 if [[ "$h" != "raspberrypi" ]]; then
-   echo -n "label: $h"
+   echo "label: \"$h\""
 fi
 #jq .label /etc/sensorgnome/acquisition.json
 

@@ -3,13 +3,18 @@
 # boot-time tasks for Sensor Gnome (for debian 7.0 armhf)
 # These must be run before network interfaces are brought up!
 
+# Capture the hostname entered by the user in raspi-imager
+[[ -f /etc/sensorgnome/hostname-init ]] || cp /etc/hostname /etc/sensorgnome/hostname-init
+
 # Generate the sensorgnome unique system ID into /etc/sensorgnome/id
 # This ID is associated with the CPU chip, thus if the hardware is swapped out due to a failure
 # the station will get a new ID...
 ./gen_id.sh
 
 # Make sure serial number-hostname for local host is in /etc/hosts
-sed -i /etc/hosts -e "/127.0.0.1[ \t]\+localhost/s/^.*$/127.0.0.1\tlocalhost `hostname`/"
+sed -i /etc/hosts \
+    -e "/127.0.0.1[ \t]\+localhost/s/^.*$/127.0.0.1\tlocalhost `hostname`/" \
+    -e "s/raspberrypi/`hostname`/"
 
 # Increment the persistent bootcount in /etc/bootcount
 BOOT_COUNT_FILE="/etc/sensorgnome/bootcount"

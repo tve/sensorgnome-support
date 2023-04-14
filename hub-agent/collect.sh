@@ -9,8 +9,6 @@ echo -n "timezone: "
 tail -1 /etc/localtime
 echo -n "bootcount: "
 cat /etc/sensorgnome/bootcount
-echo -n "label: "
-jq .label /etc/sensorgnome/acquisition.json
 echo -n "lotek_freq: "
 jq .lotek_freq /etc/sensorgnome/acquisition.json
 echo "find_tags: " $(jq .module_options.find_tags.params /etc/sensorgnome/acquisition.json)
@@ -18,6 +16,12 @@ echo -n "version: "
 cat /etc/sensorgnome/version
 echo -n "train: "
 awk '{print $3}' </etc/apt/sources.list.d/sensorgnome.list
+
+h=$(cat /etc/sensorgnome/hostname-init)
+if [[ "$h" != "raspberrypi" ]]; then
+   echo -n "label: $h"
+fi
+#jq .label /etc/sensorgnome/acquisition.json
 
 echo -n "default route: "
 ip route get 1.1.1.1 | head -1

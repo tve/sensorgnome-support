@@ -1,6 +1,6 @@
 [Unit]
 Description=Init USB devs for sensorgnome
-After: sg-boot.service
+After=sg-boot.service
 
 [Service]
 Type=oneshot

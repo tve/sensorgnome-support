@@ -108,6 +108,7 @@ function request(url, method = "GET", options = {}, postData) {
     const req = client.request(headers)
     req.on("error", err => {
       console.log(`http2 request error: ${err}`)
+      if (err.includes("certificate is not yet valid")) fixtime().then(()=>{})
       delete clients[hostport]
       reject(err)
     })
@@ -171,6 +172,31 @@ function request1(url, method = "GET", options = {}, postData) {
     }
     req.end()
   })
+}
+
+// An HTTPS request returned a "certificate not yet valid" error. Most likely this means that the
+// time is not set properly. Try to fix it by looking at the server's time using HTTP. But first
+// check that the time is truly unset!
+async function fixtime() {
+  try {
+    const image = parseInt(await fsp.readFile('/etc/sensorgnome/image-stamp'))
+    const now = Date.now()/1000
+    if (now > image) return // be a coward and don't fix the time
+    const url = sghub.replace("https","http")
+    http.request(url, res => {
+      res.on("data", () => {})
+      res.on("end", () => {
+        if (res.headers.date) {
+          const d = new Date(res.headers.date)
+          console.log(`Setting time to ${d}`)
+          execSync("date -s '"+d.toISOString()+"'")
+        }
+      })
+    }).end()
+
+  } catch(e) {
+    console.log("fixtime error: ", e)
+  }
 }
 
 class LogShipper {
@@ -418,6 +444,7 @@ async function updateTunnel(tunnel) {}
 const shipper = new LogShipper()
 
 let failed = 0 // number of consecutive failed uploads
+let offline = false // whether we are offline
 
 async function doit() {
   if (process.env.NOTIFY_SOCKET) await execFile("systemd-notify", ["--ready"])
@@ -468,7 +495,11 @@ async function doit() {
     
     close_clients()
 
-    console.log("Sleeping", delay, "seconds")
+    // little dance with 'online' and 'offline' to avoid log spam
+    if (online) offline = false
+    if (!offline) console.log("Sleeping", delay, "seconds")
+    if (!online) { offline = true; console.log("We seem to be offline") }
+
     await sleep(delay * 1000)
   }
 }

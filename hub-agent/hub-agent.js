@@ -178,18 +178,24 @@ function request1(url, method = "GET", options = {}, postData) {
 // time is not set properly. Try to fix it by looking at the server's time using HTTP. But first
 // check that the time is truly unset!
 async function fixtime() {
-  try {
-    const image = parseInt(await fsp.readFile('/etc/sensorgnome/image-stamp'))
+  async function timeNeedsFixing() {
     const now = Date.now()/1000
-    if (now > image) return // be a coward and don't fix the time
+    const image = parseInt(await fsp.readFile('/etc/sensorgnome/image-stamp'))
+    return now < image
+  }
+  try {
+    if (!timeNeedsFixing()) return // be a coward and don't fix the time
     const url = sghub.replace("https","http")
     http.request(url, res => {
       res.on("data", () => {})
       res.on("end", () => {
         if (res.headers.date) {
           const d = new Date(res.headers.date)
+          if (!timeNeedsFixing()) return // chrony got there faster...
           console.log(`Setting time to ${d}`)
-          execSync("date -s '"+d.toISOString()+"'")
+          cp.execFile("/usr/bin/date", ['-s', d.toISOString()], (err, stdout, stderr) => {
+            if (err) console.log(`erro setting time: ${err}`)
+          })
         }
       })
     }).end()

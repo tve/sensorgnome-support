@@ -108,7 +108,7 @@ function request(url, method = "GET", options = {}, postData) {
     const req = client.request(headers)
     req.on("error", err => {
       console.log(`http2 request error: ${err}`)
-      if (err.includes("certificate is not yet valid")) fixtime().then(()=>{})
+      if (err.message.includes("certificate is not yet valid")) fixtime().then(()=>{})
       delete clients[hostport]
       reject(err)
     })
@@ -498,7 +498,7 @@ async function doit() {
     // little dance with 'online' and 'offline' to avoid log spam
     if (online) offline = false
     if (!offline) console.log("Sleeping", delay, "seconds")
-    if (!online) { offline = true; console.log("We seem to be offline") }
+    if (!online && !offline) { offline = true; console.log("We seem to be offline") }
 
     await sleep(delay * 1000)
   }

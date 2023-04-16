@@ -17,7 +17,9 @@ fi
 
 systemctl daemon-reload
 
+deb-systemd-helper enable gpsd.service # seems not to be by default??
 deb-systemd-helper disable sg-gps-init.service || true
+
 deb-systemd-helper enable sg-ada-gps-init.service
 deb-systemd-helper enable sg-mm-gps-init.service
 if systemctl is-active --quiet sg-mm-gps-init.service; then

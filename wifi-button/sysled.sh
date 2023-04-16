@@ -19,8 +19,8 @@ hotspot=$1
 internet=$2
 
 # patterns
-blink1="1 1000 0 1000"
-blink2="1 200 0 200 1 200 0 1000"
+blink1="1 300 0 1700"
+blink2="1 200 0 200 1 200 0 1400"
 blink3="1 200 0 200 1 200 0 200 1 200 0 1000"
 
 # figure out the LED device to use

@@ -70,6 +70,12 @@ fi
 rm -f /etc/localtime
 ln -sf /usr/share/zoneinfo/UTC /etc/localtime
 
+# starting with 2023-106 we store an image creation timestamp in /etc/sensorgnome/image-timestamp
+# but when upgrading that's missing... make one up using /opt/sensorgnome
+if ! [[ -f /etc/sensorgnome/image-timestamp ]]; then
+    stat -c %Y /opt/sensorgnome > /etc/sensorgnome/image-timestamp
+fi
+
 # ensure we're close enough to a current date that chrony will sync (10 years)
 if [[ $(date +%Y) -lt 2020 ]]; then
     echo "Setting date to 2020-01-01"

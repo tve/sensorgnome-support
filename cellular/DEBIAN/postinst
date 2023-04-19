@@ -1,4 +1,4 @@
-#! /usr/bin/bash -ex
+#! /usr/bin/bash -e
 echo "Running sg-cellular postinst in $(pwd)"
 SRC=/opt/sensorgnome/cellular # would be nice to derive that from some env var...
 
@@ -29,4 +29,4 @@ for U in check-modem.timer init-modem.service; do
     fi
 done
 
-echo "Done"
+echo "sg-cellular postinst done"

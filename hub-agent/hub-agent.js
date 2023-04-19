@@ -314,6 +314,8 @@ function remoteFeatures() {
   }
 }
 
+let sg_control_failure = 0
+
 // run collect.sh to collect information about the system, post it to the server, and return
 // any response received (may include a command to execute)
 async function shipInfo() {
@@ -326,6 +328,9 @@ async function shipInfo() {
   } catch (e) {
     info += `\n\njson: { "error": "${e.message.replace(/"/g, '"')}" }`
     console.log("shipInfo: " + e)
+    if (++sg_control_failure == 3) {
+      console.log(await execFile("/usr/bin/systemctl", ["status", "--with-dependencies", "sg-control"]))
+    }
   }
   // get current remote management
   // send the data to the hub

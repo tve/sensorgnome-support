@@ -1,5 +1,6 @@
 [Unit]
 Description=Init USB devs for sensorgnome
+Requires=sg-boot.service
 After=sg-boot.service
 
 [Service]

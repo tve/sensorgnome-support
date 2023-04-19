@@ -1,7 +1,9 @@
 [Unit]
 Description=Init GPS for Sensorgnome
+Requires=sg-boot.service
 After=sg-boot.service
-Before=gpsd.service gpsd.socket chrony.service
+; Note: we can't declare before:gpsd 'cause it creates a dependency loop
+Before=chrony.service
 
 [Service]
 Type=oneshot

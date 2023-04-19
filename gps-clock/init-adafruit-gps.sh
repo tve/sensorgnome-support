@@ -8,6 +8,10 @@ if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     echo "Adafruit GPS HAT detected, enabling PPS input to chrony"
     /usr/bin/systemctl stop serial-getty@ttyS0.service
     ln -f -s /dev/serial0 /dev/sensorgnome/gps.port=0.pps=1.kind=hat.model=adafruit
+    # Set speed to 9600 baud for prompt discovery
+    stty -F /dev/serial0 speed 9600
+    # Tell GPSd to look at serial0
+    systemctl start --no-block gpsdctl@serial0.service
     # Enable GPIO 4 for PPS from the Adafruit GPS hat
     dtoverlay pps-gpio gpiopin=4
     # Enable PPS in chrony

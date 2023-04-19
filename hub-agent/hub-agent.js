@@ -299,9 +299,9 @@ class LogShipper {
   }
 }
 
-let remoteFeatures = null
+let remoteFeaturesCache = null
 function remoteFeatures() {
-  if (remoteFeatures != null) return remoteFeatures
+  if (remoteFeaturesCache != null) return remoteFeaturesCache
   try {
     const r = JSON.parse(fs.readFileSync(remote)) || {}
     let f = ""
@@ -309,7 +309,7 @@ function remoteFeatures() {
     if (r.webui) f += 'w'
     if (r.support) f += 's'
     console.log(`Remote features: ${f}`)
-    remoteFeatures = f
+    remoteFeaturesCache = f
     return f
   } catch (e) {
     console.log("failed to read remote features config: " + e)

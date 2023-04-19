@@ -12,13 +12,13 @@ if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     dtoverlay pps-gpio gpiopin=4
     # Enable PPS in chrony
     sed -i '/refclock PPS/s/^#//' /etc/chrony/chrony.conf
-    systemctl restart chrony.service
+    #systemctl restart chrony.service # chrony should not start before this unit is done
     exit 0
 else
     echo "No Adafruit GPS HAT detected, disabling PPS input to chrony"
     if grep -q '^refclock PPS' /etc/chrony/chrony.conf; then
         sed -i '/^refclock PPS/s/^/#/' /etc/chrony/chrony.conf
-        systemctl restart chrony.service
+        #systemctl restart chrony.service
     fi
 fi
 

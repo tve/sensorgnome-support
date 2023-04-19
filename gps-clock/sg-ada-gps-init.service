@@ -1,7 +1,7 @@
 [Unit]
 Description=Init GPS for Sensorgnome
 After=sg-boot.service
-Before=gpsd.service gpsd.socket
+Before=gpsd.service gpsd.socket chrony.service
 
 [Service]
 Type=oneshot

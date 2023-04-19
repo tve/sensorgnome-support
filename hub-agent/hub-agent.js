@@ -80,7 +80,7 @@ function request(url, method = "GET", options = {}, postData) {
       try {
         client = http2.connect(hostport)
         clients[hostport] = client
-        console.log("Opened client for ", hostport)
+        //console.log("Opened client for ", hostport)
       } catch (err) {
         console.log(`http2 connect error: ${err}`)
         delete clients[hostport]
@@ -134,7 +134,7 @@ function request(url, method = "GET", options = {}, postData) {
 
 function close_clients() {
   for (const hostport in clients) {
-    console.log("Closing client for ", hostport)
+    //console.log("Closing client for ", hostport)
     clients[hostport].close()
     delete clients[hostport]
   }
@@ -286,7 +286,7 @@ class LogShipper {
   async processAll() {
     const logFiles = this.logFileList()
     const now = new Date().toISOString()
-    console.log(`${now}: Processing ${logFiles.length} log files`)
+    //console.log(`${now}: Processing ${logFiles.length} log files`)
     //console.log(logFiles.join(', '))
 
     let allDone = true
@@ -299,7 +299,9 @@ class LogShipper {
   }
 }
 
+let remoteFeatures = null
 function remoteFeatures() {
+  if (remoteFeatures != null) return remoteFeatures
   try {
     const r = JSON.parse(fs.readFileSync(remote)) || {}
     let f = ""
@@ -307,6 +309,7 @@ function remoteFeatures() {
     if (r.webui) f += 'w'
     if (r.support) f += 's'
     console.log(`Remote features: ${f}`)
+    remoteFeatures = f
     return f
   } catch (e) {
     console.log("failed to read remote features config: " + e)

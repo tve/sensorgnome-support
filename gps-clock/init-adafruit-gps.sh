@@ -5,8 +5,9 @@ mkdir -p /dev/sensorgnome
 
 # Detect Adafruit GPS HAT. Its EEPROM causes /proc/device-tree/hat/product to be set
 if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
-    echo "Adafruit GPS HAT detected, enabling PPS input to chrony"
-    /usr/bin/systemctl stop serial-getty@ttyS0.service
+    echo "Adafruit GPS HAT detected, starting GPSd and enabling PPS input to chrony"
+    dev=$(readlink /dev/serial0) # ttyAMA0 or ttyS0
+    systemctl stop serial-getty@$dev.service
     ln -f -s /dev/serial0 /dev/sensorgnome/gps.port=0.pps=1.kind=hat.model=adafruit
     # Set speed to 9600 baud for prompt discovery
     stty -F /dev/serial0 speed 9600
@@ -28,7 +29,15 @@ fi
 
 # Detect Sensorstations with built-in GPS
 if [[ $(cat /etc/sensorgnome/id) == *RPS* ]]; then
-    # Sensorstation V1/V2/V3
-    #ln -s /dev/ttyAMA0 /dev/ttyGPS # not needed 'cause /dev/serial0 already links to ttyAMA0
-    raspi-gpio set 28 op dh # Enable GPS power
+    echo "SensorStation detected, starting GPSd"
+    # Stopping getty also opens up permissions on the serial port
+    dev=$(readlink /dev/serial0) # ttyAMA0 or ttyS0
+    systemctl stop serial-getty@$dev.service
+    # Enable GPS power
+    raspi-gpio set 28 op dh
+    sleep 1 # time for GPS to start-up (do we need this?)
+    # Set speed to 9600 baud for prompt discovery
+    stty -F /dev/serial0 speed 9600
+    # Tell GPSd to look at serial0
+    systemctl start --no-block gpsdctl@serial0.service
 fi

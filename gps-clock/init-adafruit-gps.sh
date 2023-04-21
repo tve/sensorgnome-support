@@ -3,6 +3,12 @@
 SGH=/dev/sensorgnome/hat
 mkdir -p /dev/sensorgnome
 
+# Note: the code here disables getty to free up access to the serial port, then symlinks
+# /dev/ttyGPS to the gps's port, and finally restarts gpsd.
+# The 'proper' way to add a port to GPSd is to run run gpsdctl@<port>.service and that's
+# how USB-attached GPSes work. However, if gpsd is restarted then all the dynamically
+# added devices are lost.
+
 # Detect Adafruit GPS HAT. Its EEPROM causes /proc/device-tree/hat/product to be set
 if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     echo "Adafruit GPS HAT detected, starting GPSd and enabling PPS input to chrony"
@@ -12,7 +18,9 @@ if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     # Set speed to 9600 baud for prompt discovery
     stty -F /dev/serial0 speed 9600
     # Tell GPSd to look at serial0
-    systemctl start --no-block gpsdctl@serial0.service
+    #systemctl start --no-block gpsdctl@serial0.service
+    ln -f -s /dev/serial0 /dev/ttyGPS
+    systemctl restart gpsd.service
     # Enable GPIO 4 for PPS from the Adafruit GPS hat
     dtoverlay pps-gpio gpiopin=4
     # Enable PPS in chrony
@@ -39,5 +47,7 @@ if [[ $(cat /etc/sensorgnome/id) == *RPS* ]]; then
     # Set speed to 9600 baud for prompt discovery
     stty -F /dev/serial0 speed 9600
     # Tell GPSd to look at serial0
-    systemctl start --no-block gpsdctl@serial0.service
+    #systemctl start --no-block gpsdctl@serial0.service
+    ln -f -s /dev/serial0 /dev/ttyGPS
+    systemctl restart gpsd.service
 fi

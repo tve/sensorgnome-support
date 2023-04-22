@@ -323,7 +323,7 @@ def displayHandler():
         (up, dl, net) = getInfo()
         # wifi
         y = 12
-        wifi = mapNetStatus(net["wifi"])
+        wifi = mapNetStatus(net.get("wifi"))
         if wifi != "OK" and wifi != "N/A":
             color = 2
         else:
@@ -332,7 +332,7 @@ def displayHandler():
         draw.text((184, y), wifi, color, font_fixed)
         y += inc
         # hotspot
-        hotspot = mapNetStatus(net["hotspot"])
+        hotspot = mapNetStatus(net.get("hotspot"))
         if hotspot != "ON" and hotspot != "N/A":
             color = 2
         else:
@@ -341,7 +341,7 @@ def displayHandler():
         draw.text((184, y), hotspot, color, font_fixed)
         y += inc
         # cell modem
-        cell = mapNetStatus(net["cell"])
+        cell = mapNetStatus(net.get("cell"))
         if cell != "OK" and cell != "N/A":
             color = 2
         else:
@@ -350,7 +350,7 @@ def displayHandler():
         draw.text((184, y), cell, color, font_fixed)
         y += inc
         # Inet
-        inet = mapNetStatus(net["inet"])
+        inet = mapNetStatus(net.get("inet"))
         if inet == "none":
             color = 2
         else:

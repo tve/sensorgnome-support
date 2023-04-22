@@ -20,7 +20,7 @@ if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     # Tell GPSd to look at serial0
     #systemctl start --no-block gpsdctl@serial0.service
     ln -f -s /dev/serial0 /dev/ttyGPS
-    systemctl restart gpsd.service
+    systemctl restart --no-block gpsd.service
     # Enable GPIO 4 for PPS from the Adafruit GPS hat
     dtoverlay pps-gpio gpiopin=4
     # Enable PPS in chrony
@@ -49,5 +49,5 @@ if [[ $(cat /etc/sensorgnome/id) == *RPS* ]]; then
     # Tell GPSd to look at serial0
     #systemctl start --no-block gpsdctl@serial0.service
     ln -f -s /dev/serial0 /dev/ttyGPS
-    systemctl restart gpsd.service
+    systemctl restart --no-block gpsd.service
 fi

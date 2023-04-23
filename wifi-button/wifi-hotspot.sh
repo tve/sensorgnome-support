@@ -42,6 +42,13 @@ elif [[ "$1" == "capinfo" ]]; then
     else
         echo "off"
     fi
+elif [[ "$1" == "pwinfo" ]]; then
+    c=/etc/hostapd/hostapd.conf
+    if grep -E -q '^wpa=2$' $c && egrep -E -q '^wpa_psk=[0-9a-f]{16}' $c; then
+        echo "set"
+    else
+        echo "open"
+    fi
 elif [[ "$1" == "mode" ]]; then
     if [[ "$2" == "WPA-PSK" ]] || [[ "$2" == "SAE" ]]; then
         echo "Setting mode to $2"

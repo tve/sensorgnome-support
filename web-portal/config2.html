@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sensorgnome Password</title>
+    <style>
+      p { line-height: 2.5ex; margin-top: 1.5em; }
+      li {line-height: 2.5ex; }
+      .submit { width: 8em; height: 3ex; margin: 0.5em 0px 0em 4em; font-size: 125%; }
+      input { font-size: 110%; }
+      body > div {
+        width: 90%; max-width: 40em;
+        margin: auto; padding: 10px;
+        border: 2px solid grey;
+        background-color: #ffd;
+      }
+    </style>
+  </head>
+  <body style="margin: 1em 0px">
+    <div>
+      <h1>Sensorgnome <!--sgid--> Password</h1>
+      <h2>Welcome to your new Sensorgnome</h2>
+      <form action="/init/chk-config" method="post" onSubmit="disableForm()">
+          <p>Please enter the Sensorgnome password.</p>
+          </p>
+          <label for="password">Sensorgnome Password:</label>
+          <input type="text" name="password" id="password" required />
+          
+          <p style="color:red; font-weight:bold"><!--message--></p>
+          <input class="submit" type="submit" value="Submit" id="submit" />
+          <p>Note: <b>form submission takes a good 5 seconds</b>,
+            if it hangs forever when using an Android phone please ensure your
+            cellular/mobile connection is disabled.</p>
+          <p>(This step is necessary to set-up a password for the Hot-Spot.)</p>
+          <p>Sensorgnome IP addresses:</p>
+          <ul><!--ipaddrs--></ul>
+      </form>
+    </div>
+  </body>
+  <script>
+    let submit = document.getElementById('submit')
+    function disableForm() {
+      submit.disabled = true
+      submit.value = 'Submitting...'
+      window.setTimeout(function() {
+        submit.disabled = false
+        submit.value = 'Submit'
+      }, 20000)
+    }
+  </script>
+</html>

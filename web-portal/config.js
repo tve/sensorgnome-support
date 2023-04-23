@@ -12,6 +12,7 @@ const CP = require('child_process')
 const crypto = require("crypto")
 
 const config_html = Fs.readFileSync("public/config.html").toString()
+const config2_html = Fs.readFileSync("public/config2.html").toString()
 const redirect_html = Fs.readFileSync("public/redirect.html").toString()
 const redirecths_html = Fs.readFileSync("public/redirect-hs.html").toString()
 const success_html = Fs.readFileSync("public/success.html").toString()
@@ -47,6 +48,15 @@ function cap_enabled() {
     return false
 }
 
+// check whether hotspot password is set
+function hs_pw_set() {
+    try {
+        let info = CP.execFileSync(wifi_hotspot, ["pwinfo"])
+        return info.toString().startsWith("set")
+    } catch(e) { console.log("Error checking hostspot password:", e) }
+    return false
+}
+
 // respond using a string as a template and substituting fields <!--field--> from info.field
 function respond(res, template, info) {
     info.ipaddrs = ifaces_list()
@@ -61,12 +71,20 @@ app.use(BodyParser.urlencoded({extended: false}))
 
 // get the config page with some placeholders filled in
 app.get('/config', (req, res) => {
-    if (!Fs.existsSync('public/need_init'))
-        return respond(res, config_html,
-            {message: "This Sensorgnome has already been initialized, use the std web UI to re-init"})
-    respond(res, config_html, {})
+    // password not set, needs the full init
+    if (Fs.existsSync('public/need_init')) {
+        return respond(res, config_html, {})
+    }
+    // password set, but not for hotspot, needs password check to set hotspot pw
+    if (hs_pw_set()) {
+        return respond(res, config2_html, {})
+    }
+    // nothing to config
+    return respond(res, config_html,
+        {message: "This Sensorgnome has already been initialized, use the std web UI to re-init"})
 })
 
+// set the full config: unix password, short name, wifi mode, wifi password
 app.post('/set-config', (req, res) => {
     if (!Fs.existsSync('public/need_init'))
         return respond(res, config_html,
@@ -133,7 +151,66 @@ app.post('/set-config', (req, res) => {
         }
     }, 5000)
     
-    let ifaces = ifaces_list()
+    respond(res, success_html, {}) // {shortname: sn})
+})
+
+// get user name given a user id
+function get_user(id) {
+    const pwdfile = Fs.readFileSync("/etc/passwd").toString()
+    const username = new RegExp(`^([^:]+):[^:]*:${id}:`).exec(pwdfile)?.[1]
+    if (!username) throw new Error(`User with id ${id} does not exist`)
+    return username
+}
+
+// extract the password field from /etc/shadow for the specific user
+function shadow_hash(user) {
+     const data = Fs.readFileSync("/etc/shadow")
+     const lines = data.toString().split('\n')
+     const line = lines.find(l => l.startsWith(`${user}:`))
+     if (!line) throw new Error(`User '${user}' does not exist`)
+     const fields = line.split(':')
+     if (fields.length < 2) throw new Error(`User '${user}' has no password`)
+     const hash = fields[1]
+     if (hash == '*') throw new Error(`User '${user}' has no password`)
+     return hash
+}
+
+// use python's crypt function to verify the password,
+// see https://www.baeldung.com/linux/shadow-passwords
+function py_auth(user, pass) {
+    const verifier = shadow_hash(user)
+    const method_salt = verifier.replace(/\$[^$]+$/, '$')
+    const args = ["-c", `import crypt; print(crypt.crypt("${pass}", "${method_salt}"))`]
+    const stdout = Cp.execFileSync("/usr/bin/python3", args)
+    if (stdout.trim() != verifier) throw new Error(`Wrong password for user '${user}'`)
+    return true
+}
+
+// check unix password and set hotspot password to the same value
+app.post('/chk-config', (req, res) => {
+    if (hs_pw_set())
+        return respond(res, config2_html,
+            {message: "This Sensorgnome has already been initialized, use the std web UI to re-init"})
+
+    // check the password
+    try {
+        const user = get_user(1000)
+        py_auth(user, req.body.password)
+    } catch(err) {
+        return respond(res, config_html, {message: err.message})
+    }
+
+    // change the wifi async after a short delay so we can send a response back
+    const wpw = crypto.pbkdf2Sync(req.body.password, sgid, 4096, 256 / 8, "sha1").toString("hex")
+    setTimeout(() => {
+        try {
+            CP.execFileSync(wifi_hotspot, ["mode", mode, wpw||""])
+        } catch(e) {
+            console.log("Error setting WiFi mode:", e)
+            respond(res, config_html, {message: "Error setting WiFi mode"})
+        }
+    }, 5000)
+    
     respond(res, success_html, {}) // {shortname: sn})
 })
 

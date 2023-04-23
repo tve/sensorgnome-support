@@ -5,8 +5,13 @@ touch public/need_init # used by caddy to route
 
 user=`getent passwd 1000 | cut -d: -f1`
 if egrep -q "^${user}:[^!x:][^:]{10,}" /etc/shadow; then
-    echo "Password has been set"
-    rm -f public/need_init
+    echo "Unix password has been set"
+    if [[ $(../wifi-button/wifi-hotspot.sh pwinfo) == "set" ]]; then
+        echo "Hotspot password has been set"
+        rm -f public/need_init
+    else
+        echo "Hotspot password has not been set"
+    fi
 fi
 
 # start the landing page and initial config app

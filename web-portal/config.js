@@ -57,6 +57,39 @@ function hs_pw_set() {
     return false
 }
 
+// get user name given a user id
+function get_user(id) {
+    const pwdfile = Fs.readFileSync("/etc/passwd").toString()
+    const username = new RegExp(`^([^:]+):[^:]*:${id}:`, 'm').exec(pwdfile)?.[1]
+    console.log(username)
+    if (!username) throw new Error(`User with id ${id} does not exist`)
+    return username
+}
+
+// extract the password field from /etc/shadow for the specific user
+function shadow_hash(user) {
+     const data = Fs.readFileSync("/etc/shadow").toString()
+     const lines = data.split('\n')
+     const line = lines.find(l => l.startsWith(`${user}:`))
+     if (!line) throw new Error(`User '${user}' does not exist`)
+     const fields = line.split(':')
+     if (fields.length < 2) throw new Error(`User '${user}' has no password`)
+     const hash = fields[1]
+     if (hash == '*') throw new Error(`User '${user}' has no password`)
+     return hash
+}
+
+// use python's crypt function to verify the password,
+// see https://www.baeldung.com/linux/shadow-passwords
+function py_auth(user, pass) {
+    const verifier = shadow_hash(user)
+    const method_salt = verifier.replace(/\$[^$]+$/, '$')
+    const args = ["-c", `import crypt; print(crypt.crypt("${pass}", "${method_salt}"))`]
+    const stdout = CP.execFileSync("/usr/bin/python3", args).toString()
+    if (stdout.trim() != verifier) throw new Error(`Wrong password for user '${user}'`)
+    return true
+}
+
 // respond using a string as a template and substituting fields <!--field--> from info.field
 function respond(res, template, info) {
     info.ipaddrs = ifaces_list()
@@ -71,17 +104,25 @@ app.use(BodyParser.urlencoded({extended: false}))
 
 // get the config page with some placeholders filled in
 app.get('/config', (req, res) => {
-    // password not set, needs the full init
-    if (Fs.existsSync('public/need_init')) {
-        return respond(res, config_html, {})
+    if (!Fs.existsSync('public/need_init')) {
+        // nothing to config
+        return respond(res, config_html,
+            {message: "This Sensorgnome has already been initialized, use the std web UI to re-init"})
     }
     // password set, but not for hotspot, needs password check to set hotspot pw
-    if (hs_pw_set()) {
-        return respond(res, config2_html, {})
+    try {
+        const user = get_user(1000)
+        const verifier = shadow_hash(user)
+        if (verifier) {
+            // unit password set, just set hotspot pw
+            return respond(res, config2_html, {})
+        } else {
+            // password not set, needs the full init
+            return respond(res, config_html, {})
+        }
+    } catch(err) {
+        return respond(res, config_html, {message: err.message})
     }
-    // nothing to config
-    return respond(res, config_html,
-        {message: "This Sensorgnome has already been initialized, use the std web UI to re-init"})
 })
 
 // set the full config: unix password, short name, wifi mode, wifi password
@@ -154,38 +195,6 @@ app.post('/set-config', (req, res) => {
     respond(res, success_html, {}) // {shortname: sn})
 })
 
-// get user name given a user id
-function get_user(id) {
-    const pwdfile = Fs.readFileSync("/etc/passwd").toString()
-    const username = new RegExp(`^([^:]+):[^:]*:${id}:`).exec(pwdfile)?.[1]
-    if (!username) throw new Error(`User with id ${id} does not exist`)
-    return username
-}
-
-// extract the password field from /etc/shadow for the specific user
-function shadow_hash(user) {
-     const data = Fs.readFileSync("/etc/shadow")
-     const lines = data.toString().split('\n')
-     const line = lines.find(l => l.startsWith(`${user}:`))
-     if (!line) throw new Error(`User '${user}' does not exist`)
-     const fields = line.split(':')
-     if (fields.length < 2) throw new Error(`User '${user}' has no password`)
-     const hash = fields[1]
-     if (hash == '*') throw new Error(`User '${user}' has no password`)
-     return hash
-}
-
-// use python's crypt function to verify the password,
-// see https://www.baeldung.com/linux/shadow-passwords
-function py_auth(user, pass) {
-    const verifier = shadow_hash(user)
-    const method_salt = verifier.replace(/\$[^$]+$/, '$')
-    const args = ["-c", `import crypt; print(crypt.crypt("${pass}", "${method_salt}"))`]
-    const stdout = Cp.execFileSync("/usr/bin/python3", args)
-    if (stdout.trim() != verifier) throw new Error(`Wrong password for user '${user}'`)
-    return true
-}
-
 // check unix password and set hotspot password to the same value
 app.post('/chk-config', (req, res) => {
     if (hs_pw_set())
@@ -197,19 +206,21 @@ app.post('/chk-config', (req, res) => {
         const user = get_user(1000)
         py_auth(user, req.body.password)
     } catch(err) {
-        return respond(res, config_html, {message: err.message})
+        return respond(res, config2_html, {message: err.message})
     }
 
     // change the wifi async after a short delay so we can send a response back
+    let mode = "WPA-PSK"
     const wpw = crypto.pbkdf2Sync(req.body.password, sgid, 4096, 256 / 8, "sha1").toString("hex")
     setTimeout(() => {
         try {
             CP.execFileSync(wifi_hotspot, ["mode", mode, wpw||""])
         } catch(e) {
             console.log("Error setting WiFi mode:", e)
-            respond(res, config_html, {message: "Error setting WiFi mode"})
+            respond(res, config2_html, {message: "Error setting WiFi mode"})
         }
     }, 5000)
+    Fs.rmSync("public/need_init")
     
     respond(res, success_html, {}) // {shortname: sn})
 })

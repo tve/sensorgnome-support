@@ -67,3 +67,10 @@ echo
 echo vnstat
 vnstat
 echo
+
+echo iw
+iw list | \
+   sed -r -n \
+      -e '/Supported interface modes/,/^\t[^\t]/p' \
+      -e '/interface combinations/,/^\t[^\t]/p'
+# the sed above could be enhanced using https://stackoverflow.com/a/50746521/3807231

@@ -113,7 +113,7 @@ app.get('/config', (req, res) => {
     try {
         const user = get_user(1000)
         const verifier = shadow_hash(user)
-        if (verifier) {
+        if (verifier?.length > 20) {
             // unit password set, just set hotspot pw
             return respond(res, config2_html, {})
         } else {

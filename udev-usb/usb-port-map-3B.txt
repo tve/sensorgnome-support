@@ -1,20 +1,20 @@
 # Path -> port mappings
 
-# Mappings for rPi3B+ built-in ports
+# Mappings for rPi3B (not-plus) built-in ports
 # Port 1: next to ethernet at top
 1.2 -> 1
 1.3 -> 2
 1.4 -> 3
 1.5 -> 4
 
-# Mappings for 4-port hub plugged into rPi3B+ port 4
+# Mappings for 4-port hub plugged into rPi3B port 4
 # Port 4: lower outer port
 1.5.1 -> 4
 1.5.2 -> 5
 1.5.3 -> 6
 1.5.4 -> 7
 
-# Mappings for 7-port Dlink DUBH7 hub plugged into rPi3B+ port 4
+# Mappings for 7-port Dlink DUBH7 hub plugged into rPi3B port 4
 #1.5.1 -> 4
 #1.5.2 -> 5
 #1.5.3 -> 6

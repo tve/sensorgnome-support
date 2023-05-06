@@ -18,12 +18,19 @@ if ! [[ -f /etc/sensorgnome/usb-port-map.txt ]]; then
   # Raspberry Pi Compute Module 3 Plus Rev 1.0
   model=$(/bin/sed -re 's/^.*-.{4}(.{4}).*/\1/' </etc/sensorgnome/id)
   case $model in
-    RPI3) MODEL=3B ;;
     RPI4) MODEL=4B ;;
     RPZ2) MODEL=Z2 ;;
     RPS1) MODEL=ss12 ;;
     RPS2) MODEL=ss12 ;;
     RPS3) MODEL=ss3 ;;
+    RPI3) # need to distinguish between 3B and 3B+
+      # 3B has an 8 as second-last digit in the revision code
+      if [[ $(cat /proc/cpuinfo | grep Revision | cut -d' ' -f2) = *8? ]]; then
+        MODEL=3B
+      else
+        MODEL=3B+
+      fi
+      ;;
     *) MODEL=generic ;;
   esac
 

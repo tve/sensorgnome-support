@@ -1,4 +1,4 @@
-#! /usr/bin/bash -e
+#! /usr/bin/bash -ex
 #DTP=/proc/device-tree/hat/product
 SGH=/dev/sensorgnome/hat
 mkdir -p /dev/sensorgnome

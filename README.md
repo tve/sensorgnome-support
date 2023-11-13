@@ -32,7 +32,7 @@ The current subsystems are:
 Development
 -----------
 
-- To test&dev it's helpful to have an rPi with a clean Raspberry Pi 'lite' OS installation.
+- To test & dev it's helpful to have an rPi with a clean Raspberry Pi 'lite' OS installation.
   Download the image from the raspberry site and save it locally. Then flash an SDcard and
   edit the `init-rpi.sh` script's variables at the top of the file. Running that script
   preps the rpi image (after flashing is complete you have to pull & re-insert the SDcard

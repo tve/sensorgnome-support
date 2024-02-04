@@ -25,7 +25,12 @@ if [[ -f $BOOT_COUNT_FILE ]]; then
     fi
     echo $(( 1 + $COUNT )) > $BOOT_COUNT_FILE
 else
-    echo 1 > $BOOT_COUNT_FILE
+    # Due to a back-end bug, we try to start at a unique boot count instead of 1, sigh...
+    # Generate an initial boot count of the form EEEEEBBBBB, where EEEEE is "a boot epoch"
+    # and BBBBB is the boot count starting at 1.
+    rnd=$(dd if=/dev/urandom bs=100 count=1 2>/dev/null | md5sum | sed -e 's/ .*//' | tr 'a-z' 'A-Z')
+    epoch=$(echo -e "ibase=16\n${rnd}%10000" | bc)
+    echo "${epoch}00001" > $BOOT_COUNT_FILE
 fi
 echo "The boot count is $(cat $BOOT_COUNT_FILE)"
 sync

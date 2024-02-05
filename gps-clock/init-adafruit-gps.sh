@@ -17,12 +17,14 @@ if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     ln -f -s /dev/serial0 /dev/sensorgnome/gps.port=0.pps=1.kind=hat.model=adafruit
     # Set speed to 9600 baud for prompt discovery
     stty -F /dev/serial0 ispeed 9600 ospeed 9600
+    sleep 1
     # For diagnostic purposes, check that we can see the gps
-    if timeout 3 tail -f /dev/serial0 | grep -q '^\$GPRMC,'; then
+    lines=$(timeout 4 tail -100f /dev/serial0 || true)
+    if [[ "$lines" == *\$GPRMC,* ]]; then
         echo "Got GPS stanzas at 9600 baud"
     else
-        echo "No GPS stanzas at 9600 baud"
-        timeout 3 tail -f /dev/serial0 | od -c | tail -n 10
+        echo "No GPS stanzas at 9600 baud:"
+        od -c <<<"$lines"
     fi
     # Tell GPSd to look at serial0
     #systemctl start --no-block gpsdctl@serial0.service

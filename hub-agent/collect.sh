@@ -15,7 +15,7 @@ echo "find_tags: " $(jq .module_options.find_tags.params /etc/sensorgnome/acquis
 echo -n "version: "
 cat /etc/sensorgnome/version
 echo -n "train: "
-awk '{print $3}' </etc/apt/sources.list.d/sensorgnome.list
+awk '{print $(NF-1)}' </etc/apt/sources.list.d/sensorgnome.list
 
 h=$(cat /etc/sensorgnome/hostname-init)
 if [[ "$h" != "raspberrypi" ]]; then

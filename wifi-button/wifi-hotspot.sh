@@ -65,7 +65,7 @@ elif [[ "$1" == "mode" ]]; then
     fi
     sed -i -e "s/^wpa_key_mgmt=.*/wpa_key_mgmt=$2/" /etc/hostapd/hostapd.conf
     systemctl restart hostapd
-elif iw dev | grep -q ap0; then
+else
     # Ensure hostapd has the correct ssid/psk
     # Use different SSIDs for initial open hotspot than for "final" hostspot 'cause Android gets
     # confused when it switches from password-less to w/password.
@@ -101,6 +101,4 @@ elif iw dev | grep -q ap0; then
     iptables -t nat -D $ipt_reset 2>/dev/null || true
     iptables -t nat -A $ipt_self
     iptables -t nat -A $ipt_route
-else
-    echo "Cannot start WiFi Hotspot: there is no AP capable adapter present"
 fi

@@ -8,6 +8,10 @@ DEST=$DESTDIR/etc/sensorgnome
 install -d $DEST
 TZ=PST8PDT date +'SG %Y-%j' > $DEST/version
 
+# Place SS flash file into gnome home dir
+install -d $DESTDIR/home/gnome
+install -m 755 flash-ss.sh $DESTDIR/home/gnome
+
 # Figure out exact versions of sensorgnome dependencies
 cp -r DEBIAN $DESTDIR
 # get version of sg-control package 'cause it's not in this repo

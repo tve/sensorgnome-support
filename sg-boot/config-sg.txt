@@ -5,8 +5,10 @@
 [board-type=0x10]
 dtparam=i2c_arm=on
 dtparam=i2c1=on
-# real-time-clock support
+# real-time-clock support for SS1
 dtoverlay=i2c-rtc,ds3231
+# real-time clock support for SS3
+dtoverlay=i2c-rtc,mcp7941x
 # GPS PPS input pin
 dtoverlay=pps-gpio,gpiopin=13
 # disable bluetooth as it uses a uart
@@ -26,6 +28,8 @@ dtparam=spi=on
 # don't enable the modem tx/rx 'cause it's a useless 2G device
 # modem tx/rx
 #dtoverlay=uart1,txd1_pin=32,rxd1_pin=33
+# Provide max current to USB bus
+max_usb_current=1
 
 [all]
 enable_uart=1

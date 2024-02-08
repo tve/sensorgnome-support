@@ -1,4 +1,4 @@
-#! /bin/bash -e
+#! /bin/bash
 # Initial Sensorgnome config: user password and "short name"
 cd /opt/sensorgnome/web-portal
 touch public/need_init # used by caddy to route
@@ -18,11 +18,11 @@ fi
 if [[ -f public/need_init ]]; then
     # initial config needed, ensure hotspot is on to do it
     echo "Initial SG config needed, turning hotspot on"
-    /opt/sensorgnome/wifi-button/wifi-hotspot.sh on || true
+    /opt/sensorgnome/wifi-button/wifi-hotspot.sh on & # don't die if this fails...
 else
     # initial config done, for now unconditionally turn on hot-spot, should have a setting somewhere
     echo "Initial SG config done, turning hotspot on anyway for now..."
-    /opt/sensorgnome/wifi-button/wifi-hotspot.sh on || true
+    /opt/sensorgnome/wifi-button/wifi-hotspot.sh on & # don't die if this fails...
 fi
 echo "Starting web portal/landing page app"
 node ./config.js

@@ -45,6 +45,7 @@ else
 fi
 
 # Detect Sensorstations with built-in GPS
+# Comment this out / disable in order to see the SS TTY console for troubleshooting
 if [[ $(cat /etc/sensorgnome/id) == *RPS* ]]; then
     echo "SensorStation detected, starting GPSd"
     # Stopping getty also opens up permissions on the serial port

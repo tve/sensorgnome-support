@@ -127,7 +127,7 @@ LABEL="CornellTagXCVR"
 ACTION!="add",GOTO="done"
 IMPORT{program}="/bin/sh -c '(sleep 2; /bin/stty -F /dev/ttyUSB%n 115200 raw &)'"
 IMPORT{program}="/opt/sensorgnome/udev-usb/get-usb-port.py %p"
-ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/CornellTagXCVR.port=%E{PORT_NUM}.port_path=%E{PORT_PATH}"
+ENV{PORT_NUM}!="",SYMLINK+="sensorgnome/CornellTagXCVR.port=%E{PORT_NUM}.usbPath=%s{busnum}:%s{devnum}.port_path=%E{PORT_PATH}"
 ENV{PORT_NUM}!="",RUN{program}+="/usr/bin/logger -t sensorgnome Added CornellTagXCVR %E{PORT_PATH}->port %E{PORT_NUM}"
 GOTO="done"
 

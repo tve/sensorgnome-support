@@ -16,10 +16,11 @@ if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     systemctl stop serial-getty@$dev.service
     ln -f -s /dev/serial0 /dev/sensorgnome/gps.port=0.pps=1.kind=hat.model=adafruit
     # Set speed to 9600 baud for prompt discovery
-    stty -F /dev/serial0 ispeed 9600 ospeed 9600
+    stty -F /dev/serial0 raw 9600 min 0 time 100
     sleep 1
+    echo -e '\r\n$PMTK605*31\r' >/dev/ttyGPS; # query GPS firmware version while we're at it
     # For diagnostic purposes, check that we can see the gps
-    lines=$(timeout 4 tail -100f /dev/serial0 || true)
+    lines=$(timeout 4 cat /dev/serial0 || true)
     if [[ "$lines" == *\$GPRMC,* ]]; then
         echo "Got GPS stanzas at 9600 baud"
     else
@@ -55,7 +56,7 @@ if [[ $(cat /etc/sensorgnome/id) == *RPS* ]]; then
     raspi-gpio set 28 op dh
     sleep 1 # time for GPS to start-up (do we need this?)
     # Set speed to 9600 baud for prompt discovery
-    stty -F /dev/serial0 ispeed 9600 ospeed 9600
+    stty -F /dev/serial0 raw 9600
     # Tell GPSd to look at serial0
     #systemctl start --no-block gpsdctl@serial0.service
     ln -f -s /dev/serial0 /dev/ttyGPS

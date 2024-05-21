@@ -31,6 +31,11 @@ dtparam=spi=on
 # Provide max current to USB bus
 max_usb_current=1
 
+[pi3]
+# Swap UARTs to facilitate MTK GPS detection and use (adafruit hat)
+# This may only affect non-plus 3B's
+dtoverlay=disable-bt
+
 [all]
 enable_uart=1
 dtparam=act_led_trigger=default-on

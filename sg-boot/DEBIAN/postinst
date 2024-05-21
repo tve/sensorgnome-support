@@ -30,3 +30,14 @@ done
 if ! egrep -q nodelaycompress /etc/logrotate.d/rsyslog; then
     sed -i 's/delaycompress/nodelaycompress/' /etc/logrotate.d/rsyslog
 fi
+
+# perform UART swap for Pi3
+if ! grep -q disable-bt /boot/config.txt; then
+    cat <<EOF >>/boot/config.txt
+
+[pi3]
+# Swap UARTs to facilitate MTK GPS detection and use (adafruit hat)
+# This may only affect non-plus 3B's
+dtoverlay=disable-bt
+EOF
+fi

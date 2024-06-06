@@ -4,7 +4,8 @@ Architecture: armhf
 Section: misc
 Priority: standard
 Essential: no
-Depends: fcd, find-tags-unifile, vamp-alsa-host, vamp-plugins, sensorgnome-librtlsdr,
+Depends: fcd, find-tags-unifile, vamp-alsa-host,
+    vamp-plugins (>= 2024.116), sensorgnome-librtlsdr (>= 2024.156),
     sg-boot, sg-gps-clock, sg-udev-usb, sg-web-portal, sg-wifi-button,
     sg-control, sg-upgrader, sg-hub-agent, sg-cellular, ss1-display,
     rpiboot

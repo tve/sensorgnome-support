@@ -70,10 +70,10 @@ fi
 rm -f /etc/localtime
 ln -sf /usr/share/zoneinfo/UTC /etc/localtime
 
-# starting with 2023-106 we store an image creation timestamp in /etc/sensorgnome/image-timestamp
+# starting with 2023-106 we store an image creation timestamp in /etc/sensorgnome/image-stamp
 # but when upgrading that's missing... make one up using /opt/sensorgnome
-if ! [[ -f /etc/sensorgnome/image-timestamp ]]; then
-    stat -c %Y /opt/sensorgnome > /etc/sensorgnome/image-timestamp
+if ! [[ -f /etc/sensorgnome/image-stamp ]]; then
+    stat -c %Y /opt/sensorgnome > /etc/sensorgnome/image-stamp
 fi
 
 # ensure we're close enough to a current date that chrony will sync (10 years)

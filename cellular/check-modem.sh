@@ -60,15 +60,16 @@ while [[ -n "$modem" ]]; do
 
     # Check if the modem is connected
     state=$(jq -r .modem.generic.state <<<$info)
-    echo "Modem: $modem, state: $state, APN: $apn, IP type: $iptype"
+    oper=$(jq -r '.modem."3gpp"."operator-code" + " " + .modem."3gpp"."operator-name"' <<<$info)
+    echo "Modem ${modem##/}, state: $state, APN: $apn $iptype, Operator: $oper"
     if [[ "$state" != "connected" ]] || [[ "$bearer" == "null" ]]; then
         echo Not connected, reason: $(jq -r '.modem.generic["state-failed-reason"]' <<<$info)
         if [[ "$bearer" == null ]]; then
-            echo Disconnecting existing bearer
+            #echo Disconnecting existing bearer
             mmcli -m $m --simple-disconnect
             sleep 2
         fi
-        echo "Configuring initial EPS bearer settings"
+        #echo "Configuring initial EPS bearer settings"
         mmcli -m $m --3gpp-set-initial-eps-bearer-settings="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
         sleep 2
         echo "Connecting modem $m, apn=$apn ip-type=$iptype allow-roaming=$roaming"

@@ -7,3 +7,5 @@ node_modules
 supervisor/main.js
 supervisor/README.md
 supervisor/telegraf-init.sh
+gps-snippets.sh
+tunnel/

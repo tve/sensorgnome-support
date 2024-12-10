@@ -3,8 +3,8 @@ echo "Running sg-boot postinst in $(pwd)"
 MISC=/opt/sensorgnome/sg-boot # would be nice to derive that from some env var...
 
 # Update config.txt
-sed -i -e '/Sensorgnome/,$d' /boot/config.txt
-cat $MISC/config-sg.txt >>/boot/config.txt
+sed -i -e '/Sensorgnome/,$d' /boot/firmware/config.txt
+cat $MISC/config-sg.txt >>/boot/firmware/config.txt
 
 # enable and start/restart systemd units
 for U in sg-boot; do
@@ -25,19 +25,3 @@ for U in sg-boot; do
         fi
     fi
 done
-
-# change rsyslog config
-if ! egrep -q nodelaycompress /etc/logrotate.d/rsyslog; then
-    sed -i 's/delaycompress/nodelaycompress/' /etc/logrotate.d/rsyslog
-fi
-
-# perform UART swap for Pi3
-if ! grep -q disable-bt /boot/config.txt; then
-    cat <<EOF >>/boot/config.txt
-
-[pi3]
-# Swap UARTs to facilitate MTK GPS detection and use (adafruit hat)
-# This may only affect non-plus 3B's
-dtoverlay=disable-bt
-EOF
-fi

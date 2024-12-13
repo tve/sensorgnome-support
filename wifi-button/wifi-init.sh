@@ -4,6 +4,11 @@ echo "Unblocking wlan"
 rfkill unblock wlan # prob not necessary but harmless, always do this
 rfkill unblock wifi # prob not necessary but harmless, always do this
 
+# Make sure the wlan0 interface exists, this should be done by waiting for the appropriate
+# systemd something, but not obvious what that is
+if ! wpa_cli interface | grep -q wlan0; then sleep 5; fi
+if ! wpa_cli interface | grep -q wlan0; then sleep 5; fi
+
 # Set wifi country to global if not set
 if wpa_cli -i wlan0 get country | egrep -q FAIL; then
     echo "Setting wifi country to global"

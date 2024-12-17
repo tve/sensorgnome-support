@@ -17,7 +17,7 @@ cp $SRC/gpio_pull.dtbo /boot/overlays # can't let dpkg do that 'cause chmod does
 #[[ -f /etc/sensorgnome/network.txt ]] || cp $SRC/network.txt /etc/sensorgnome
 
 # enable and start/restart gestures and wifi_init units
-for U in wifi-init gestures; do
+for U in wifi-init gestures rfunblock net-mods; do
     # code from debhelper's postinst-systemd-enable template
     if [ "$1" = "configure" ] || [ "$1" = "abort-upgrade" ] || [ "$1" = "abort-deconfigure" ] || [ "$1" = "abort-remove" ] ; then
         # This will only remove masks created by d-s-h on package removal.

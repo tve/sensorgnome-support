@@ -1,0 +1,12 @@
+[Unit]
+Description=Ensure wifi is enabled
+Before=dhcpcd.service
+After=systemd-rfkill.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/rfkill unblock wlan
+
+[Install]
+WantedBy=multi-user.target

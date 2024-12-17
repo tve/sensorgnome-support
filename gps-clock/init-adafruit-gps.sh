@@ -32,7 +32,8 @@ if [[ -f $SGH ]] && grep -q "Ultimate GPS HAT" $SGH; then
     ln -f -s /dev/serial0 /dev/ttyGPS
     systemctl restart --no-block gpsd.service
     # Enable GPIO 4 for PPS from the Adafruit GPS hat
-    dtoverlay pps-gpio gpiopin=4
+    dtoverlay -l
+    dtoverlay pps-gpio gpiopin=4 || true # seems to already be active??
     # Enable PPS in chrony
     sed -i '/refclock PPS/s/^#//' /etc/chrony/chrony.conf
     #systemctl restart chrony.service # chrony should not start before this unit is done

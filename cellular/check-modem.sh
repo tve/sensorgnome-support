@@ -14,7 +14,7 @@
 if [[ -f /etc/sensorgnome/cellular.json ]]; then
     config=$(cat /etc/sensorgnome/cellular.json)
 else
-    echo '{"apn":"","ip-type":"ipv4v6","allow-roaming":"yes"}' >/etc/sensorgnome/cellular.json
+    echo '{"apn":"changeme","ip-type":"ipv4v6","allow-roaming":"yes"}' >/etc/sensorgnome/cellular.json
     config=""
 fi
 apn=$(jq -r .apn <<<$config)

@@ -50,7 +50,18 @@ while [[ -n "$modem" ]]; do
     count=$((count+1))
     if (( $count > 1 )); then
         [[ -n "$reconfigure" ]] && exit 0  # don't loop if we're reconfiguring
-        (( $count > 5 )) && exit 1  # we'll come back in a few minutes...
+        if (( $count > 3 )); then # TODO: change back to 5?
+            mmcli -m $m --timeout=120 --3gpp-scan
+            # the following commands are Quectel specific and report network scan results
+            # with rsrp / rsrq values, however, only partial results are returned if sg-control
+            # tries to scan at the same time
+            # if [[ $(mmcli -J -m $m | jq -r .modem.generic.plugin) == quectel ]]; then
+            #     mmcli -m a --command='AT+QOPSCFG="displayrssi,1"'
+            #     mmcli -m a --command='AT+QCFG="nwscanmode",0'
+            #     mmcli -m a --timeout=120 --command='AT+QOPS'
+            # fi
+            exit 1  # we'll come back in a few minutes...
+        fi
         sleep 5
         eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
         m=$(basename $modem)
@@ -71,9 +82,10 @@ while [[ -n "$modem" ]]; do
         fi
         #echo "Configuring initial EPS bearer settings"
         mmcli -m $m --3gpp-set-initial-eps-bearer-settings="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
-        sleep 2
+        mmcli -m $m --signal-setup=20
+        sleep 1
         echo "Connecting modem $m, apn=$apn ip-type=$iptype allow-roaming=$roaming"
-        mmcli -m $m --simple-connect="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
+        mmcli -m $m --timeout=120 --simple-connect="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
         continue
     fi
 

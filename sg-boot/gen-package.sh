@@ -13,6 +13,8 @@ install -d $DESTDIR/etc/sensorgnome
 install -d $DESTDIR/boot
 #install -m 644 config-*.txt $DESTDIR/boot # fails trying to make backup
 install -m 644 config-*.txt $DEST
+install -d $DESTDIR/etc/rsyslog.d
+install -m 644 etc-rsyslog.conf $DESTDIR/etc/rsyslog.d/timestamp.conf                               
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

@@ -11,6 +11,19 @@
 
 [[ "$1" == "-r" ]] && reconfigure=1  # reconfiguring
 
+# Log this execution to a file
+exec 6>&1
+exec > >(tee /tmp/check-modem-new.log) 2>&1
+date
+function finish {
+    exec 1>&6
+    trap - EXIT
+    mv /tmp/check-modem-new.log /tmp/check-modem.log
+    exit ${1:-1}
+}
+trap finish EXIT
+
+# Load information from cellular config
 if [[ -f /etc/sensorgnome/cellular.json ]]; then
     config=$(cat /etc/sensorgnome/cellular.json)
 else
@@ -27,7 +40,61 @@ eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
 if [[ "$modem" == null ]]; then
     echo "No modem found"
     exit 0
+elif [[ -z "$modem" ]] && [[ $(mmcli -L 2>&1) == *find?the?ModemManager?process* ]]; then
+    echo "ModemManager locked-up, restarting"
+    systemctl restart ModemManager
+    finish 1
 fi
+
+declare -a operators=()
+
+# function to gather the modem state from ModemManager
+function get_state {
+    info=$(mmcli -J -m $m)
+    if [[ -z "$info" ]]; then
+        # oops, MM lost the modem??
+        sleep 10
+        info=$(mmcli -J -m $m)
+        if [[ -z "$info" ]]; then
+            echo "Lost modem, exiting"
+            finish 1
+        fi
+    fi
+    bearer=$(jq -r '.modem.generic.bearers[0]' <<<$info)  # bearers[0] is the latest, phew...
+    state=$(jq -r .modem.generic.state <<<$info)
+    oper=$(jq -r '.modem."3gpp"."operator-code" + " " + .modem."3gpp"."operator-name"' <<<$info)
+    echo "Modem ${modem##*/} state: $state, APN: $apn $iptype, Operator: $oper"
+    if [[ "$state" != "connected" ]]; then
+        reason=$(jq -r '.modem.generic["state-failed-reason"]' <<<$info)
+        more=$(jq -c '.modem["3gpp"]' <<<$info)
+        #echo More: $more
+        if [[ "$reason" == "--" ]]; then
+            reason=$(jq -r '.["network-rejection-access-technology"] + " " + .["network-rejection-error"]' <<<$more)
+        fi
+        if [[ "$oper" == *-- ]]; then
+            oper=$(jq -r '."operator-code" + " " + ."operator-name"' <<<$more)
+        fi
+        if [[ "$oper" == "-- --" ]]; then
+            oper=$(jq -r '.["network-rejection-operator-id"] + " " + .["network-rejection-operator-name"]' <<<$more)
+        fi
+        msg=""
+        [[ "$reason" != --* ]] && msg="$reason"
+        [[ "$oper" != *-- ]] && msg="$msg / $oper"
+        [[ -n "$msg" ]] && echo "Failure reason: $msg"
+    fi
+}
+
+function get_scan {
+    scan=$(mmcli -J -m $m --timeout=120 --3gpp-scan)
+    if [[ "$scan" == *operator-code* ]]; then
+        filter='.modem."3gpp"."scan-networks" | map(select(.availability == "available")) |'
+        filter="$filter "' map(."operator-code") | unique | join(" ")'
+        operators=($(jq -j "$filter" <<<$scan))
+        echo "Found ${#operators[@]} available operators: ${operators[*]}"
+    else
+        echo "Found no available operators"
+    fi
+}
 
 # handle APN auto-detection for some SIM cards
 if [[ -n "$modem" ]] && [[ -z "$apn" ]]; then
@@ -50,7 +117,7 @@ while [[ -n "$modem" ]]; do
     count=$((count+1))
     if (( $count > 1 )); then
         [[ -n "$reconfigure" ]] && exit 0  # don't loop if we're reconfiguring
-        if (( $count > 3 )); then # TODO: change back to 5?
+        if (( $count > 5 )); then
             mmcli -m $m --timeout=120 --3gpp-scan
             # the following commands are Quectel specific and report network scan results
             # with rsrp / rsrq values, however, only partial results are returned if sg-control
@@ -62,85 +129,131 @@ while [[ -n "$modem" ]]; do
             # fi
             exit 1  # we'll come back in a few minutes...
         fi
-        sleep 5
         eval $(mmcli -L -J | jq -j '.["modem-list"] | last | "modem=\(@sh)"')
         m=$(basename $modem)
     fi
-    info=$(mmcli -J -m $m)
-    bearer=$(jq -r '.modem.generic.bearers[0]' <<<$info)  # bearers[0] is the latest, phew...
 
-    # Check if the modem is connected
-    state=$(jq -r .modem.generic.state <<<$info)
-    oper=$(jq -r '.modem."3gpp"."operator-code" + " " + .modem."3gpp"."operator-name"' <<<$info)
-    echo "Modem ${modem##/}, state: $state, APN: $apn $iptype, Operator: $oper"
-    if [[ "$state" != "connected" ]] || [[ "$bearer" == "null" ]]; then
-        echo Not connected, reason: $(jq -r '.modem.generic["state-failed-reason"]' <<<$info)
-        if [[ "$bearer" == null ]]; then
-            #echo Disconnecting existing bearer
+    get_state
+    if [[ "$state" == connected ]] && [[ "$bearer" != null ]]; then
+        # Got a bearer, ensure we actually have connectivity and can pass data
+
+        # Check that we have the correct APN
+        binfo=$(mmcli -J -m $m -b $bearer)
+        cur_apn=$(jq -r .bearer.properties.apn <<<$binfo)
+        if [[ "$cur_apn" != "$apn" ]]; then
+            echo "Configured APN is $apn, disconnecting bearer"
             mmcli -m $m --simple-disconnect
             sleep 2
+            continue
         fi
-        #echo "Configuring initial EPS bearer settings"
-        mmcli -m $m --3gpp-set-initial-eps-bearer-settings="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
-        mmcli -m $m --signal-setup=20
-        sleep 1
-        echo "Connecting modem $m, apn=$apn ip-type=$iptype allow-roaming=$roaming"
-        mmcli -m $m --timeout=120 --simple-connect="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
-        continue
-    fi
 
-    # Check that we have the correct APN
-    binfo=$(mmcli -J -m $m -b $bearer)
-    cur_apn=$(jq -r .bearer.properties.apn <<<$binfo)
-    if [[ "$cur_apn" != "$apn" ]]; then
-        echo "Configured APN is $apn, disconnecting bearer"
-        mmcli -m $m --simple-disconnect
-        continue
-    fi
-
-    # Check that we have a default route
-    defrt=$(ip route show default)
-    iface=$(jq -r .bearer.status.interface <<<$binfo)
-    if [[ "$iface" == ttyUSB* ]]; then
-        net=$(jq -r '.modem.generic.ports | last | sub(" .*"; "")' <<<$info)
-        echo "Interface $iface -> $net"
-        iface=$net
-    fi
-    if ! grep -e "$iface" <<<$defrt; then
-        if (( $count == 1 )); then
-            echo "No default route via $iface, resetting modem"
-            mmcli -m $m --reset
-            sleep 20
-        else
-            echo "No default route via $iface, waiting..."
+        # Check that we have a default route
+        defrt=$(ip route show default)
+        iface=$(jq -r .bearer.status.interface <<<$binfo)
+        if [[ "$iface" == ttyUSB* ]]; then
+            net=$(jq -r '.modem.generic.ports | last | sub(" .*"; "")' <<<$info)
+            echo "Interface $iface -> $net"
+            iface=$net
         fi
-        continue
-    fi
-
-    # If we're *the* default route, check that we have traffic in the past 90 minutes
-    vnstat=$(vnstat -i $iface --json f 18)
-    rx=$(jq -c '.interfaces[0].traffic.fiveminute | map(.rx) | add' <<<$vnstat) || \
-        echo "Error getting RX bytes from vnstat: $vnstat"
-    echo "RX bytes in last 90 minutes: $rx"
-    dr=$(ip route get 1.1.1.1)
-    if [[ "$dr" = *${iface}* ]]; then
-        echo "Default route uses $iface"
-        if (( $rx < 10240 )); then
-            echo "No traffic in last 90 minutes, pinging 1.1.1.1"
-            if ping -n -c 20 -I $iface 1.1.1.1 | grep -q ' 0 received'; then
-                echo "Resetting modem"
+        if ! grep -e "$iface" <<<$defrt; then
+            if (( $count == 1 )); then
+                echo "No default route via $iface, resetting modem"
                 mmcli -m $m --reset
-                exit 1
+                sleep 30
             else
-                echo "Ping OK"
+                echo "No default route via $iface, waiting..."
+                sleep 2
             fi
+            continue
         fi
-    else
-        dr=$(echo $dr | sed -e 's/.*dev \([^ ]*\).*/\1/')
-        echo "System default route is via $dr, not $iface (OK)"
+        
+        # If we're *the* default route, check that we have traffic in the past 90 minutes
+        vnstat=$(vnstat -i $iface --json f 18)
+        rx=$(jq -c '.interfaces[0].traffic.fiveminute | map(.rx) | add' <<<$vnstat) || \
+            echo "Error getting RX bytes from vnstat: $vnstat"
+        echo "RX bytes in last 90 minutes: $rx"
+        dr=$(ip route get 1.1.1.1)
+        if [[ "$dr" = *${iface}* ]]; then
+            echo "Default route uses $iface"
+            if (( $rx < 10240 )); then
+                echo "No traffic in last 90 minutes, pinging 1.1.1.1"
+                if ping -n -c 20 -I $iface 1.1.1.1 | grep -q ' 0 received'; then
+                    echo "Resetting modem"
+                    mmcli -m $m --reset
+                    finish 1
+                else
+                    echo "Ping OK"
+                fi
+            fi
+        else
+            dr=$(echo $dr | sed -e 's/.*dev \([^ ]*\).*/\1/')
+            echo "System default route is via $dr, not $iface (OK)"
+        fi
+
+        # Ensure we're getting signal info
+        if [[ $(mmcli -m $m) != *20?seconds* ]]; then
+            mmcli -m $m --signal-setup=20
+        fi
+
+        #echo "Modem $m is OK"
+        finish 0
     fi
 
-    #echo "Modem $m is OK"
-    exit 0
+    # Not connected or the bearer doesn't work. In either case, we need to (re-)connect
+
+    # if there is a bearer then disconnect it
+    if [[ "$bearer" != null ]]; then
+        #echo Disconnecting existing bearer
+        mmcli -m $m --simple-disconnect
+        sleep 2
+    fi
+
+    # check that ModemManager is using the QMI interface
+    drivers=$(jq -r '.modem.generic.drivers' <<<$info)
+    priport=$(jq -r '.modem.generic["primary-port"]' <<<$info)
+    if [[ "$drivers" = *qmi_wwan* ]] && [[ "$priport" != cdc-wdm* ]]; then
+        echo "Modem supports QMI but using $priport: resetting modem"
+        mmcli -m $m --reset
+        sleep 30
+        continue
+    fi
+
+    # ensure modem is enabled
+    if [[ "$state" == disabled ]]; then
+        echo "Enabling modem"
+        mmcli -m $m -e
+        sleep 2
+    fi
+
+    #
+    if [[ $count == 1 ]]; then
+        mmcli -m $m --3gpp-set-initial-eps-bearer-settings="apn=$apn,ip-type=$iptype,allow-roaming=$roaming"
+        mmcli -m $m --signal-setup=0
+        sleep 1
+    fi
+
+    # Make a connection attempt
+    date
+    if [[ $count -gt 1 ]] && [[ $state != connected ]] && [[ $state != registered ]]; then
+        if [[ ${#operators[*]} == 0 ]]; then
+            echo "#$count: Performing a scan"
+            get_scan
+        fi
+        if [[ ${#operators[*]} -gt 0 ]]; then
+            ix=$(( $RANDOM % ${#operators[*]} ))
+            oper="${operators[$ix]}"
+            echo "#$count: Registering with operator $oper"
+            mmcli -m $m --timeout=120 --3gpp-register-in-operator=$oper
+            # err=$(mmcli -m $m --timeout=120 --3gpp-register-in-operator=$oper 2>&1)
+            # echo "Got: <<$err>>"
+            continue
+        fi
+    fi
+    echo "#$count: Connecting modem $m, apn=$apn ip-type=$iptype allow-roaming=$roaming"
+    err=$(mmcli -m $m --timeout=120 --simple-connect="apn=$apn,ip-type=$iptype,allow-roaming=$roaming,operator-id=310260" 2>&1)
+    if [[ "$err" == *InProgress* ]]; then
+        echo "  connection attempt already in progress??"
+        finish 1
+    fi
 
 done

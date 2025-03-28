@@ -1,0 +1,5 @@
+#! /usr/bin/bash -e
+echo "Running sg-burstfinder postinst in $(pwd)"
+WP=/opt/sensorgnome/burstfinder # would be nice to derive that from some env var...
+
+# there is no service as the burstfinder is launched from sg-control

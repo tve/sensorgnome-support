@@ -1,0 +1,466 @@
+# Burstfinder takes a sequence of pulses and uses the Lotek codeset to identify each burst of pulses that matches a known code.
+# TODO: Document burst file format for discussion
+# TODO: Combine pulse files from same receiver to avoid missing bursts split across files
+# TODO: check compability with non-numeric antenna IDs
+# TODO: print header when requested
+# TODO: include start/stop as arguments
+# TODO: performance improvements, e.g. with static typing
+# TODO: break find_bursts function down into more functions so it is easier to understand
+# TODO: Write GPS data lines into separate file
+
+import os, sys, argparse, yaml, logging
+import numpy as np
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s",
+										handlers=[logging.StreamHandler(sys.stderr), logging.FileHandler('burstfinder.log')])
+
+# START and DURATION parameters can be used to process only some subset of the pulse files
+START = 0 # [s]
+DURATION = np.inf # [s]
+
+# File name suffixes for the pulse, burst, and burstpulse files
+SUFFIX_PULSES = '-all.txt'
+
+# High confidence criteria for matching bursts to codes
+BURST_CRITERIA_HI = dict(
+	WARNING = 0, # 0 = High quality
+	MAX_PULSE_SLOP = 0.0004, # [s] Max variation in pulse intervals for matching a burst to a code
+	MAX_FREQ_DIFF = 0.05, # [kHz] Max difference between max and min frequency of pulses within a burst
+	MAX_FREQ_OUTLIERS = 0, # [] Max number of pulses that are allowed to be outside of the max frequency range (required to detect bursts where a pulse is being maksed by a pulse from another burst).
+	MAX_USED_PULSES = 0, # [] Max number of pulses that can be used in more than one burst
+	MAX_SIG_DIFF = 10, # [dB] Max difference between max and min signal strength of pulses within a burst
+)
+
+# Low confidence criteria for matching bursts to codes
+BURST_CRITERIA_LO = dict(
+	WARNING = 1, # 1 = Low quality
+	MAX_PULSE_SLOP = 0.0015, # [s] Max variation in pulse intervals for matching a burst to a code
+	MAX_FREQ_DIFF = 0.1, # [kHz] Max difference between max and min frequency of pulses within a burst
+	MAX_FREQ_OUTLIERS = 1, # [] Max number of pulses that are allowed to be outside of the max frequency range (required to detect bursts where a pulse is being maksed by a pulse from another burst).
+	MAX_USED_PULSES = 1, # [] Max number of pulses that can be used in more than one burst
+	MAX_SIG_DIFF = 20, # [dB] Max difference between max and min signal strength of pulses within a burst
+)
+
+# Enum for pulse file columns
+class PULSE_COLS:
+	ANT = 0; TS = 1; FREQ = 2; SIG = 3; NOISE = 4; USED = 5
+	HEADER = 'Antenna ID,Unix timestamp (s),Frequency offset (kHz),Signal strength (dB),Noise (dB),Bursts using this pulse'
+
+# Enum for burst file columns
+class BURST_COLS:
+	ANT = 0; TS = 1; ID = 2; FREQ_MEAN = 3; FREQ_DIFF = 4; SIG_MEAN = 5; SIG_DIFF = 6; NOISE_MEAN = 7; SLOP = 8;
+	SNR_MIN = 9; USED_PULSES = 10; NUM_PULSES = 11; WARNING = 12; PULSES = 13
+	HEADER = 'Antenna ID,Unix timestamp (s),Lotek code ID,Frequency offset mean (kHz),Frequency offset range (kHz),Signal strength mean (dB),' \
+						'Signal strength range (dB),Noise mean (dB),Max pulse slop (s),Minimum signal to noise (dB),Other bursts using this pulse,' \
+						'Other pulses in the window,Warning flag'
+	# TODO: Share format definition with test_burstfinder SHORT_NAMES = ['ANT', 'TS', 'ID', 'FREQ_MEAN', 'FREQ_DIFF', 'SIG_MEAN', 'SIG_DIFF', 'NOISE_MEAN', 'SLOP', 'SNR_MIN', 'USED_PULSES', 'NUM_PULSES', 'WARNING', 'PULSES']
+
+# Class to calculate and provide some code data
+class Codes:
+	def __init__(self, code_intervals):
+		ids = np.array(list(code_intervals.keys()))
+		intervals = np.array(list(code_intervals.values()))/1000 # Get all intervals in seconds
+		intervals_min = intervals.min(axis=0) # Shortest code
+		intervals_max = intervals.max(axis=0) # Longest code
+		# Determine the pulse window, the maximum time separation between the first and last pulse in a burst
+		pulse_window = np.sum(intervals_max) + BURST_CRITERIA_LO['MAX_PULSE_SLOP']*2 # [s]
+		# Determine the number of unique pulse intervals for each of the 3 intervals in a code
+		interval_num = np.array([len(np.unique(intervals)) for intervals in intervals.T])
+		# Determine the pulse interval step size (knowing that Lotek codes use a fixed step size between intervals)
+		interval_step = np.mean((intervals_max - intervals_min)/(interval_num-1))
+		code_lookup = dict()
+		for id in code_intervals:
+			intervals = np.array(code_intervals[id])/1000
+			# Interpret each iterval as an integer code symbol
+			symbols = np.round((intervals - intervals_min)/interval_step).astype(int)
+			if symbols[2] not in code_lookup:
+				code_lookup[symbols[2]] = dict()
+			if symbols[1] not in code_lookup[symbols[2]]:
+				code_lookup[symbols[2]][symbols[1]] = dict()
+			code_lookup[symbols[2]][symbols[1]][symbols[0]] = id
+
+		self.code_intervals = code_intervals
+		self.ids = ids
+		self.intervals_min = intervals_min
+		self.intervals_max = intervals_max
+		self.interval_step = interval_step
+		self.pulse_window = pulse_window
+		self.code_lookup = code_lookup
+
+# Does some input/output handling then processes each pulse file
+def main(input_path, output_path, codes_path, settings_path, output_bursts, output_pulses, include_header):
+	if codes_path:
+		# Load codeset from specified file
+		with open(codes_path, 'r') as file:
+			code_intervals = yaml.safe_load(file)
+	else:
+		# Otherwise load the built-in codeset
+		from lotek6m_codes import code_intervals
+	codes = Codes(code_intervals)
+
+	if settings_path:
+		# Load settings from specified file
+		with open(settings_path, 'r') as file:
+			settings = yaml.safe_load(file)
+		BURST_CRITERIA_HI.update(settings['BURST_CRITERIA_HI'])
+		BURST_CRITERIA_LO.update(settings['BURST_CRITERIA_LO'])
+
+	pulse_paths = []
+	# If input argument is a file, add it to the list of input files
+	if input_path == 'stdin':
+		logging.info('Reading pulses from stdin')
+		pulse_paths.append(input_path)
+	elif os.path.isfile(input_path):
+		if input_path.endswith(SUFFIX_PULSES):
+			pulse_paths.append(input_path)
+	# If input argument is a directory, add all pulse files in the directory to the list of input files
+	elif os.path.isdir(input_path):
+		for path in os.listdir(input_path):
+			if os.path.isdir(os.path.join(input_path, path)):
+				os.makedirs(os.path.join(output_path, path), exist_ok=True)
+				main(os.path.join(input_path, path), os.path.join(output_path, path), codes_path, output_bursts, output_pulses)
+			elif path.endswith(SUFFIX_PULSES):
+				pulse_paths.append(os.path.join(input_path, path))
+
+	# For each input pulse file, find and output bursts and/or filtered pulses
+	for pulse_path in pulse_paths:
+		if output_path == 'stdout':
+			logging.info('Writing bursts to stdout')
+			burst_path = None if not output_bursts else 'stdout'
+			burstpulse_path = None if not output_pulses else 'stdout'
+		else:
+			pulse_name = os.path.basename(pulse_path).replace('.txt','')
+			burst_path = None if not output_bursts else f'{output_path}/{pulse_name}-bursts-burstfinder.txt'
+			burstpulse_path = None if not output_pulses else f'{output_path}/{pulse_name}-burstpulses-burstfinder.txt'
+
+		find_bursts(pulse_path, burst_path, burstpulse_path, codes, include_header)
+
+def open_input_handle(path=None):
+	return sys.stdin if path == 'stdin' else open(path, "r")
+
+def open_output_handle(path=None):
+	return sys.stdout if path == 'stdout' else open(path, "w")
+
+# Process a single burst file, generating 
+def find_bursts(pulse_path, burst_path, burstpulse_path, codes, include_header):
+	# Initialize start time and counters
+	t_start = None
+	pulse_count = 0; burst_count = 0 # Initialize pulse and burst counters
+	unique_codes = set() # Keep track of all unique codes detected
+	# Initialize pulse buffers
+	pulse_prebuffers = dict()
+	pulse_buffers = dict()
+	burst_buffers = dict()
+	# Open files
+	f_pulse = open_input_handle(pulse_path)
+	f_burst = open_output_handle(burst_path) if burst_path else None
+	if f_burst and include_header:
+		f_burst.write(BURST_COLS.HEADER+'\n')
+	f_burstpulse = open_output_handle(burstpulse_path) if burstpulse_path else None
+	if f_burstpulse and include_header:
+		f_burst.write(PULSE_COLS.HEADER+'\n')
+	# Process each pulse in the pulse file
+	for pulse_txt in f_pulse:
+		# Get new pulse
+		pulse = parse_pulse_txt(pulse_txt)
+		if not pulse:
+			continue # Not pulse data, proceed to next pulse
+		pulse_count += 1
+
+		# Check if pulse time is within specified constraints
+		t = pulse[PULSE_COLS.TS]
+		if t_start is None: t_start = t
+		if t - t_start < START:	continue
+		if t - t_start > START + DURATION: break
+
+		# First add pulses to a prebuffer, so we can examine them and handle cases where a single real pulse has been recorded as two adjacent pulses in the pulse data
+		ant = pulse[PULSE_COLS.ANT]
+		if ant not in pulse_prebuffers:
+			pulse_prebuffers[ant] = list()
+		pulse_prebuffer = pulse_prebuffers[ant]
+		pulse_prebuffer.append(pulse)
+
+		if len(pulse_prebuffer) < 2:
+			continue
+		pulse_1 = pulse_prebuffer[0]
+		pulse_2 = pulse_prebuffer[1]
+
+		# If the pulses are too close together
+		if np.abs(pulse_2[PULSE_COLS.TS] - pulse_1[PULSE_COLS.TS]) < 0.0015:# and np.abs(pulse_2[PULSE_COLS.FREQ] - pulse_1[PULSE_COLS.FREQ]) < 0.1:
+			# Take the stronger of the two pulses
+			if pulse_1[PULSE_COLS.SIG] > pulse_2[PULSE_COLS.SIG]:
+				pulse = pulse_1
+			else:
+				pulse = pulse_2
+			# pulse[1:5] = np.mean(np.vstack([pulse_1[1:5], pulse_2[1:5]]), axis=0).round(6)
+			pulse_prebuffer.pop(0)
+			pulse_prebuffer.pop(0)
+		else:
+			# Other wise just provide the next pulse
+			pulse = pulse_1
+			pulse_prebuffer.pop(0)
+
+		if ant not in pulse_buffers:
+			pulse_buffers[ant] = list()
+		pulse_buffer = pulse_buffers[ant]
+		pulse_buffer.append(pulse)
+
+		# Write any previously detected bursts to file, if they are now outside of the pulse window
+		if ant not in burst_buffers:
+			burst_buffers[ant] = list()
+		burst_buffer = burst_buffers[ant]
+		pulse_window_start = t - codes.pulse_window
+		burst_buffer = write_bursts(burst_buffer, pulse_window_start, f_burst, f_burstpulse)
+
+		if len(pulse_buffer) < 4: continue # Not enough pulses for a code
+
+		# Remove old pulses (outside the window) from the buffer
+		# Ignore the most recently added pulse, which has a special purpose below
+		buffer_dt = get_buffer_dt(pulse_buffer)
+		while buffer_dt > codes.pulse_window:
+			pulse_buffer.pop(0)
+			buffer_dt = get_buffer_dt(pulse_buffer)
+
+		if len(pulse_buffer) < 4: continue # Not enough pulses for a code
+
+		# Find some high quality bursts in the window and add them to burst buffer
+		for _ in range(10):
+			burst = find_burst(pulse_buffer, BURST_CRITERIA_HI, codes)
+			if burst is None:
+				break
+			else:
+				burst_count += 1
+				unique_codes.add(burst[BURST_COLS.ID])
+				pulse_buffer = update_used_pulses(pulse_buffer, burst)
+				burst_buffer.append(burst)
+				continue
+
+		# Find some low quality bursts in the window and add them to burst buffer
+		# Do this only if there are not too many pulses in the buffer, to prevent false positives and excessive processing time from noisy environments
+		if len(pulse_buffer) < 12:
+			for _ in range(10):
+				burst = find_burst(pulse_buffer, BURST_CRITERIA_LO, codes)
+				if burst is None:
+					break
+				else:
+					burst_count += 1
+					unique_codes.add(burst[BURST_COLS.ID])
+					pulse_buffer = update_used_pulses(pulse_buffer, burst)
+					burst_buffer.append(burst)
+					continue
+
+		pulse_buffers[ant] = pulse_buffer
+		burst_buffers[ant] = burst_buffer
+
+	# Write remaining bursts
+	for ant in burst_buffers:
+		write_bursts(burst_buffers[ant], np.inf, f_burst, f_burstpulse)
+
+	# Close files
+	# f_pulse.close()
+	# f_burst.close() if f_burst else None
+	# f_burstpulse.close() if f_burstpulse else None
+	duration = t - t_start if pulse_count > 1 else 0
+	logging.info(f'Input: {pulse_path}')
+	logging.info(f'  Duration: {(duration)/60:.1f} min | '+
+				f'Pulse count: {pulse_count:6.0f} | Pulses per sec: {pulse_count/(duration):.1f} | '+
+				f'Burst count: {burst_count:6.0f} | Bursts per min: {burst_count/(duration)*60:6.1f}')
+
+	return pulse_count, burst_count, duration, unique_codes
+
+def write_bursts(burst_buffer, pulse_window_start, f_burst, f_burstpulse):
+	bursts_to_write = []
+	bursts_to_keep = []
+	for burst in burst_buffer:
+		if burst[BURST_COLS.TS] < pulse_window_start:
+			bursts_to_write.append(burst)
+		else:
+			bursts_to_keep.append(burst)
+	bursts_to_write_agg = aggregate_bursts(bursts_to_write)
+	if len(bursts_to_write_agg) > 0:
+		f_burst.write(format_bursts(bursts_to_write_agg)) if f_burst else None
+		f_burstpulse.write(format_burstpulses(bursts_to_write_agg)) if f_burstpulse else None
+	return bursts_to_keep
+
+def find_pulses(pulse_buffer, burst_pulses, code_lookup, burst_criteria, codes):
+	interval_i = 3 - len(burst_pulses)
+	pulse_next = burst_pulses[0]
+	pulse_mask = pulse_buffer[:,PULSE_COLS.TS] < pulse_next[PULSE_COLS.TS]
+	if burst_criteria['MAX_FREQ_OUTLIERS'] == 0:
+		pulse_mask &= np.abs(pulse_buffer[:,PULSE_COLS.FREQ] - pulse_next[PULSE_COLS.FREQ]) <= burst_criteria['MAX_FREQ_DIFF']
+	# For each pulse in the buffer (in reverse order), consider whether it meets all criteria to be part of the current burst candidate
+	# If it does not meet any criteria, continue to the next pulse
+	for pulse in reversed(pulse_buffer[pulse_mask]):
+		pulse_interval = pulse_next[PULSE_COLS.TS] - pulse[PULSE_COLS.TS]
+		if pulse_interval < codes.intervals_min[interval_i] - burst_criteria['MAX_PULSE_SLOP'] or pulse_interval > codes.intervals_max[interval_i] + burst_criteria['MAX_PULSE_SLOP']:
+			continue
+		# Interpret the pulse interval as an integer code symbol
+		symbol_float = (pulse_interval - codes.intervals_min[interval_i])/codes.interval_step
+		symbol = np.round(symbol_float).astype(int)
+		if symbol not in code_lookup:
+			continue
+		# Calculate the pulse interval slop by calculating the difference between the float symbol and the nearest integer symbol
+		# Multiply this difference by the interval step to get the slop in seconds
+		pulse_interval_slop = np.abs(symbol_float - symbol)*codes.interval_step
+		if pulse_interval_slop > burst_criteria['MAX_PULSE_SLOP']:
+			continue
+		possible_burst_pulses = np.concatenate([[pulse], burst_pulses])
+		if max(possible_burst_pulses[:,PULSE_COLS.SIG]) - min(possible_burst_pulses[:,PULSE_COLS.SIG]) > burst_criteria['MAX_SIG_DIFF']:
+			continue
+		if np.sum(possible_burst_pulses[:,PULSE_COLS.USED]) > burst_criteria['MAX_USED_PULSES']:
+			continue
+		if not check_freq_criteria(possible_burst_pulses, burst_criteria):
+			continue
+		# If there are fewer than 4 pulses, call this function recursively to look for additional valid pulses
+		if len(possible_burst_pulses) < 4:
+			result = find_pulses(pulse_buffer, possible_burst_pulses, code_lookup[symbol], burst_criteria, codes)
+			if result is None:
+				continue
+			return result
+		# Otherwise a valid burst has been found
+		id = code_lookup[symbol]
+		return possible_burst_pulses, id
+
+def check_freq_criteria(burst_pulses, burst_criteria):
+	# Check if difference between max and min freq is within tolerance
+	freq_diff = max(burst_pulses[:,PULSE_COLS.FREQ]) - min(burst_pulses[:,PULSE_COLS.FREQ])
+	if freq_diff <= burst_criteria['MAX_FREQ_DIFF']:
+		return True
+	# If not, and if freq outliers are allowed, then check again without the outliers
+	pulse_mask = np.repeat(True, len(burst_pulses))
+	for _ in range(burst_criteria['MAX_FREQ_OUTLIERS']):
+		freq_diffs_mean = burst_pulses[:,PULSE_COLS.FREQ] - np.mean(burst_pulses[:,PULSE_COLS.FREQ])
+		i_pulse = np.argmax(np.abs(freq_diffs_mean))
+		# Only ignore the freq outlier if the sig is stronger that the weakest pulse in the burst
+		if burst_pulses[i_pulse,PULSE_COLS.SIG] > np.min(burst_pulses[pulse_mask,PULSE_COLS.SIG]):
+			pulse_mask[i_pulse] = False
+	freq_diff = max(burst_pulses[pulse_mask,PULSE_COLS.FREQ]) - min(burst_pulses[pulse_mask,PULSE_COLS.FREQ])
+	if freq_diff <= burst_criteria['MAX_FREQ_DIFF']:
+		return True
+	return False
+
+def find_burst(pulse_buffer, burst_criteria, codes):
+	pulse_buffer = np.array(pulse_buffer)
+	# Only consider bursts that end on the last pulse
+	burst_pulses = np.expand_dims(pulse_buffer[-1],0)
+	# For each pulse, find the preceding pulse that best fits a known code
+	code_lookup = codes.code_lookup
+	result = find_pulses(pulse_buffer, burst_pulses, code_lookup, burst_criteria, codes)
+	if result is None:
+		return None
+	burst_pulses, id = result
+
+	# Compile burst info
+	ant = burst_pulses[0][PULSE_COLS.ANT]
+	timestamp = burst_pulses[0][PULSE_COLS.TS]
+	max_pulse_slop = max(np.diff(burst_pulses[:,PULSE_COLS.TS]) - codes.code_intervals[id])
+	freq_mean = np.mean(burst_pulses[:,PULSE_COLS.FREQ])
+	freq_sd = np.std(burst_pulses[:,PULSE_COLS.FREQ])
+	sig_mean = np.mean(burst_pulses[:,PULSE_COLS.SIG])
+	sig_sd = np.std(burst_pulses[:,PULSE_COLS.SIG])
+	noise_mean = np.mean(burst_pulses[:,PULSE_COLS.NOISE])
+	snr_mean = np.mean(burst_pulses[:,PULSE_COLS.SIG] - burst_pulses[:,PULSE_COLS.NOISE])
+	used_pulses = np.sum(burst_pulses[:,PULSE_COLS.USED])
+	if used_pulses > 0:
+		pass
+	num_pulses = len(pulse_buffer)
+	pulses = {i:pulse for i, pulse in enumerate(burst_pulses)}
+
+	burst = [ant, timestamp, id, freq_mean, freq_sd, sig_mean, sig_sd, noise_mean, max_pulse_slop, snr_mean, used_pulses, num_pulses, burst_criteria['WARNING'], pulses]
+	return burst
+
+def update_used_pulses(pulse_buffer, burst):
+	# Update pulse buffer to reflect which pulses have been used for this burst
+	for i_burstpulse in burst[BURST_COLS.PULSES].keys():
+		for i_pulse in range(len(pulse_buffer)):
+			if pulse_buffer[i_pulse][PULSE_COLS.TS] == burst[BURST_COLS.PULSES][i_burstpulse][PULSE_COLS.TS]:
+				pulse_buffer[i_pulse][PULSE_COLS.USED] += 1
+				burst[BURST_COLS.PULSES][i_burstpulse][PULSE_COLS.USED] += 1
+				break
+	return pulse_buffer
+
+# Remove duplicates from a list of detected bursts, leaving only the burst with the strongest mean signal strength
+def aggregate_bursts(bursts):
+	# Aggregate any duplicate detections
+	if len(bursts) < 2:
+		return bursts
+	bursts = np.vstack(bursts)
+	i_sorted = np.lexsort((bursts[:,BURST_COLS.ID],bursts[::-1,BURST_COLS.SIG_MEAN]))
+	bursts = bursts[i_sorted]
+	i_unique = np.unique(bursts[:,BURST_COLS.ID], return_index=True)[1]
+	bursts = bursts[i_unique]
+	return bursts
+
+# Calculate the duration between the first and last pulse in the buffer
+def get_buffer_dt(pulse_buffer):
+	return pulse_buffer[-1][PULSE_COLS.TS] - pulse_buffer[0][PULSE_COLS.TS]
+
+# Represent a list of bursts as a string (where each line is a burst), in preparation for writing to a burst file
+def format_bursts(bursts):
+	lines = ''
+	for burst in bursts:
+		sen, ts, id, freq_mean, freq_sd, sig_mean, sig_sd, noise_mean, interval_diff_max, snr_min, used_pulses, num_pulses, warning = burst[:-1]
+		line = f'{sen:.0f},{ts:.4f},{id:.0f},{freq_mean:.3f},{freq_sd:.3f},{sig_mean:.3f},{sig_sd:.3f},{noise_mean:.3f},{interval_diff_max:.5f},{snr_min:.3f},{used_pulses:.0f},{num_pulses:.0f},{warning:.0f}\n'
+		lines += line
+	return lines
+
+# Represent a list of bursts as a string (where each line is a pulse), in preparation for writing to a burst pulse file
+def format_burstpulses(bursts):
+	lines = ''
+	for burst in bursts:
+		id = burst[BURST_COLS.ID]
+		for pulse in burst[BURST_COLS.PULSES].values():
+			sen, ts, sig, freq, noise, used = pulse
+			line = f'{sen:.0f},{ts:.4f},{sig:.3f},{freq:.3f},{noise:.3f},{id:.0f},{used:.0f}\n'
+			lines += line
+	return lines
+
+# Parse a single line of text from a pulse file and return the pulse data (if it contains a pulse)
+def parse_pulse_txt(pulse_txt):
+	pulse = pulse_txt.rstrip().split(',')[:5]
+	if len(pulse) < 5:
+		return [] # Must be corrupted data
+	if pulse[PULSE_COLS.ANT][0] != 'p':
+		return [] # Must be GPS record or something other than pulse data
+	pulse[PULSE_COLS.ANT] = pulse[PULSE_COLS.ANT].replace('p','')
+	try:
+		pulse = [float(v) for v in pulse]
+		pulse[PULSE_COLS.ANT] = int(pulse[PULSE_COLS.ANT])
+	except:
+		return []
+	pulse[PULSE_COLS.FREQ] = abs(pulse[PULSE_COLS.FREQ])
+	pulse.append(0) # Initialize counter for the number of times this pulse is used to identify a burst
+	return pulse
+
+# Parse command line arguments
+def parse_args():
+	parser = argparse.ArgumentParser(description='Burstfinder')
+	parser.add_argument('-i', '--input', type=str, default='stdin', help='Path to input files (either a pulse file or directory of pulse files), or "stdin" (default)')
+	parser.add_argument('-o', '--output', type=str, default='stdout', help='Path to a directory for output files, or "stdout" (default)')
+	parser.add_argument('-c', '--codes', type=str, default='', help='Optional path to a YAML codeset definition (e.g. codes.yaml)')
+	parser.add_argument('-s', '--settings', type=str, default='', help='Optional path to a YAML settings file (e.g. settings.yaml)')
+	# Removed option to produce burstpulses based on 2025-03-06 agreement to only produce burst files
+	# parser.add_argument('-b', '--bursts', action='store_true', help='Optional flag to produce burst files')
+	# parser.add_argument('-p', '--pulses', action='store_true', help='Optional flag to produce filtered pulse files')
+	parser.add_argument('-H', '--header', action='store_true', help='Optional flag to include a header in the output files')
+	return parser.parse_args()
+
+# Validate command line arguments
+def validate_args(args):
+	if not args.input == 'stdin' and not os.path.exists(args.input):
+		raise ValueError('Input path does not exist')
+	if not args.output == 'stdout' and not os.path.exists(args.output):
+		logging.warning('Output path does not exist - creating path')
+		os.makedirs(args.output, exist_ok=True)
+
+# Run the program
+if __name__ == '__main__':
+	try:
+		args = parse_args()
+		validate_args(args)
+		# Hardcoded arguments to produce bursts only and not burstpulses (see comment in parse_args)
+		main(args.input, args.output, args.codes, args.settings, True, False, args.header)
+	except KeyboardInterrupt:
+		logging.error('Process interrupted by user')
+	except Exception as e:
+		logging.error(e)

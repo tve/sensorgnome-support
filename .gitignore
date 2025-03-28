@@ -9,3 +9,5 @@ supervisor/README.md
 supervisor/telegraf-init.sh
 gps-snippets.sh
 tunnel/
+burstfinder/bursts-tve.json
+burstfinder/encrypt-bursts.sh

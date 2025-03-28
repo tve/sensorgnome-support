@@ -29,4 +29,11 @@ for U in check-modem.timer init-modem.service; do
     fi
 done
 
+echo "Turning on debug mode for ModemManager"
+if ! grep -Eq debug /lib/systemd/system/ModemManager.service; then
+    sed -i -e 's/ModemManager$/ModemManager --debug/' \
+           -e "/ExecStart=/aExecStartPost=/usr/bin/mmcli --set-logging=INFO" \
+           /lib/systemd/system/ModemManager.service
+fi
+
 echo "sg-cellular postinst done"

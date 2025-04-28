@@ -250,7 +250,7 @@ while [[ -n "$modem" ]]; do
         fi
     fi
     echo "#$count: Connecting modem $m, apn=$apn ip-type=$iptype allow-roaming=$roaming"
-    err=$(mmcli -m $m --timeout=120 --simple-connect="apn=$apn,ip-type=$iptype,allow-roaming=$roaming,operator-id=310260" 2>&1)
+    err=$(mmcli -m $m --timeout=120 --simple-connect="apn=$apn,ip-type=$iptype,allow-roaming=$roaming" 2>&1)
     if [[ "$err" == *InProgress* ]]; then
         echo "  connection attempt already in progress??"
         finish 1

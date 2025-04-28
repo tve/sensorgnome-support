@@ -8,7 +8,8 @@ install -d $DEST
 install -m 644 bursts src/LICENSE $DEST
 sed <src/burstfinder.py >$DEST/burstfinder.py \
     -e '/^logging/s/%(asctime)s - //' \
-    -e 's/, logging.FileHandler('burstfinder.log')//'
+    -e '/^\s*initialize_logging/s/i/#i/' \
+    -e '/LATEST_TIMESTAMP/s/30.*/30000/'
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

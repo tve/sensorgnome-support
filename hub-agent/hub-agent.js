@@ -453,7 +453,24 @@ async function doCommand(cmd) {
   }
 }
 
-async function updateTunnel(tunnel) {}
+async function updateTunnel(webui) {
+  const tailscaledRunning = await execFile("/usr/bin/systemctl", ["is-active", "tailscaled"])
+  if (tailscaledRunning.trim() !== "active" && webui) {
+    console.log("Tailscale is not running, starting it")
+    try {
+      await execFile("/usr/bin/systemctl", ["start", "tailscaled"])
+    } catch (e) {
+      console.log("Failed to start tailscaled:", e.message)
+    }
+  } else if (tailscaledRunning.trim() === "active" && !webui) {
+    console.log("Tailscale is running, stopping it")
+    try {
+      await execFile("/usr/bin/systemctl", ["stop", "tailscaled"])
+    } catch (e) {
+      console.log("Failed to stop tailscaled:", e.message)
+    }
+  }
+}
 
 const shipper = new LogShipper()
 
@@ -473,7 +490,7 @@ async function doit() {
         // check whether we have some commands to execute
         if (resp && resp.length > 0 && resp.startsWith("{")) {
           const ctrl = JSON.parse(resp)
-          if ("tunnel" in ctrl) await updateTunnel(ctrl.tunnel)
+          if ("webui" in ctrl) await updateTunnel(ctrl.webui)
           if ("cmd" in ctrl) {
             await doCommand(ctrl.cmd)
             period = min_period

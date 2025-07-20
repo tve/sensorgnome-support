@@ -14,6 +14,12 @@ if egrep -q "^${user}:[^!x:][^:]{10,}" /etc/shadow; then
     fi
 fi
 
+# generate fresh self-signed HTTPs cert
+cd /etc/sensorgnome
+openssl req -x509 -newkey rsa:2048 -days 3650 \                                   
+  -noenc -keyout self-signed.key -out self-signed.pem -subj "/CN=sgpi.local" \   
+  -addext "subjectAltName=DNS:sgpi.local,DNS:*.sgpi.local"                       
+
 # start the landing page and initial config app
 if [[ -f public/need_init ]]; then
     # initial config needed, ensure hotspot is on to do it

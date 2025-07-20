@@ -71,7 +71,8 @@
 :443 {
         import main
         # ensure we get automatic certs and redirect from HTTP
-        tls /etc/sensorgnome/local-ip.pem /etc/sensorgnome/local-ip.key
+        #tls /etc/sensorgnome/local-ip.pem /etc/sensorgnome/local-ip.key
+        tls /etc/sensorgnome/self-signed.pem /etc/sensorgnome/self-signed.key
 }
 
 # Site on HTTP for hotspot interface only

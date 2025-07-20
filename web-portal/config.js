@@ -31,7 +31,7 @@ function ifaces_list() {
         let ifn = ifmap[e[0]] || e[0]
         for (let ifc of e[1]) {
             if (ifn !== 'lo' && ifc.family == 'IPv4') {
-                let addr = ifc.address.replace(/\./g, '-') + ".my.local-ip.co"
+                let addr = ifc.address // .replace(/\./g, '-') + ".my.local-ip.co"
                 ifaces += `<li>${ifn}: <a href="https://${addr}/">https://${addr}/</a></li>\n`
             }
         }

@@ -20,12 +20,11 @@ install -m 644 *.service $DESTDIR/etc/systemd/system
 # Fetch local-ip HTTPS certs - this is duplicated in the sensorgnome image build pifile
 # They also get updated from the SG Hub.
 install -d $DESTDIR/etc/sensorgnome
-# install -m 644 local-ip.key $DESTDIR/etc/sensorgnome
-# cat local-ip.pem local-ip-chain.pem >$DESTDIR/etc/sensorgnome/local-ip.pem
-curl -L -o $DESTDIR/etc/sensorgnome/local-ip.key http://local-ip.co/cert/server.key
-curl -L -o $DESTDIR/etc/sensorgnome/local-ip.pem http://local-ip.co/cert/server.pem
-curl -L -o - http://local-ip.co/cert/chain.pem >> $DESTDIR/etc/sensorgnome/local-ip.pem
-chmod 644 $DESTDIR/etc/sensorgnome/local-ip.*
+# disabled due to demise of local-ip.co
+#curl -L -o $DESTDIR/etc/sensorgnome/local-ip.key http://local-ip.co/cert/server.key
+#curl -L -o $DESTDIR/etc/sensorgnome/local-ip.pem http://local-ip.co/cert/server.pem
+#curl -L -o - http://local-ip.co/cert/chain.pem >> $DESTDIR/etc/sensorgnome/local-ip.pem
+#chmod 644 $DESTDIR/etc/sensorgnome/local-ip.*
 
 # Boilerplate package generation
 cp -r DEBIAN $DESTDIR

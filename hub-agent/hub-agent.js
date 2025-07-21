@@ -353,6 +353,7 @@ async function shipInfo() {
 
 async function checkCerts() {
   try {
+    return // short-circuit 'cause the stuff below deals with local-ip.co certs which are no more
     const opts = { auth: `${sgid}:${sgkey}` }
     const serverMD5 = (await request(sghub + "/agent/tls-key-md5", "GET", opts)).trim()
     const localMD5 = (await execFile("/usr/bin/md5sum", [keyFile])).replace(/ .*/, "").trim()
@@ -454,15 +455,19 @@ async function doCommand(cmd) {
 }
 
 async function updateTunnel(webui) {
-  const tailscaledRunning = await execFile("/usr/bin/systemctl", ["is-active", "tailscaled"])
-  if (tailscaledRunning.trim() !== "active" && webui) {
+  let tailscaledRunning = false
+  try {
+    const r = await execFile("/usr/bin/systemctl", ["is-active", "tailscaled"])
+    tailscaledRunning = r == "active"
+  } catch(e) {}
+  if (!tailscaledRunning && webui) {
     console.log("Tailscale is not running, starting it")
     try {
       await execFile("/usr/bin/systemctl", ["start", "tailscaled"])
     } catch (e) {
       console.log("Failed to start tailscaled:", e.message)
     }
-  } else if (tailscaledRunning.trim() === "active" && !webui) {
+  } else if (tailscaledRunning && !webui) {
     console.log("Tailscale is running, stopping it")
     try {
       await execFile("/usr/bin/systemctl", ["stop", "tailscaled"])
@@ -490,11 +495,11 @@ async function doit() {
         // check whether we have some commands to execute
         if (resp && resp.length > 0 && resp.startsWith("{")) {
           const ctrl = JSON.parse(resp)
-          if ("webui" in ctrl) await updateTunnel(ctrl.webui)
           if ("cmd" in ctrl) {
             await doCommand(ctrl.cmd)
             period = min_period
           }
+          // check whether we should send all logs now
           if (ctrl.logall) logall = true
         }
         // then ship log files
@@ -506,6 +511,9 @@ async function doit() {
       // check whether there are new certs available
       await checkCerts()
     }
+
+    // enable/disable remote web UI
+    await updateTunnel(online)
 
     // notify systemd that we're alive
     if (process.env.NOTIFY_SOCKET) await execFile("systemd-notify", ["WATCHDOG=1"])

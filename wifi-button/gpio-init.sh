@@ -41,12 +41,16 @@ echo "Enabling GPIO $LED_GPIO for LED and GPIO $SW_GPIO for button"
 
 dir=$PWD
 cd /sys/class/gpio
-[[ -e gpio$LED_GPIO ]] || echo $LED_GPIO > export
-echo out > gpio$LED_GPIO/direction
-echo 0 > gpio$LED_GPIO/value
+# [[ -e gpio$LED_GPIO ]] || echo $LED_GPIO > export
+# echo out > gpio$LED_GPIO/direction
+# echo 0 > gpio$LED_GPIO/value
+pinctrl set $LED_GPIO op
+pinctrl set $LED_GPIO dl
 
-[[ -e gpio$SW_GPIO ]] || echo $SW_GPIO > export
-echo 1 > gpio$SW_GPIO/active_low
+# [[ -e gpio$SW_GPIO ]] || echo $SW_GPIO > export
+# echo 1 > gpio$SW_GPIO/active_low
+pinctrl set $SW_GPIO ip
+pinctrl set $SW_GPIO pu
 
 cd $dir
 cat <<EOF >$1
